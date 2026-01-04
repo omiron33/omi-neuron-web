@@ -1,101 +1,16 @@
 {
   "issues" : [
     {
-      "message" : "Missing ## Outcomes section.",
+      "message" : "No phase headers found (### Phase N - Name ✅).",
       "path" : "plans\/master-plan-planner.md",
       "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Execution Phases section.",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Parallel \/ Unblock Options section.",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "warning"
-    },
-    {
-      "message" : "Phase header missing status emoji (✅\/🟡\/🟥).",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "warning"
-    },
-    {
-      "message" : "Phase header missing status emoji (✅\/🟡\/🟥).",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "warning"
-    },
-    {
-      "message" : "Phase header missing status emoji (✅\/🟡\/🟥).",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "warning"
-    },
-    {
-      "message" : "Phase header missing status emoji (✅\/🟡\/🟥).",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "warning"
-    },
-    {
-      "message" : "Phase header missing status emoji (✅\/🟡\/🟥).",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "warning"
-    },
-    {
-      "message" : "Phase header missing status emoji (✅\/🟡\/🟥).",
-      "path" : "plans\/master-plan-planner.md",
-      "severity" : "warning"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/phase-1-foundation-plan.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/phase-2-analysis-engine-plan.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/phase-3-api-layer-plan.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/phase-4-visualization-plan.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/phase-5-integration-plan.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/phase-6-validation-plan.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Task Backlog section.",
-      "path" : "plans\/private-npm-publishing-plan.md",
-      "severity" : "error"
-    },
-    {
-      "message" : "Missing ## Parallel \/ Unblock Options section.",
-      "path" : "plans\/private-npm-publishing-plan.md",
-      "severity" : "warning"
     }
   ],
   "summary" : {
-    "errors" : 10,
+    "errors" : 1,
     "info" : 0,
-    "warnings" : 8
+    "warnings" : 0
   },
-  "updated_at" : "2026-01-04T06:39:08Z",
+  "updated_at" : "2026-01-04T07:10:09Z",
   "version" : "1.0"
 }

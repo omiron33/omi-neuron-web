@@ -37,80 +37,80 @@
 
 ## Execution Phases
 
-### Phase 3.1 – Repository Pattern 🟥
-- [ ] Create BaseRepository class with common CRUD
-- [ ] Create NodeRepository with full CRUD + batch operations
-- [ ] Create EdgeRepository with relationship queries
-- [ ] Create ClusterRepository with membership management
-- [ ] Create SettingsRepository with deep merge updates
-- [ ] Create AnalysisRunRepository for job tracking
-- [ ] Add transaction support across repositories
+### Phase 3.1 – Repository Pattern ✅
+- [x] Create BaseRepository class with common CRUD
+- [x] Create NodeRepository with full CRUD + batch operations
+- [x] Create EdgeRepository with relationship queries
+- [x] Create ClusterRepository with membership management
+- [x] Create SettingsRepository with deep merge updates
+- [x] Create AnalysisRunRepository for job tracking
+- [x] Add transaction support across repositories
 
-### Phase 3.2 – Query Builder 🟥
-- [ ] Create GraphQueryBuilder class
-- [ ] Implement node filtering (type, domain, cluster, status)
-- [ ] Implement edge filtering (type, strength, confidence)
-- [ ] Implement pagination with cursor-based approach
-- [ ] Implement depth-limited graph expansion
-- [ ] Implement path finding (shortest path, all paths)
-- [ ] Add query optimization hints
+### Phase 3.2 – Query Builder ✅
+- [x] Create GraphQueryBuilder class
+- [x] Implement node filtering (type, domain, cluster, status)
+- [x] Implement edge filtering (type, strength, confidence)
+- [x] Implement pagination with cursor-based approach
+- [x] Implement depth-limited graph expansion
+- [x] Implement path finding (shortest path, all paths)
+- [x] Add query optimization hints
 
-### Phase 3.3 – Nodes API 🟥
-- [ ] Implement GET /api/neuron/nodes (list with filters)
-- [ ] Implement POST /api/neuron/nodes (create single or batch)
-- [ ] Implement GET /api/neuron/nodes/:id (get with relations)
-- [ ] Implement PATCH /api/neuron/nodes/:id (update)
-- [ ] Implement DELETE /api/neuron/nodes/:id (delete with cascade)
-- [ ] Add search parameter for full-text search
-- [ ] Add embedding inclusion option
+### Phase 3.3 – Nodes API ✅
+- [x] Implement GET /api/neuron/nodes (list with filters)
+- [x] Implement POST /api/neuron/nodes (create single or batch)
+- [x] Implement GET /api/neuron/nodes/:id (get with relations)
+- [x] Implement PATCH /api/neuron/nodes/:id (update)
+- [x] Implement DELETE /api/neuron/nodes/:id (delete with cascade)
+- [x] Add search parameter for full-text search
+- [x] Add embedding inclusion option
 
-### Phase 3.4 – Edges API 🟥
-- [ ] Implement GET /api/neuron/edges (list with filters)
-- [ ] Implement POST /api/neuron/edges (create single or batch)
-- [ ] Implement GET /api/neuron/edges/:id (get single)
-- [ ] Implement PATCH /api/neuron/edges/:id (update)
-- [ ] Implement DELETE /api/neuron/edges/:id (delete)
-- [ ] Add bulk delete by node ID
-- [ ] Add relationship type filtering
+### Phase 3.4 – Edges API ✅
+- [x] Implement GET /api/neuron/edges (list with filters)
+- [x] Implement POST /api/neuron/edges (create single or batch)
+- [x] Implement GET /api/neuron/edges/:id (get single)
+- [x] Implement PATCH /api/neuron/edges/:id (update)
+- [x] Implement DELETE /api/neuron/edges/:id (delete)
+- [x] Add bulk delete by node ID
+- [x] Add relationship type filtering
 
-### Phase 3.5 – Graph API 🟥
-- [ ] Implement GET /api/neuron/graph (full graph for visualization)
-- [ ] Implement POST /api/neuron/graph/expand (expand from nodes)
-- [ ] Implement POST /api/neuron/graph/path (find paths)
-- [ ] Add node count limiting for performance
-- [ ] Add cluster information in response
-- [ ] Implement graph statistics endpoint
+### Phase 3.5 – Graph API ✅
+- [x] Implement GET /api/neuron/graph (full graph for visualization)
+- [x] Implement POST /api/neuron/graph/expand (expand from nodes)
+- [x] Implement POST /api/neuron/graph/path (find paths)
+- [x] Add node count limiting for performance
+- [x] Add cluster information in response
+- [x] Implement graph statistics endpoint
 
-### Phase 3.6 – Analysis API 🟥
-- [ ] Implement POST /api/neuron/analyze (trigger analysis)
-- [ ] Implement GET /api/neuron/analyze/:jobId (check status)
-- [ ] Implement POST /api/neuron/analyze/:jobId/cancel (cancel job)
-- [ ] Implement GET /api/neuron/analyze/history (list past jobs)
-- [ ] Add webhook notification on completion
-- [ ] Add estimated duration calculation
+### Phase 3.6 – Analysis API ✅
+- [x] Implement POST /api/neuron/analyze (trigger analysis)
+- [x] Implement GET /api/neuron/analyze/:jobId (check status)
+- [x] Implement POST /api/neuron/analyze/:jobId/cancel (cancel job)
+- [x] Implement GET /api/neuron/analyze/history (list past jobs)
+- [x] Add webhook notification on completion
+- [x] Add estimated duration calculation
 
-### Phase 3.7 – Settings API 🟥
-- [ ] Implement GET /api/neuron/settings (get current)
-- [ ] Implement PATCH /api/neuron/settings (update with deep merge)
-- [ ] Implement POST /api/neuron/settings/reset (reset sections)
-- [ ] Implement GET /api/neuron/settings/schema (get JSON schema)
-- [ ] Add settings validation before save
-- [ ] Add settings change events
+### Phase 3.7 – Settings API ✅
+- [x] Implement GET /api/neuron/settings (get current)
+- [x] Implement PATCH /api/neuron/settings (update with deep merge)
+- [x] Implement POST /api/neuron/settings/reset (reset sections)
+- [x] Implement GET /api/neuron/settings/schema (get JSON schema)
+- [x] Add settings validation before save
+- [x] Add settings change events
 
-### Phase 3.8 – Search API 🟥
-- [ ] Implement POST /api/neuron/search (semantic search)
-- [ ] Implement POST /api/neuron/search/similar (find similar nodes)
-- [ ] Add query embedding caching
-- [ ] Add result explanation option
-- [ ] Add domain/type filtering
+### Phase 3.8 – Search API ✅
+- [x] Implement POST /api/neuron/search (semantic search)
+- [x] Implement POST /api/neuron/search/similar (find similar nodes)
+- [x] Add query embedding caching
+- [x] Add result explanation option
+- [x] Add domain/type filtering
 
-### Phase 3.9 – API Middleware 🟥
-- [ ] Create validation middleware (Zod integration)
-- [ ] Create error handling middleware (consistent error format)
-- [ ] Create logging middleware
-- [ ] Create CORS middleware (optional enable)
-- [ ] Create request timing middleware
-- [ ] Export route handler factory functions
+### Phase 3.9 – API Middleware ✅
+- [x] Create validation middleware (Zod integration)
+- [x] Create error handling middleware (consistent error format)
+- [x] Create logging middleware
+- [x] Create CORS middleware (optional enable)
+- [x] Create request timing middleware
+- [x] Export route handler factory functions
 
 ## Task Files
 
@@ -161,9 +161,10 @@ See `tasks/phase-3-api/` for individual task tracking:
 | Validation overhead | Schema caching, efficient validators |
 
 ## Open Questions
-- GraphQL support in addition to REST?
-- Batch operations transaction semantics?
-- Pagination: offset vs cursor?
+- None (resolved for initial release).
+
+## Task Backlog
+- None. All Phase 3 tasks completed.
 
 ## Parallel / Unblock Options
 - Repository pattern and middleware can be built first
@@ -172,10 +173,9 @@ See `tasks/phase-3-api/` for individual task tracking:
 - Analysis API depends on Phase 2 pipeline
 
 ## Validation Criteria
-- [ ] All endpoints return correct response format
-- [ ] Validation rejects invalid inputs with clear errors
-- [ ] Pagination works correctly
-- [ ] Graph queries perform within acceptable time
-- [ ] Analysis jobs track and report progress
-- [ ] Settings persist and apply correctly
-
+- [x] All endpoints return correct response format
+- [x] Validation rejects invalid inputs with clear errors
+- [x] Pagination works correctly
+- [x] Graph queries perform within acceptable time
+- [x] Analysis jobs track and report progress
+- [x] Settings persist and apply correctly

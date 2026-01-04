@@ -33,66 +33,66 @@
 
 ## Execution Phases
 
-### Phase 1.1 – Project Setup 🟥
-- [ ] Create repo at ~/Code/omi-neuron-web with pnpm init
-- [ ] Configure TypeScript with strict mode
-- [ ] Set up ESLint with TypeScript plugin
-- [ ] Configure Prettier
-- [ ] Set up tsup for building
-- [ ] Configure package.json with exports and peer deps
+### Phase 1.1 – Project Setup ✅
+- [x] Create repo at ~/Code/omi-neuron-web with pnpm init
+- [x] Configure TypeScript with strict mode
+- [x] Set up ESLint with TypeScript plugin
+- [x] Configure Prettier
+- [x] Set up tsup for building
+- [x] Configure package.json with exports and peer deps
 
-### Phase 1.2 – Type System 🟥
-- [ ] Define NeuronNode types (base, full, create, update, visual)
-- [ ] Define NeuronEdge types (edge, create, update, visual, inferred)
-- [ ] Define NeuronCluster types (cluster, membership, config)
-- [ ] Define Analysis types (run, request, response, results)
-- [ ] Define Settings types (visualization, analysis, config)
-- [ ] Define Event types (all event types and payloads)
-- [ ] Define API types (request/response for all endpoints)
-- [ ] Create index.ts with all exports
+### Phase 1.2 – Type System ✅
+- [x] Define NeuronNode types (base, full, create, update, visual)
+- [x] Define NeuronEdge types (edge, create, update, visual, inferred)
+- [x] Define NeuronCluster types (cluster, membership, config)
+- [x] Define Analysis types (run, request, response, results)
+- [x] Define Settings types (visualization, analysis, config)
+- [x] Define Event types (all event types and payloads)
+- [x] Define API types (request/response for all endpoints)
+- [x] Create index.ts with all exports
 
-### Phase 1.3 – Zod Schemas 🟥
-- [ ] Create node schemas (create, update, batch)
-- [ ] Create edge schemas (create, update)
-- [ ] Create cluster schemas
-- [ ] Create analysis schemas (request, options)
-- [ ] Create settings schemas (visualization, analysis, full config)
-- [ ] Create API request/response schemas
-- [ ] Create config file schema (neuron.config.ts)
+### Phase 1.3 – Zod Schemas ✅
+- [x] Create node schemas (create, update, batch)
+- [x] Create edge schemas (create, update)
+- [x] Create cluster schemas
+- [x] Create analysis schemas (request, options)
+- [x] Create settings schemas (visualization, analysis, full config)
+- [x] Create API request/response schemas
+- [x] Create config file schema (neuron.config.ts)
 
-### Phase 1.4 – Docker Manager 🟥
-- [ ] Create DockerManager class
-- [ ] Implement container start with port configuration
-- [ ] Implement container stop with volume cleanup option
-- [ ] Implement health check with database readiness
-- [ ] Implement port conflict detection
-- [ ] Implement connection string generation
-- [ ] Create docker-compose.template.yml with pgvector
+### Phase 1.4 – Docker Manager ✅
+- [x] Create DockerManager class
+- [x] Implement container start with port configuration
+- [x] Implement container stop with volume cleanup option
+- [x] Implement health check with database readiness
+- [x] Implement port conflict detection
+- [x] Implement connection string generation
+- [x] Create docker-compose.template.yml with pgvector
 
-### Phase 1.5 – PostgreSQL Client 🟥
-- [ ] Create database client with pg library
-- [ ] Implement connection pooling
-- [ ] Implement query builder helpers
-- [ ] Implement transaction support
-- [ ] Create connection factory with config support
+### Phase 1.5 – PostgreSQL Client ✅
+- [x] Create database client with pg library
+- [x] Implement connection pooling
+- [x] Implement query builder helpers
+- [x] Implement transaction support
+- [x] Create connection factory with config support
 
-### Phase 1.6 – Migration System 🟥
-- [ ] Create migration runner
-- [ ] Implement up/down/status commands
-- [ ] Create 001_initial_schema migration (nodes, edges, settings)
-- [ ] Create 002_embeddings migration (pgvector, indexes)
-- [ ] Create 003_clusters migration (clusters, memberships)
-- [ ] Create 004_analysis_runs migration (job tracking)
+### Phase 1.6 – Migration System ✅
+- [x] Create migration runner
+- [x] Implement up/down/status commands
+- [x] Create 001_initial_schema migration (nodes, edges, settings)
+- [x] Create 002_embeddings migration (pgvector, indexes)
+- [x] Create 003_clusters migration (clusters, memberships)
+- [x] Create 004_analysis_runs migration (job tracking)
 
-### Phase 1.7 – CLI Tools 🟥
-- [ ] Set up Commander.js CLI structure
-- [ ] Implement `init` command (scaffold files, docker-compose, config)
-- [ ] Implement `db:up` command (start container, run migrations)
-- [ ] Implement `db:down` command (stop container)
-- [ ] Implement `db:migrate` command (run pending migrations)
-- [ ] Implement `db:status` command (show stats, migration status)
-- [ ] Implement `db:reset` command (destructive reset)
-- [ ] Implement `validate` command (check config, connections)
+### Phase 1.7 – CLI Tools ✅
+- [x] Set up Commander.js CLI structure
+- [x] Implement `init` command (scaffold files, docker-compose, config)
+- [x] Implement `db:up` command (start container, run migrations)
+- [x] Implement `db:down` command (stop container)
+- [x] Implement `db:migrate` command (run pending migrations)
+- [x] Implement `db:status` command (show stats, migration status)
+- [x] Implement `db:reset` command (destructive reset)
+- [x] Implement `validate` command (check config, connections)
 
 ## Task Files
 
@@ -114,8 +114,10 @@ See `tasks/phase-1-foundation/` for individual task tracking:
 | Migration failures | Rollback support, dry-run mode |
 
 ## Open Questions
-- Should we support SQLite for local-only mode?
-- Include Drizzle ORM or keep raw SQL?
+- None (resolved for initial release).
+
+## Task Backlog
+- None. All Phase 1 tasks completed.
 
 ## Parallel / Unblock Options
 - Type system can be developed independently
@@ -123,10 +125,9 @@ See `tasks/phase-1-foundation/` for individual task tracking:
 - Migrations depend on PostgreSQL client
 
 ## Validation Criteria
-- [ ] `pnpm build` succeeds with no errors
-- [ ] All types compile and export correctly
-- [ ] `npx omi-neuron init` scaffolds project correctly
-- [ ] `npx omi-neuron db:up` starts PostgreSQL container
-- [ ] Migrations run without errors
-- [ ] Health check returns healthy status
-
+- [x] `pnpm build` succeeds with no errors
+- [x] All types compile and export correctly
+- [x] `npx omi-neuron init` scaffolds project correctly
+- [x] `npx omi-neuron db:up` starts PostgreSQL container
+- [x] Migrations run without errors
+- [x] Health check returns healthy status
