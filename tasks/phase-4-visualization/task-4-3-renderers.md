@@ -1,6 +1,6 @@
 ---
 title: Node and Edge Renderers
-status: not_started
+status: completed
 priority: 1
 labels:
   - 'Phase:4-Visualization'

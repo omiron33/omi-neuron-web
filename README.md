@@ -26,7 +26,14 @@ npm run dev
 
 ## Documentation
 
-See the [plans/](./plans/) directory for detailed implementation plans and the [tasks/](./tasks/) directory for individual task breakdowns.
+- [Getting Started](./docs/getting-started.md)
+- [Configuration](./docs/configuration.md)
+- [API Reference](./docs/api-reference.md)
+- [Hooks Reference](./docs/hooks-reference.md)
+- [Component Props](./docs/component-props.md)
+- [CLI Reference](./docs/cli-reference.md)
+- [Architecture](./docs/architecture.md)
+- [Troubleshooting](./docs/troubleshooting.md)
 
 ### Phase Overview
 
@@ -46,4 +53,3 @@ See [plans/master-plan-planner.md](./plans/master-plan-planner.md) for current s
 ## License
 
 MIT
-

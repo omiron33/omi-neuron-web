@@ -1,6 +1,6 @@
 ---
 title: CLI Tools - init, db commands
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:1-Foundation'

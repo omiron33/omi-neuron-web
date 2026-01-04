@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  pg-basic-usage:
+    image: pgvector/pgvector:pg16
+    container_name: pg-basic-usage
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: neuron
+      POSTGRES_PASSWORD: neuron_dev
+      POSTGRES_DB: neuron_web
+    ports:
+      - "5433:5432"
+    volumes:
+      - basic_usage_neuron_data:/var/lib/postgresql/data
+
+volumes:
+  basic_usage_neuron_data:
+    name: basic_usage_neuron_data

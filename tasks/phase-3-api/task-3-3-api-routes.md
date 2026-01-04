@@ -1,6 +1,6 @@
 ---
 title: API Routes - All Endpoints
-status: not_started
+status: completed
 priority: 1
 labels:
   - 'Phase:3-API'

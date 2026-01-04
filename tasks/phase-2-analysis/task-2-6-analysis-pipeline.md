@@ -1,6 +1,6 @@
 ---
 title: Analysis Pipeline - Orchestration
-status: not_started
+status: completed
 priority: 1
 labels:
   - 'Phase:2-Analysis'

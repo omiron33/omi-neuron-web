@@ -1,6 +1,6 @@
 ---
 title: Example Applications
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:5-Integration'

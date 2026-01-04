@@ -1,6 +1,6 @@
 ---
 title: npm Publishing - Changesets and CI
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:6-Validation'

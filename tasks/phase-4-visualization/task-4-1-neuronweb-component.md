@@ -1,6 +1,6 @@
 ---
 title: NeuronWeb Component - Port and Refactor
-status: not_started
+status: completed
 priority: 1
 labels:
   - 'Phase:4-Visualization'

@@ -6,6 +6,7 @@ export default defineConfig({
     'visualization/index': 'src/visualization/index.ts',
     'api/index': 'src/api/index.ts',
     'cli/index': 'src/cli/index.ts',
+    'migration/index': 'src/migration/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,
@@ -20,4 +21,3 @@ export default defineConfig({
     };
   },
 });
-

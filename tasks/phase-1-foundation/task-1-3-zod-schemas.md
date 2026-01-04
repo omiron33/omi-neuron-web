@@ -1,6 +1,6 @@
 ---
 title: Zod Validation Schemas
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:1-Foundation'

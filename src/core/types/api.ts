@@ -28,6 +28,16 @@ export interface PaginationMeta {
 }
 
 // ============================================================================
+// Graph filters
+// ============================================================================
+
+export interface GraphFilters {
+  domains?: string[];
+  nodeTypes?: string[];
+  search?: string;
+}
+
+// ============================================================================
 // Nodes API
 // ============================================================================
 
@@ -202,6 +212,14 @@ export interface SemanticSearchRequest {
   includeExplanation?: boolean;
 }
 
+export interface SemanticSearchOptions {
+  nodeTypes?: string[];
+  domains?: string[];
+  limit?: number;
+  minSimilarity?: number;
+  includeExplanation?: boolean;
+}
+
 export interface SemanticSearchResponse {
   results: Array<{
     node: NeuronNode;
@@ -212,8 +230,20 @@ export interface SemanticSearchResponse {
   queryTime: number;
 }
 
+export interface SearchResult {
+  node: NeuronNode;
+  similarity: number;
+  explanation?: string;
+}
+
 export interface FindSimilarRequest {
   nodeId: string;
+  limit?: number;
+  minSimilarity?: number;
+  excludeConnected?: boolean;
+}
+
+export interface FindSimilarOptions {
   limit?: number;
   minSimilarity?: number;
   excludeConnected?: boolean;
@@ -276,4 +306,3 @@ export interface HealthCheckResponse {
     docker: boolean;
   };
 }
-

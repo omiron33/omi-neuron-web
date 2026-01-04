@@ -2,15 +2,16 @@
  * Visualization exports for omi-neuron-web
  */
 
-// Main component (to be implemented)
-// export { NeuronWeb } from './NeuronWeb';
+// Main component
+export { NeuronWeb } from './NeuronWeb';
 
 // Scene management
-// export { SceneManager } from './scene/scene-manager';
+export { SceneManager } from './scene/scene-manager';
 
 // Themes
-// export { ThemeEngine, DEFAULT_THEME } from './themes/theme-engine';
+export { ThemeEngine } from './themes/theme-engine';
+export { DEFAULT_THEME } from './constants';
 
 // Types
 export type { NeuronVisualNode, NeuronVisualEdge } from '../core/types';
-
+export type { NeuronWebProps, NeuronWebTheme } from './types';

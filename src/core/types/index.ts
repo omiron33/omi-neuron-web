@@ -115,6 +115,7 @@ export type {
 export type {
   PaginationParams,
   PaginationMeta,
+  GraphFilters,
   ListNodesParams,
   ListNodesResponse,
   CreateNodesRequest,
@@ -136,6 +137,9 @@ export type {
   FindPathResponse,
   GetAnalysisJobResponse,
   CancelAnalysisResponse,
+  SearchResult,
+  SemanticSearchOptions,
+  FindSimilarOptions,
   SemanticSearchRequest,
   SemanticSearchResponse,
   FindSimilarRequest,
@@ -148,4 +152,3 @@ export type {
   ApiErrorResponse,
   HealthCheckResponse,
 } from './api';
-

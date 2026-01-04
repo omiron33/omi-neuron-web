@@ -1,6 +1,6 @@
 ---
 title: Query Builder - Graph Queries
-status: not_started
+status: completed
 priority: 1
 labels:
   - 'Phase:3-API'

@@ -1,20 +1,20 @@
 #!/usr/bin/env node
-/**
- * CLI for omi-neuron-web
- */
+import { program } from 'commander';
+import { initCommand } from './commands/init';
+import { dbCommand } from './commands/db';
+import { analyzeCommand } from './commands/analyze';
+import { validateCommand } from './commands/validate';
+import { configCommand } from './commands/config';
 
-// CLI implementation will be added in Phase 1
+program
+  .name('omi-neuron')
+  .description('CLI for omi-neuron-web library')
+  .version('0.1.0');
 
-// Placeholder for now
-console.log('omi-neuron-web CLI');
-console.log('Run `npx omi-neuron init` to get started');
-console.log('');
-console.log('Commands:');
-console.log('  init          Initialize omi-neuron-web in your project');
-console.log('  db:up         Start the PostgreSQL database');
-console.log('  db:down       Stop the PostgreSQL database');
-console.log('  db:migrate    Run database migrations');
-console.log('  db:status     Show database status');
-console.log('  analyze:full  Run full analysis pipeline');
-console.log('  validate      Validate configuration');
+program.addCommand(initCommand);
+program.addCommand(dbCommand);
+program.addCommand(analyzeCommand);
+program.addCommand(validateCommand);
+program.addCommand(configCommand);
 
+program.parse();
