@@ -1,0 +1,67 @@
+# omi-neuron-web Cursor Rules
+
+## Project Type
+TypeScript library for Next.js applications
+
+## Architecture
+- Drop-in library with CLI scaffolding
+- Docker-managed PostgreSQL with pgvector
+- OpenAI for embeddings and analysis
+- Three.js for visualization
+- React hooks for integration
+
+## Code Style
+- TypeScript strict mode (no any)
+- Zod for runtime validation
+- Named exports preferred
+- JSDoc on public interfaces
+- Consistent file naming (kebab-case for files, PascalCase for components)
+
+## Directory Structure
+- Types: src/core/types/
+- Schemas: src/core/schemas/
+- Analysis: src/core/analysis/
+- Database: src/storage/
+- API: src/api/
+- Visualization: src/visualization/
+- React: src/react/
+- CLI: src/cli/
+
+## Patterns
+- Repository pattern for data access
+- Factory functions for API routes
+- Event bus for cross-cutting concerns
+- Class-based services
+- Hooks for React integration
+
+## When Creating Files
+1. Add to appropriate directory
+2. Export from module index.ts
+3. Export from src/index.ts if public API
+4. Add types to src/core/types/ if new
+
+## When Modifying Code
+1. Check for breaking changes
+2. Update related types
+3. Update schemas if types changed
+4. Run typecheck and lint
+
+## Planning System
+- Read plans/next-step.json for current task
+- Follow task requirements exactly
+- Update status when complete
+- Respect task dependencies
+
+## Testing
+- Use Vitest
+- Tests in tests/ directory
+- Mock external services
+- Test happy path + edge cases
+
+## Don'ts
+- Don't use any type
+- Don't skip exports
+- Don't hardcode config
+- Don't skip dependencies
+- Don't over-engineer
+
