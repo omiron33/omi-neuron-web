@@ -10,7 +10,7 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
 fi
 
 CURRENT=$(node -p "require('./package.json').version")
-NEXT=$(node - <<'NODE'
+NEXT=$(node - "$CURRENT" <<'NODE'
 const [current] = process.argv.slice(1);
 const parse = (v) => v.split('-')[0].split('.').map((n) => parseInt(n, 10));
 const [maj, min, patch] = parse(current);
@@ -20,7 +20,7 @@ if ([maj, min, patch].some((n) => Number.isNaN(n))) {
 }
 console.log(`${maj}.${min}.${patch + 1}`);
 NODE
-"$CURRENT")
+)
 
 TAG="v${NEXT}"
 if git rev-parse "$TAG" >/dev/null 2>&1; then
