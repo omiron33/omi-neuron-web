@@ -861,7 +861,9 @@ Helper skill (repo-local):
 skills/tagged-npm-release/scripts/create_patch_tag.sh
 ```
 
-Required secret: `NPM_TOKEN` in GitHub repo secrets.
+Authentication:
+- **Preferred**: npm **Trusted Publishing** (OIDC). Configure the GitHub repo/workflow in npm package settings. No secret required.
+- **Legacy fallback**: set `NPM_TOKEN` in GitHub repo secrets and remove `--provenance` from the workflow.
 
 ## License
 

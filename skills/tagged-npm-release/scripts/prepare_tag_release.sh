@@ -19,6 +19,8 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "Note: This script is a legacy token flow. Prefer npm Trusted Publishing (OIDC) when configured."
+
 echo "Checking GitHub auth..."
 gh auth status >/dev/null
 
