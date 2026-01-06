@@ -1,11 +1,11 @@
 import { DEFAULT_THEME } from '../constants';
-import type { NeuronWebTheme } from '../types';
+import type { NeuronWebTheme, NeuronWebThemeOverride } from '../types';
 
 export class ThemeEngine {
   private theme: NeuronWebTheme;
   onThemeChange: (theme: NeuronWebTheme) => void = () => {};
 
-  constructor(initialTheme?: Partial<NeuronWebTheme>) {
+  constructor(initialTheme?: NeuronWebThemeOverride) {
     this.theme = this.mergeTheme(DEFAULT_THEME, initialTheme);
   }
 
@@ -13,7 +13,7 @@ export class ThemeEngine {
     return this.theme;
   }
 
-  setTheme(theme: Partial<NeuronWebTheme>): void {
+  setTheme(theme: NeuronWebThemeOverride): void {
     this.theme = this.mergeTheme(this.theme, theme);
     this.onThemeChange(this.theme);
   }
@@ -62,7 +62,7 @@ export class ThemeEngine {
     }
   }
 
-  private mergeTheme(base: NeuronWebTheme, next?: Partial<NeuronWebTheme>): NeuronWebTheme {
+  private mergeTheme(base: NeuronWebTheme, next?: NeuronWebThemeOverride): NeuronWebTheme {
     if (!next) return { ...base };
     return {
       ...base,

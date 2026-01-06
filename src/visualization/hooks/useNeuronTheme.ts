@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import type { NeuronWebTheme } from '../types';
+import type { NeuronWebTheme, NeuronWebThemeOverride } from '../types';
 import { ThemeEngine } from '../themes/theme-engine';
 
-export function useNeuronTheme(initialTheme?: Partial<NeuronWebTheme>) {
+export function useNeuronTheme(initialTheme?: NeuronWebThemeOverride) {
   const [theme, setThemeState] = useState<NeuronWebTheme>(() =>
     new ThemeEngine(initialTheme).getTheme()
   );

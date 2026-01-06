@@ -17,6 +17,7 @@ export type { NeuronVisualNode, NeuronVisualEdge } from '../core/types';
 export type {
   NeuronWebProps,
   NeuronWebTheme,
+  NeuronWebThemeOverride,
   NeuronLayoutOptions,
   NeuronLayoutMode,
   HoverCardOptions,

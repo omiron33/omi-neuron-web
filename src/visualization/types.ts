@@ -55,6 +55,13 @@ export interface NeuronWebTheme {
   };
 }
 
+export interface NeuronWebThemeOverride {
+  colors?: Partial<NeuronWebTheme['colors']>;
+  typography?: Partial<NeuronWebTheme['typography']>;
+  effects?: Partial<NeuronWebTheme['effects']>;
+  animation?: Partial<NeuronWebTheme['animation']>;
+}
+
 export type NeuronLayoutMode = 'auto' | 'positioned' | 'fuzzy';
 
 export interface NeuronLayoutOptions {
@@ -97,7 +104,7 @@ export interface NeuronWebProps {
   studyPathRequest?: StudyPathRequest | null;
   onStudyPathComplete?: () => void;
   layout?: NeuronLayoutOptions;
-  theme?: Partial<NeuronWebTheme>;
+  theme?: NeuronWebThemeOverride;
   domainColors?: Record<string, string>;
   renderNodeHover?: (node: NeuronVisualNode) => React.ReactNode;
   hoverCard?: HoverCardOptions;
