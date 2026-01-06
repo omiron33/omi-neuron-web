@@ -1,13 +1,6 @@
 {
-  "planFile": "plans/phase-4-visualization-polish-plan.md",
-  "taskIndex": 0,
-  "taskText": "Audit current NeuronWeb visual baseline for density, motion, and readability.",
-  "currentPhase": "phase-4-visualization-polish",
-  "currentTask": "task-4p-1-visual-baseline-audit",
-  "status": "not_started",
-  "updatedBy": "codex",
-  "updatedAt": "2026-01-05T18:16:16.770923000Z",
-  "notes": "New visualization polish initiative for motion, hover cards, density, and effects.",
-  "queue": [],
-  "completedTasks": []
+  "planFile" : "plans\/master-plan-planner.md",
+  "taskIndex" : 4,
+  "taskText" : "🟥 **Phase 4B: Visualization Polish** — Cinematic motion, hover cards, density controls (`plans\/phase-4-visualization-polish-plan.md`)",
+  "updatedBy" : "omi-md-viewer"
 }

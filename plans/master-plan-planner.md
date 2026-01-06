@@ -83,6 +83,8 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 ---
 
 ## Execution Phases
+### Phase 1 – Discovery 🟡
+- [ ] Outline scope.
 
 All phases executed in dependency order with task completion tracked in `tasks/` and `plans/next-step.json`.
 
