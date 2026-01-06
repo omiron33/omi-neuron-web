@@ -12,7 +12,13 @@ Create a patch tag (`vX.Y.Z`) that triggers the GitHub Actions publish workflow.
 ## Quick Start
 
 1) Ensure the working tree is clean.
-2) Create and push the next patch tag:
+2) If `NPM_TOKEN` needs refresh, run the prep script (web login + secret set + tag):
+
+```bash
+skills/tagged-npm-release/scripts/prepare_tag_release.sh
+```
+
+3) Otherwise, just create and push the next patch tag:
 
 ```bash
 skills/tagged-npm-release/scripts/create_patch_tag.sh
@@ -31,6 +37,11 @@ That pushes `vX.Y.(Z+1)` to `origin`, which triggers the GitHub Actions workflow
 - Workflow file: `.github/workflows/publish-on-tag.yml`.
 - Requires `NPM_TOKEN` in GitHub Secrets.
 - Uses tag version as authoritative and publishes `latest`.
+
+## Token Strategy (recommended)
+
+- **Long‑lived CI token**: Create an **npm Automation token** (or a Granular token with no expiry and publish rights) in npm web UI, then set it once as `NPM_TOKEN` in GitHub Secrets. This avoids 2FA prompts in CI and doesn’t expire unless revoked.
+- **Web login flow**: `prepare_tag_release.sh` uses `npm login --auth-type=web` (opens a web approval URL), then creates a classic token via `npm token create`, sets `NPM_TOKEN`, and tags.
 
 ## Troubleshooting
 
