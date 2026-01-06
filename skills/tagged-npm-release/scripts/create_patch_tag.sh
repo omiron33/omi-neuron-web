@@ -10,8 +10,8 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
 fi
 
 CURRENT=$(node -p "require('./package.json').version")
-NEXT=$(node - "$CURRENT" <<'NODE'
-const [current] = process.argv.slice(1);
+NEXT=$(CURRENT="$CURRENT" node - <<'NODE'
+const current = process.env.CURRENT;
 const parse = (v) => v.split('-')[0].split('.').map((n) => parseInt(n, 10));
 const [maj, min, patch] = parse(current);
 if ([maj, min, patch].some((n) => Number.isNaN(n))) {
