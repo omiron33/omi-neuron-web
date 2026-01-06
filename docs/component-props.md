@@ -81,6 +81,46 @@ You can customize content with `renderNodeHover`:
 />
 ```
 
+### Click Cards
+
+`NeuronWebProps.clickCard` enables a persistent card on node click.
+
+- `enabled`: toggle click cards (default: false)
+- `width`: card width in pixels
+- `offset`: `[x, y]` offset from the node
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  clickCard={{ enabled: true, width: 320, offset: [24, 24] }}
+/>
+```
+
+### Card Mode
+
+`NeuronWebProps.cardsMode` overrides card visibility globally.
+
+When `cardsMode` is set, it takes precedence over `hoverCard.enabled` and `clickCard.enabled`.
+
+- `none`: disable all cards
+- `hover`: hover cards only
+- `click`: click cards only
+- `both`: hover + click cards
+
+```tsx
+<NeuronWeb graphData={{ nodes, edges }} cardsMode="hover" />
+```
+
+### Click Zoom
+
+`NeuronWebProps.clickZoom` controls whether clicking a node zooms the camera to it.
+
+- `enabled`: toggle click zoom (default: true)
+
+```tsx
+<NeuronWeb graphData={{ nodes, edges }} clickZoom={{ enabled: false }} />
+```
+
 ## NeuronWebProvider
 
 See `NeuronWebProviderProps` in `src/react/NeuronWebProvider.tsx`.

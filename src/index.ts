@@ -18,7 +18,15 @@ export * from './config';
 
 // Visualization
 export { NeuronWeb } from './visualization';
-export type { NeuronWebProps, NeuronWebTheme, NeuronLayoutOptions, NeuronLayoutMode } from './visualization';
+export type {
+  NeuronWebProps,
+  NeuronWebTheme,
+  NeuronLayoutOptions,
+  NeuronLayoutMode,
+  ClickCardOptions,
+  ClickZoomOptions,
+  CardsMode,
+} from './visualization';
 
 // Re-export hooks (when implemented)
 export * from './react/hooks';
@@ -27,5 +35,4 @@ export * from './react/hooks';
 export { NeuronWebProvider } from './react/NeuronWebProvider';
 
 // Version
-export const VERSION = '0.1.1';
-
+export const VERSION = '0.2.3';

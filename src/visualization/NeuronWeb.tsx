@@ -26,7 +26,11 @@ export function NeuronWeb({
   theme,
   layout,
   cameraFit,
+  cardsMode,
+  clickCard,
+  clickZoom,
   renderNodeHover,
+  renderNodeDetail,
   hoverCard,
   onNodeHover,
   onNodeClick,
@@ -37,6 +41,7 @@ export function NeuronWeb({
 }: NeuronWebProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const hoverCardRef = useRef<HTMLDivElement>(null);
+  const clickCardRef = useRef<HTMLDivElement>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const fitStateRef = useRef<{ hasFit: boolean; signature: string }>({ hasFit: false, signature: '' });
@@ -196,9 +201,16 @@ export function NeuronWeb({
 
   const hoveredNode = hoveredNodeId ? nodeMap.get(hoveredNodeId) ?? null : null;
   const hoverCardEnabled =
-    (hoverCard?.enabled ?? true) && resolvedPerformanceMode !== 'fallback';
+    (cardsMode ? (cardsMode === 'hover' || cardsMode === 'both') : (hoverCard?.enabled ?? true)) &&
+    resolvedPerformanceMode !== 'fallback';
   const hoverCardOffset = hoverCard?.offset ?? [18, 18];
   const hoverCardWidth = hoverCard?.width ?? 240;
+  const clickCardEnabled =
+    (cardsMode ? (cardsMode === 'click' || cardsMode === 'both') : (clickCard?.enabled ?? false)) &&
+    resolvedPerformanceMode !== 'fallback';
+  const clickCardOffset = clickCard?.offset ?? [24, 24];
+  const clickCardWidth = clickCard?.width ?? 320;
+  const clickZoomEnabled = clickZoom?.enabled ?? true;
 
   useEffect(() => {
     if (!sceneManager || !nodeRenderer || !edgeRenderer) return;
@@ -290,6 +302,22 @@ export function NeuronWeb({
           hoverCardRef.current.style.transform = `translate(${x}px, ${y}px)`;
         }
       }
+      if (clickCardRef.current && selectedNodeId) {
+        const position = nodeRenderer.getNodePosition(selectedNodeId);
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (position && rect) {
+          const screen = sceneManager.worldToScreen(position);
+          const cardWidth = clickCardRef.current.offsetWidth;
+          const cardHeight = clickCardRef.current.offsetHeight;
+          const rawX = screen.x - rect.left + clickCardOffset[0];
+          const rawY = screen.y - rect.top + clickCardOffset[1];
+          const maxX = Math.max(8, rect.width - cardWidth - 8);
+          const maxY = Math.max(8, rect.height - cardHeight - 8);
+          const x = Math.min(Math.max(rawX, 8), maxX);
+          const y = Math.min(Math.max(rawY, 8), maxY);
+          clickCardRef.current.style.transform = `translate(${x}px, ${y}px)`;
+        }
+      }
     });
   }, [
     sceneManager,
@@ -298,6 +326,8 @@ export function NeuronWeb({
     animationController,
     hoveredNodeId,
     hoverCardOffset,
+    selectedNodeId,
+    clickCardOffset,
   ]);
 
   useEffect(() => {
@@ -330,6 +360,14 @@ export function NeuronWeb({
       setSelectedNodeId(node.id);
       nodeRenderer.setSelectedNode(node.id);
       nodeRenderer.pulseNode(node.id);
+      if (clickZoomEnabled) {
+        const nodePosition = nodeRenderer.getNodePosition(node.id);
+        if (nodePosition) {
+          animationController?.focusOnNode(nodePosition, () => {
+            if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
+          });
+        }
+      }
       const slug = nodeSlugById.get(node.id);
       edgeRenderer.setFocusEdges(slug ? edgesBySlug.get(slug) ?? [] : []);
       if (onNodeClick) {
@@ -364,6 +402,7 @@ export function NeuronWeb({
     animationController,
     hoveredNodeId,
     selectedNodeId,
+    clickZoomEnabled,
     onNodeHover,
     onNodeClick,
     onNodeDoubleClick,
@@ -465,6 +504,44 @@ export function NeuronWeb({
                 {typeof hoveredNode.metadata?.summary === 'string'
                   ? hoveredNode.metadata.summary
                   : 'Click to focus this node and explore connections.'}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {clickCardEnabled && selectedNodeId && (
+        <div
+          ref={clickCardRef}
+          style={{
+            position: 'absolute',
+            width: clickCardWidth,
+            pointerEvents: 'auto',
+            padding: '14px 16px',
+            borderRadius: 14,
+            background:
+              'linear-gradient(140deg, rgba(10, 14, 32, 0.98) 0%, rgba(20, 26, 58, 0.94) 100%)',
+            border: '1px solid rgba(140, 170, 255, 0.4)',
+            boxShadow: '0 22px 60px rgba(5, 10, 30, 0.6)',
+            color: resolvedTheme.colors.labelText,
+            fontFamily: resolvedTheme.typography.labelFontFamily,
+            fontSize: 13,
+            zIndex: 5,
+            opacity: 0.98,
+            transition: `opacity ${resolvedTheme.animation.hoverCardFadeDuration}ms ease`,
+            transform: `translate(${clickCardOffset[0]}px, ${clickCardOffset[1]}px)`,
+          }}
+        >
+          {renderNodeDetail ? (
+            renderNodeDetail(nodeMap.get(selectedNodeId) as unknown as NeuronNode)
+          ) : (
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                {nodeMap.get(selectedNodeId)?.label ?? 'Selected node'}
+              </div>
+              <div style={{ opacity: 0.75 }}>
+                {typeof nodeMap.get(selectedNodeId)?.metadata?.summary === 'string'
+                  ? (nodeMap.get(selectedNodeId)?.metadata?.summary as string)
+                  : 'Click another node to explore more details.'}
               </div>
             </div>
           )}

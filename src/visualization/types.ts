@@ -81,6 +81,18 @@ export interface HoverCardOptions {
   offset?: [number, number];
 }
 
+export interface ClickCardOptions {
+  enabled?: boolean;
+  width?: number;
+  offset?: [number, number];
+}
+
+export interface ClickZoomOptions {
+  enabled?: boolean;
+}
+
+export type CardsMode = 'none' | 'hover' | 'click' | 'both';
+
 export interface CameraFitOptions {
   /** Enable auto-fitting camera to node bounds */
   enabled?: boolean;
@@ -118,6 +130,9 @@ export interface NeuronWebProps {
   onStudyPathComplete?: () => void;
   layout?: NeuronLayoutOptions;
   cameraFit?: CameraFitOptions;
+  cardsMode?: CardsMode;
+  clickCard?: ClickCardOptions;
+  clickZoom?: ClickZoomOptions;
   theme?: NeuronWebThemeOverride;
   domainColors?: Record<string, string>;
   renderNodeHover?: (node: NeuronVisualNode) => React.ReactNode;

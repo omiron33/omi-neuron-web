@@ -668,6 +668,9 @@ export interface NeuronWebProps {
   onStudyPathComplete?: () => void;
   layout?: NeuronLayoutOptions;
   cameraFit?: CameraFitOptions;
+  cardsMode?: CardsMode;
+  clickCard?: ClickCardOptions;
+  clickZoom?: ClickZoomOptions;
   theme?: NeuronWebThemeOverride;
   domainColors?: Record<string, string>;
   renderNodeHover?: (node: NeuronVisualNode) => React.ReactNode;
@@ -682,9 +685,9 @@ export interface NeuronWebProps {
 
 Props currently used inside `NeuronWeb` (others are reserved for future use):
 
-- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `hoverCard`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`.
+- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `renderNodeDetail`, `hoverCard`, `clickCard`, `clickZoom`, `cardsMode`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`.
 - Used: `cameraFit` (auto-fit bounds to a viewport fraction).
-- Reserved (declared but not used in the component yet): `selectedNode`, `focusNodeSlug`, `visibleNodeSlugs`, `onEdgeClick`, `onCameraChange`, `studyPathRequest`, `onStudyPathComplete`, `domainColors`, `renderNodeDetail`, `graphData.storyBeats`.
+- Reserved (declared but not used in the component yet): `selectedNode`, `focusNodeSlug`, `visibleNodeSlugs`, `onEdgeClick`, `onCameraChange`, `studyPathRequest`, `onStudyPathComplete`, `domainColors`, `graphData.storyBeats`.
 
 ### Layout modes
 
@@ -728,6 +731,36 @@ When `isFullScreen` is true and `cameraFit.enabled` is not specified, auto-fit i
     padding: 0.15,          // 15% padding around bounds
   }}
 />
+```
+
+### Click cards + click zoom
+
+Enable a persistent card on click and optional zoom-to-node behavior:
+
+```tsx
+<NeuronWeb
+  graphData={graphData}
+  clickCard={{ enabled: true, width: 320, offset: [24, 24] }}
+  clickZoom={{ enabled: true }}
+/>
+```
+
+### Card mode (global override)
+
+`cardsMode` lets you force card behavior irrespective of `hoverCard.enabled` or `clickCard.enabled`
+(when `cardsMode` is set, it wins).
+
+```tsx
+<NeuronWeb graphData={graphData} cardsMode="none" />
+<NeuronWeb graphData={graphData} cardsMode="hover" />
+<NeuronWeb graphData={graphData} cardsMode="click" />
+<NeuronWeb graphData={graphData} cardsMode="both" />
+```
+
+Disable click cards or zoom:
+
+```tsx
+<NeuronWeb graphData={graphData} clickCard={{ enabled: false }} clickZoom={{ enabled: false }} />
 ```
 
 To disable in fullscreen:
@@ -813,6 +846,22 @@ pnpm typecheck
 pnpm lint
 pnpm test
 ```
+
+## Release via tags (automation)
+
+This repo publishes on **tag push**. The tag version is authoritative and must be a **patch bump**.
+
+Workflow:
+- Create and push `vX.Y.Z` (same major/minor as `package.json`, patch +1).
+- GitHub Actions updates `package.json` + `src/index.ts`, commits to `main`, builds, and publishes.
+
+Helper skill (repo-local):
+
+```bash
+skills/tagged-npm-release/scripts/create_patch_tag.sh
+```
+
+Required secret: `NPM_TOKEN` in GitHub repo secrets.
 
 ## License
 

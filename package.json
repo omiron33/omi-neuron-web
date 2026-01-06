@@ -1,6 +1,6 @@
 {
   "name": "@omiron33/omi-neuron-web",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "A drop-in Next.js library for data analysis and 3D visualization with OpenAI-powered insights",
   "type": "module",
   "main": "./dist/index.js",
