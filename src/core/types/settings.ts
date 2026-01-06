@@ -343,3 +343,4 @@ export const DEFAULT_ANALYSIS_SETTINGS: AnalysisSettings = {
   maxConcurrentAnalysis: 5,
 };
 
+

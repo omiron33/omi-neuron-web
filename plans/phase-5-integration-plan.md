@@ -278,3 +278,4 @@ export default function RootLayout({ children }) {
 - [x] Examples run successfully with npm run dev
 - [x] TypeScript types work correctly in consuming apps
 - [x] No runtime errors in production builds
+

@@ -37,6 +37,7 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 - [x] ✅ **Phase 2: Analysis Engine** — Embeddings, clustering, relationship inference pipeline (`plans/phase-2-analysis-engine-plan.md`)
 - [x] ✅ **Phase 3: API Layer** — REST endpoints for nodes, edges, graph, analysis, settings (`plans/phase-3-api-layer-plan.md`)
 - [x] ✅ **Phase 4: Visualization** — Three.js NeuronWeb component with full customization (`plans/phase-4-visualization-plan.md`)
+- [ ] 🟥 **Phase 4B: Visualization Polish** — Cinematic motion, hover cards, density controls (`plans/phase-4-visualization-polish-plan.md`)
 - [x] ✅ **Phase 5: React Integration** — Provider, hooks, Next.js integration, examples (`plans/phase-5-integration-plan.md`)
 - [x] ✅ **Phase 6: Validation & Publish** — Tests, documentation, npm publishing (`plans/phase-6-validation-plan.md`)
 
@@ -69,6 +70,9 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 
 ### ✅ Phase 4 - Visualization
 - `plans/phase-4-visualization-plan.md` — Three.js component, scene management, interactions, theming
+
+### 🟥 Phase 4B - Visualization Polish
+- `plans/phase-4-visualization-polish-plan.md` — Motion polish, hover cards, density controls, effects
 
 ### ✅ Phase 5 - React Integration
 - `plans/phase-5-integration-plan.md` — Provider, hooks, Next.js wrapper, examples

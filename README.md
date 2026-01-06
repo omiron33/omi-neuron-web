@@ -14,11 +14,14 @@ A drop-in Next.js library for data analysis and 3D visualization with OpenAI-pow
 ## Quick Start
 
 ```bash
+# Install the package
+pnpm add @omiron33/omi-neuron-web
+
 # Initialize in your Next.js project
-npx omi-neuron init
+npx @omiron33/omi-neuron-web init
 
 # Start the database
-npx omi-neuron db:up
+npx @omiron33/omi-neuron-web db:up
 
 # Run your Next.js app
 npm run dev
@@ -53,3 +56,4 @@ See [plans/master-plan-planner.md](./plans/master-plan-planner.md) for current s
 ## License
 
 MIT
+

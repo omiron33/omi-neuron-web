@@ -139,3 +139,4 @@ await db.transaction(async (client) => {
 - Handle pgvector types properly
 - Log slow queries (configurable threshold)
 
+

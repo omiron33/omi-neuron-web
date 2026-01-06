@@ -194,3 +194,4 @@ Connection string: postgresql://neuron:neuron_dev@localhost:5433/neuron_web
 - Handle Ctrl+C gracefully
 - Store config in neuron.config.ts, not CLI state
 
+

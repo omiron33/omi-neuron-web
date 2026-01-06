@@ -74,3 +74,4 @@ Establish the foundational TypeScript project structure with proper tooling for 
 - Use strict TypeScript mode from the start
 - Externalize peer dependencies to avoid bundling React/Three.js
 
+

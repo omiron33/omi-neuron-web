@@ -5,12 +5,12 @@
 ## Example
 
 ```ts
-import { defineNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from 'omi-neuron-web';
+import { defineNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from '@omiron33/omi-neuron-web';
 
 export default defineNeuronConfig({
   instance: {
     name: 'My Graph',
-    version: '0.1.0',
+    version: '0.1.1',
     repoName: 'my-graph',
   },
   visualization: DEFAULT_VISUALIZATION_SETTINGS,

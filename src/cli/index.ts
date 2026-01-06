@@ -18,3 +18,4 @@ program.addCommand(validateCommand);
 program.addCommand(configCommand);
 
 program.parse();
+

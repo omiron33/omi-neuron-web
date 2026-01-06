@@ -111,3 +111,4 @@ Define the complete TypeScript type system for all library entities including no
 - Keep visual types minimal for Three.js performance
 - Default settings should be exported as const objects
 
+

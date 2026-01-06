@@ -14,4 +14,13 @@ export { DEFAULT_THEME } from './constants';
 
 // Types
 export type { NeuronVisualNode, NeuronVisualEdge } from '../core/types';
-export type { NeuronWebProps, NeuronWebTheme } from './types';
+export type {
+  NeuronWebProps,
+  NeuronWebTheme,
+  NeuronLayoutOptions,
+  NeuronLayoutMode,
+  HoverCardOptions,
+} from './types';
+
+// Layout helpers
+export { applyFuzzyLayout } from './layouts/fuzzy-layout';

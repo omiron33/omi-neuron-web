@@ -33,12 +33,43 @@ export interface NeuronWebTheme {
     starfieldColor: string;
     glowEnabled: boolean;
     glowIntensity: number;
+    ambientMotionEnabled: boolean;
+    ambientMotionSpeed: number;
+    ambientMotionAmplitude: number;
+    edgeFlowEnabled: boolean;
+    edgeFlowSpeed: number;
+    fogEnabled: boolean;
+    fogColor: string;
+    fogNear: number;
+    fogFar: number;
   };
   animation: {
     focusDuration: number;
     transitionDuration: number;
     easing: string;
+    hoverScale: number;
+    selectedScale: number;
+    selectionPulseScale: number;
+    selectionPulseDuration: number;
+    hoverCardFadeDuration: number;
   };
+}
+
+export type NeuronLayoutMode = 'auto' | 'positioned' | 'fuzzy';
+
+export interface NeuronLayoutOptions {
+  mode?: NeuronLayoutMode;
+  radius?: number;
+  jitter?: number;
+  zSpread?: number;
+  seed?: string;
+  spread?: number;
+}
+
+export interface HoverCardOptions {
+  enabled?: boolean;
+  width?: number;
+  offset?: [number, number];
 }
 
 export interface NeuronWebProps {
@@ -65,8 +96,11 @@ export interface NeuronWebProps {
   onCameraChange?: (position: [number, number, number]) => void;
   studyPathRequest?: StudyPathRequest | null;
   onStudyPathComplete?: () => void;
+  layout?: NeuronLayoutOptions;
   theme?: Partial<NeuronWebTheme>;
   domainColors?: Record<string, string>;
+  renderNodeHover?: (node: NeuronVisualNode) => React.ReactNode;
+  hoverCard?: HoverCardOptions;
   renderNodeDetail?: (node: NeuronNode) => React.ReactNode;
   renderEmptyState?: () => React.ReactNode;
   renderLoadingState?: () => React.ReactNode;

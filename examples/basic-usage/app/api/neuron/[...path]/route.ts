@@ -1,4 +1,4 @@
-import { createNeuronRoutes } from 'omi-neuron-web/api';
+import { createNeuronRoutes } from '@omiron33/omi-neuron-web/api';
 import config from '../../../../neuron.config';
 
 const routes = createNeuronRoutes(config);

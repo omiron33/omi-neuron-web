@@ -255,3 +255,4 @@ interface NeuronWebProps {
 - [x] Theme changes apply immediately
 - [x] Fallback2D activates on WebGL failure
 - [x] Performance stays smooth with 200+ nodes
+

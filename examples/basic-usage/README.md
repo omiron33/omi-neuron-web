@@ -1,6 +1,6 @@
 # Basic Usage Example
 
-Demonstrates core features of omi-neuron-web.
+Demonstrates core features of @omiron33/omi-neuron-web.
 
 ## Quick Start
 

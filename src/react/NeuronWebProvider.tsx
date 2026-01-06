@@ -22,7 +22,7 @@ export interface NeuronWebProviderProps {
 const buildDefaultConfig = (overrides?: Partial<NeuronSettings>): NeuronConfig => ({
   instance: {
     name: 'default',
-    version: '0.1.0',
+    version: '0.1.1',
     repoName: 'omi-neuron-web',
   },
   visualization: { ...DEFAULT_VISUALIZATION_SETTINGS, ...(overrides?.visualization ?? {}) },

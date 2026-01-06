@@ -140,3 +140,4 @@ ORDER BY array_length(path, 1), total_strength DESC;
 - Consider materialized views for common queries
 - Test with large graphs (1000+ nodes)
 
+

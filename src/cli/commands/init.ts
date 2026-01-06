@@ -4,12 +4,12 @@ import { Command } from 'commander';
 import { logger } from '../utils/logger';
 import { writeTemplateFile } from '../utils/templates';
 
-const CONFIG_TEMPLATE = `import { defineNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from 'omi-neuron-web';
+const CONFIG_TEMPLATE = `import { defineNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from '@omiron33/omi-neuron-web';
 
 export default defineNeuronConfig({
   instance: {
     name: '{{INSTANCE_NAME}}',
-    version: '0.1.0',
+    version: '0.1.1',
     repoName: '{{REPO_NAME}}',
   },
   visualization: DEFAULT_VISUALIZATION_SETTINGS,
@@ -69,7 +69,7 @@ volumes:
     name: {{REPO_NAME}}_neuron_data
 `;
 
-const API_ROUTE_TEMPLATE = `import { createNeuronRoutes } from 'omi-neuron-web/api';
+const API_ROUTE_TEMPLATE = `import { createNeuronRoutes } from '@omiron33/omi-neuron-web/api';
 import config from '../../../../neuron.config';
 
 const routes = createNeuronRoutes(config);

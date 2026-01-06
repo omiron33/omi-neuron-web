@@ -95,3 +95,4 @@ abstract class BaseRepository<T, CreateDTO, UpdateDTO> {
 - Handle array columns (keywords, position_override)
 - Handle vector columns (embedding, centroid)
 
+

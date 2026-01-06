@@ -131,3 +131,4 @@ See `tasks/phase-1-foundation/` for individual task tracking:
 - [x] `npx omi-neuron db:up` starts PostgreSQL container
 - [x] Migrations run without errors
 - [x] Health check returns healthy status
+

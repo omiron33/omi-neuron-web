@@ -1,5 +1,10 @@
-import { NeuronWeb } from 'omi-neuron-web/visualization';
+import { NeuronWeb } from '@omiron33/omi-neuron-web';
 
 export default function Page() {
-  return <NeuronWeb graphData={{ nodes: [], edges: [] }} />;
+  return (
+    <NeuronWeb
+      graphData={{ nodes: [], edges: [] }}
+      layout={{ mode: 'fuzzy' }}
+    />
+  );
 }

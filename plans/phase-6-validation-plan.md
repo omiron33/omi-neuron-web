@@ -111,6 +111,12 @@
 - [x] Test installation in clean project
 - [x] Publish v0.1.0 release
 
+### Phase 6.8 – Patch Release: Visualization Usability ✅
+- [x] Add fuzzy layout fallback when nodes lack positions
+- [x] Export NeuronWeb from package root for simpler imports
+- [x] Update docs/examples to reference scoped package and new layout options
+- [x] Bump version + publish patch release
+
 ## Task Files
 
 See `tasks/phase-6-validation/` for individual task tracking:
@@ -121,6 +127,7 @@ See `tasks/phase-6-validation/` for individual task tracking:
 - `task-6-5-migration-scripts.md`
 - `task-6-6-documentation.md`
 - `task-6-7-npm-publishing.md`
+- `task-6-8-visualization-layout-exports.md`
 
 ## Test Structure
 

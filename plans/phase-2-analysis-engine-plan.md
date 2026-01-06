@@ -188,3 +188,4 @@ interface AnalysisPipeline {
 - [x] Relationships inferred with reasonable confidence
 - [x] Full pipeline completes without errors
 - [x] Events emit and subscribers receive correctly
+

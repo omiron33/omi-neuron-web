@@ -3,27 +3,32 @@
 ## Installation
 
 ```bash
-pnpm add omi-neuron-web
+pnpm add @omiron33/omi-neuron-web
 ```
 
 ## Project Setup
 
 1. Initialize config and Docker files:
    ```bash
-   npx omi-neuron init
+   npx @omiron33/omi-neuron-web init
    ```
 2. Start the database:
    ```bash
-   npx omi-neuron db:up
+   npx @omiron33/omi-neuron-web db:up
    ```
 
 ## First Graph
 
 ```tsx
-import { NeuronWeb } from 'omi-neuron-web/visualization';
+import { NeuronWeb } from '@omiron33/omi-neuron-web';
 
 export default function Page() {
-  return <NeuronWeb graphData={{ nodes: [], edges: [] }} />;
+  return (
+    <NeuronWeb
+      graphData={{ nodes: [], edges: [] }}
+      layout={{ mode: 'fuzzy' }}
+    />
+  );
 }
 ```
 
@@ -38,5 +43,5 @@ await api.nodes.create({ nodes: [{ label: 'Example', nodeType: 'concept' }] });
 ## Running Analysis
 
 ```bash
-npx omi-neuron analyze:full
+npx @omiron33/omi-neuron-web analyze:full
 ```

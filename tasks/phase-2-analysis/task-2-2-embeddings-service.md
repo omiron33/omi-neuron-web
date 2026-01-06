@@ -138,3 +138,4 @@ console.log(`Generated ${results.results.length} embeddings`);
 - text-embedding-ada-002: 1536 dimensions, $0.10/1M tokens (legacy)
 - Use HNSW index for similarity search performance
 
+

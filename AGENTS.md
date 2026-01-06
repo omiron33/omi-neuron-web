@@ -234,3 +234,4 @@ pnpm install
 - Peer dependencies (React, Three.js) are external
 - The CLI is the main user entry point
 
+

@@ -175,3 +175,4 @@ function MyComponent() {
 - Async handlers should not block emission
 - Unsubscribe returns function for cleanup
 
+

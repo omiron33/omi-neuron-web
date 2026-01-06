@@ -179,3 +179,4 @@ See `tasks/phase-3-api/` for individual task tracking:
 - [x] Graph queries perform within acceptable time
 - [x] Analysis jobs track and report progress
 - [x] Settings persist and apply correctly
+

@@ -1,13 +1,13 @@
 {
-  "name": "omi-neuron-web",
-  "version": "0.1.0",
+  "name": "@omiron33/omi-neuron-web",
+  "version": "0.1.2",
   "description": "A drop-in Next.js library for data analysis and 3D visualization with OpenAI-powered insights",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "omi-neuron": "./dist/cli/index.js"
+    "omi-neuron": "./dist/cli/index.cjs"
   },
   "exports": {
     ".": {
@@ -37,6 +37,10 @@
     "docker",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

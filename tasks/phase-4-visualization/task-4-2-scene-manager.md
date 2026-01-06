@@ -118,3 +118,4 @@ function useSceneManager(
 - OrbitControls for camera manipulation
 - CSS2DRenderer for HTML labels in 3D
 
+

@@ -135,3 +135,4 @@ class EdgeRenderer {
 - Frustum culling for off-screen objects
 - LOD for distant nodes
 
+

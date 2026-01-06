@@ -6,7 +6,7 @@ export class ThemeEngine {
   onThemeChange: (theme: NeuronWebTheme) => void = () => {};
 
   constructor(initialTheme?: Partial<NeuronWebTheme>) {
-    this.theme = { ...DEFAULT_THEME, ...initialTheme } as NeuronWebTheme;
+    this.theme = this.mergeTheme(DEFAULT_THEME, initialTheme);
   }
 
   getTheme(): NeuronWebTheme {
@@ -14,7 +14,7 @@ export class ThemeEngine {
   }
 
   setTheme(theme: Partial<NeuronWebTheme>): void {
-    this.theme = { ...this.theme, ...theme } as NeuronWebTheme;
+    this.theme = this.mergeTheme(this.theme, theme);
     this.onThemeChange(this.theme);
   }
 
@@ -40,10 +40,9 @@ export class ThemeEngine {
 
   applyPreset(preset: 'dark' | 'light' | 'custom'): void {
     if (preset === 'light') {
-      this.theme = {
-        ...DEFAULT_THEME,
-        colors: { ...DEFAULT_THEME.colors, background: '#f7f7fb', labelText: '#111' },
-      };
+      this.theme = this.mergeTheme(DEFAULT_THEME, {
+        colors: { background: '#f7f7fb', labelText: '#111' },
+      });
     } else if (preset === 'dark') {
       this.theme = { ...DEFAULT_THEME };
     }
@@ -59,7 +58,19 @@ export class ThemeEngine {
     if (typeof window === 'undefined') return;
     const stored = window.localStorage.getItem('omi-neuron-theme');
     if (stored) {
-      this.theme = { ...this.theme, ...(JSON.parse(stored) as NeuronWebTheme) };
+      this.theme = this.mergeTheme(this.theme, JSON.parse(stored) as NeuronWebTheme);
     }
+  }
+
+  private mergeTheme(base: NeuronWebTheme, next?: Partial<NeuronWebTheme>): NeuronWebTheme {
+    if (!next) return { ...base };
+    return {
+      ...base,
+      ...next,
+      colors: { ...base.colors, ...(next.colors ?? {}) },
+      typography: { ...base.typography, ...(next.typography ?? {}) },
+      effects: { ...base.effects, ...(next.effects ?? {}) },
+      animation: { ...base.animation, ...(next.animation ?? {}) },
+    } as NeuronWebTheme;
   }
 }

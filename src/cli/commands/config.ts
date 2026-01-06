@@ -6,7 +6,7 @@ import { logger } from '../utils/logger';
 
 const CONFIG_FILE = path.resolve('neuron.config.ts');
 
-const serializeConfig = (config: unknown): string => `import { defineNeuronConfig } from 'omi-neuron-web';\n\nexport default defineNeuronConfig(${JSON.stringify(
+const serializeConfig = (config: unknown): string => `import { defineNeuronConfig } from '@omiron33/omi-neuron-web';\n\nexport default defineNeuronConfig(${JSON.stringify(
   config,
   null,
   2

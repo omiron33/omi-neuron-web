@@ -246,3 +246,4 @@ DROP TABLE IF EXISTS analysis_runs;
 - HNSW index for fast similarity search
 - All tables have timestamps for auditing
 
+

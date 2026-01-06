@@ -16,8 +16,9 @@ export { AnalysisPipeline } from './core/analysis/pipeline';
 export * from './storage';
 export * from './config';
 
-// Re-export visualization (when implemented)
-// export { NeuronWeb } from './visualization';
+// Visualization
+export { NeuronWeb } from './visualization';
+export type { NeuronWebProps, NeuronWebTheme, NeuronLayoutOptions, NeuronLayoutMode } from './visualization';
 
 // Re-export hooks (when implemented)
 export * from './react/hooks';
@@ -26,4 +27,5 @@ export * from './react/hooks';
 export { NeuronWebProvider } from './react/NeuronWebProvider';
 
 // Version
-export const VERSION = '0.1.0';
+export const VERSION = '0.1.1';
+
