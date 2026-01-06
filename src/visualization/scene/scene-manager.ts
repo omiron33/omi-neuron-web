@@ -4,6 +4,7 @@ import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export interface SceneConfig {
   backgroundColor: string;
+  cameraFov?: number;
   cameraPosition: [number, number, number];
   cameraTarget: [number, number, number];
   minZoom: number;
@@ -35,11 +36,12 @@ export class SceneManager {
   private ambientLight: THREE.AmbientLight | null = null;
   private keyLight: THREE.DirectionalLight | null = null;
   private fillLight: THREE.PointLight | null = null;
+  private resizeObserver: ResizeObserver | null = null;
 
   constructor(private container: HTMLElement, private config: SceneConfig) {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(60, 1, 0.1, 2000);
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.camera = new THREE.PerspectiveCamera(config.cameraFov ?? 52, 1, 0.1, 220);
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     this.labelRenderer = new CSS2DRenderer();
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
   }
@@ -59,9 +61,14 @@ export class SceneManager {
 
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.config.pixelRatioCap));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMapping = THREE.NoToneMapping;
+    this.renderer.toneMappingExposure = 1;
     this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.style.top = '0';
+    this.renderer.domElement.style.left = '0';
+    this.renderer.domElement.style.width = '100%';
+    this.renderer.domElement.style.height = '100%';
     this.labelRenderer.setSize(this.container.clientWidth, this.container.clientHeight);
     this.labelRenderer.domElement.style.position = 'absolute';
     this.labelRenderer.domElement.style.top = '0';
@@ -79,12 +86,18 @@ export class SceneManager {
     }
 
     window.addEventListener('resize', this.resize);
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => this.resize());
+      this.resizeObserver.observe(this.container);
+    }
     this.startAnimationLoop();
   }
 
   dispose(): void {
     this.stopAnimationLoop();
     window.removeEventListener('resize', this.resize);
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     this.renderer.dispose();
     this.scene.clear();
     this.container.innerHTML = '';
@@ -126,6 +139,7 @@ export class SceneManager {
   resize = (): void => {
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
+    if (!width || !height) return;
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
@@ -186,20 +200,17 @@ export class SceneManager {
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i += 1) {
-      const radius = 180 + Math.random() * 120;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = radius * Math.cos(phi);
+      positions[i * 3] = THREE.MathUtils.randFloatSpread(70);
+      positions[i * 3 + 1] = THREE.MathUtils.randFloatSpread(70);
+      positions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(70);
     }
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const material = new THREE.PointsMaterial({
       color: this.config.starfieldColor,
-      size: 0.6,
+      size: 0.22,
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.5,
       depthWrite: false,
     });
     this.starfield = new THREE.Points(geometry, material);

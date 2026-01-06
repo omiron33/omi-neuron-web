@@ -16,6 +16,8 @@ export function NeuronWeb({
   graphData,
   className,
   style,
+  fullHeight,
+  isFullScreen,
   isLoading,
   error,
   renderEmptyState,
@@ -58,17 +60,18 @@ export function NeuronWeb({
 
   const sceneManager = useSceneManager(containerRef, {
     backgroundColor: resolvedTheme.colors.background,
+    cameraFov: 52,
     cameraPosition: [4, 8, 20],
     cameraTarget: [0, 0, 0],
     minZoom: 4,
     maxZoom: 42,
     enableStarfield: resolvedTheme.effects.starfieldEnabled,
-    starfieldCount: 1200,
+    starfieldCount: resolvedPerformanceMode === 'normal' ? 1200 : 700,
     starfieldColor: resolvedTheme.effects.starfieldColor,
     pixelRatioCap: 2,
-    ambientLightIntensity: 0.7,
-    keyLightIntensity: 1.1,
-    fillLightIntensity: 0.6,
+    ambientLightIntensity: 0.9,
+    keyLightIntensity: 0.6,
+    fillLightIntensity: 0.4,
     fogEnabled: resolvedTheme.effects.fogEnabled,
     fogColor: resolvedTheme.effects.fogColor,
     fogNear: resolvedTheme.effects.fogNear,
@@ -80,16 +83,22 @@ export function NeuronWeb({
     return new NodeRenderer(sceneManager.scene, {
       domainColors: resolvedTheme.colors.domainColors,
       defaultColor: resolvedTheme.colors.defaultDomainColor,
-      baseScale: 0.4,
+      baseScale: 1.15,
       tierScales: {
-        primary: 1.6,
-        secondary: 1.2,
-        tertiary: 1,
-        insight: 1,
+        primary: 1.25,
+        secondary: 1.1,
+        tertiary: 0.95,
+        insight: 1.05,
       },
       glowIntensity: resolvedTheme.effects.glowEnabled ? resolvedTheme.effects.glowIntensity : 0,
-      labelDistance: 20,
-      maxVisibleLabels: 50,
+      labelDistance: resolvedPerformanceMode === 'normal' ? 26 : 0,
+      maxVisibleLabels: resolvedPerformanceMode === 'normal' ? 80 : 0,
+      labelOffset: [0, 0.65, 0],
+      labelFontFamily: resolvedTheme.typography.labelFontFamily,
+      labelFontSize: resolvedTheme.typography.labelFontSize,
+      labelFontWeight: resolvedTheme.typography.labelFontWeight,
+      labelTextColor: resolvedTheme.colors.labelText,
+      labelBackground: resolvedTheme.colors.labelBackground,
       ambientMotionEnabled:
         resolvedTheme.effects.ambientMotionEnabled && resolvedPerformanceMode === 'normal',
       ambientMotionAmplitude: resolvedTheme.effects.ambientMotionAmplitude,
@@ -107,7 +116,7 @@ export function NeuronWeb({
       defaultColor: resolvedTheme.colors.edgeDefault,
       activeColor: resolvedTheme.colors.edgeActive,
       selectedColor: resolvedTheme.colors.edgeSelected,
-      baseOpacity: 0.5,
+      baseOpacity: 0.45,
       strengthOpacityScale: true,
       edgeFlowEnabled:
         resolvedTheme.effects.edgeFlowEnabled && resolvedPerformanceMode === 'normal',
@@ -202,6 +211,7 @@ export function NeuronWeb({
     if (!sceneManager || !nodeRenderer || !edgeRenderer) return;
     return sceneManager.addFrameListener((delta, elapsed) => {
       nodeRenderer.update(delta, elapsed);
+      nodeRenderer.updateLabelVisibility(sceneManager.camera);
       edgeRenderer.update(delta, elapsed);
       animationController?.update();
       if (hoverCardRef.current && hoveredNodeId) {
@@ -341,13 +351,27 @@ export function NeuronWeb({
     );
   }
 
+  const resolvedStyle: React.CSSProperties = {
+    position: isFullScreen ? 'fixed' : 'relative',
+    inset: isFullScreen ? 0 : undefined,
+    width: isFullScreen ? '100vw' : '100%',
+    height: isFullScreen ? '100vh' : '100%',
+    minHeight: !isFullScreen && fullHeight ? '100vh' : undefined,
+    overflow: 'hidden',
+    background: resolvedTheme.colors.background,
+    ...style,
+  };
+
   return (
     <div
       className={className}
-      style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', ...style }}
+      style={resolvedStyle}
       aria-label={ariaLabel}
     >
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      <div
+        ref={containerRef}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+      />
       {hoverCardEnabled && hoveredNode && (
         <div
           ref={hoverCardRef}

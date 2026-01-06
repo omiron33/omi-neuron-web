@@ -62,15 +62,17 @@ export interface NeuronWebThemeOverride {
   animation?: Partial<NeuronWebTheme['animation']>;
 }
 
-export type NeuronLayoutMode = 'auto' | 'positioned' | 'fuzzy';
+export type NeuronLayoutMode = 'auto' | 'positioned' | 'fuzzy' | 'atlas';
 
 export interface NeuronLayoutOptions {
   mode?: NeuronLayoutMode;
   radius?: number;
+  insightRadius?: number;
   jitter?: number;
   zSpread?: number;
   seed?: string;
   spread?: number;
+  overrides?: Record<string, [number, number, number]>;
 }
 
 export interface HoverCardOptions {

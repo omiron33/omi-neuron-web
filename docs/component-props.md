@@ -6,23 +6,32 @@ See `NeuronWebProps` in `src/visualization/types.ts`.
 
 ### Layout
 
-`NeuronWebProps.layout` provides a fuzzy 3D fallback when nodes lack explicit positions.
+`NeuronWebProps.layout` provides layout strategies when nodes lack explicit positions. The `atlas`
+mode mirrors the Technochristian golden-sphere arrangement (canonical nodes on a wider sphere,
+insight nodes on a tighter sphere) and ships with the default Technochristian position map.
 
-- `mode`: `'auto' | 'positioned' | 'fuzzy'` (default: `auto`)
-- `radius`: base radius for the layout ring
+- `mode`: `'auto' | 'positioned' | 'fuzzy' | 'atlas'` (default: `atlas`)
+- `radius`: base radius for layout (atlas + fuzzy)
+- `insightRadius`: radius for insight nodes in `atlas` mode
 - `jitter`: random offset applied to each node
 - `zSpread`: depth variance for the 3D cloud
 - `seed`: stable seed for deterministic placement
 - `spread`: density multiplier (higher = more spacing)
+- `overrides`: map of `{ [idOrSlug]: [x, y, z] }` for manual placement (merged on top of defaults)
 
 Example:
 
 ```tsx
 <NeuronWeb
   graphData={{ nodes, edges }}
-  layout={{ mode: 'fuzzy', radius: 8, jitter: 1.2, zSpread: 3, spread: 1.25 }}
+  layout={{ mode: 'atlas', radius: 12, insightRadius: 5, spread: 1.1 }}
 />
 ```
+
+### Layout Sizing
+
+- `isFullScreen`: covers the full viewport (`position: fixed; inset: 0`)
+- `fullHeight`: stretches to `100vh` when embedded in a normal layout
 
 ### Hover Cards
 

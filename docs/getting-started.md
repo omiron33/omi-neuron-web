@@ -26,7 +26,7 @@ export default function Page() {
   return (
     <NeuronWeb
       graphData={{ nodes: [], edges: [] }}
-      layout={{ mode: 'fuzzy' }}
+      layout={{ mode: 'atlas' }}
     />
   );
 }

@@ -9,7 +9,7 @@ export const DEFAULT_THEME: NeuronWebTheme = {
     edgeActive: '#c6d4ff',
     edgeSelected: '#ffffff',
     labelText: '#ffffff',
-    labelBackground: 'rgba(0, 0, 0, 0.8)',
+    labelBackground: 'rgba(5, 6, 31, 0.8)',
   },
   typography: {
     labelFontFamily: 'system-ui, sans-serif',
@@ -28,8 +28,8 @@ export const DEFAULT_THEME: NeuronWebTheme = {
     edgeFlowSpeed: 1.2,
     fogEnabled: true,
     fogColor: '#020314',
-    fogNear: 32,
-    fogFar: 180,
+    fogNear: 24,
+    fogFar: 160,
   },
   animation: {
     focusDuration: 800,
