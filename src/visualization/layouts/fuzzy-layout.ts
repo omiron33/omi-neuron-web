@@ -65,7 +65,7 @@ export function applyFuzzyLayout(
     return nodes;
   }
 
-  const needsLayout = mode !== 'positioned' && nodes.some((node) => !node.position);
+  const needsLayout = nodes.some((node) => !node.position);
   if (mode === 'auto' && !needsLayout) {
     return nodes;
   }

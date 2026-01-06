@@ -33,6 +33,32 @@ Example:
 - `isFullScreen`: covers the full viewport (`position: fixed; inset: 0`)
 - `fullHeight`: stretches to `100vh` when embedded in a normal layout
 
+### Camera Auto-Fit
+
+`NeuronWebProps.cameraFit` centers and zooms the camera so all nodes fit within a chosen viewport fraction.
+When `isFullScreen` is true and `cameraFit.enabled` is omitted, auto-fit defaults to enabled.
+
+- `enabled`: toggle auto-fit (default: false)
+- `mode`: `'once' | 'onChange'` (default: `once`)
+- `viewportFraction`: fraction of the viewport to occupy (default: `0.33` = center third)
+- `padding`: extra padding on bounds (default: `0.15` = 15%)
+
+Example:
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  isFullScreen
+  cameraFit={{ enabled: true, mode: 'once', viewportFraction: 0.33, padding: 0.15 }}
+/>
+```
+
+Disable auto-fit in fullscreen:
+
+```tsx
+<NeuronWeb graphData={{ nodes, edges }} isFullScreen cameraFit={{ enabled: false }} />
+```
+
 ### Hover Cards
 
 `NeuronWebProps.hoverCard` enables hover card overlays on nodes.

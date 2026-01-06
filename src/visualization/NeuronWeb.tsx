@@ -25,6 +25,7 @@ export function NeuronWeb({
   ariaLabel,
   theme,
   layout,
+  cameraFit,
   renderNodeHover,
   hoverCard,
   onNodeHover,
@@ -38,6 +39,7 @@ export function NeuronWeb({
   const hoverCardRef = useRef<HTMLDivElement>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const fitStateRef = useRef<{ hasFit: boolean; signature: string }>({ hasFit: false, signature: '' });
 
   const resolvedTheme = useMemo(
     () => ({
@@ -149,6 +151,24 @@ export function NeuronWeb({
     [graphData.nodes, layout]
   );
 
+  const resolvedCameraFit = useMemo(() => {
+    const enabled = cameraFit?.enabled ?? Boolean(isFullScreen);
+    return {
+      enabled,
+      mode: cameraFit?.mode ?? 'once',
+      viewportFraction: cameraFit?.viewportFraction ?? 0.33,
+      padding: cameraFit?.padding ?? 0.15,
+    };
+  }, [cameraFit, isFullScreen]);
+
+  const fitSignature = useMemo(
+    () =>
+      resolvedNodes
+        .map((node) => `${node.id}:${node.position ? node.position.map((v) => v.toFixed(3)).join(',') : ''}`)
+        .join('|'),
+    [resolvedNodes]
+  );
+
   const nodeMap = useMemo(
     () => new Map(resolvedNodes.map((node) => [node.id, node])),
     [resolvedNodes]
@@ -195,6 +215,46 @@ export function NeuronWeb({
     if (!sceneManager) return;
     sceneManager.updateBackground(resolvedTheme.colors.background);
   }, [sceneManager, resolvedTheme.colors.background]);
+
+  useEffect(() => {
+    if (!sceneManager || !animationController || !resolvedCameraFit.enabled) return;
+
+    const mode = resolvedCameraFit.mode;
+    if (mode === 'once' && fitStateRef.current.hasFit) return;
+    if (mode === 'onChange' && fitStateRef.current.signature === fitSignature) return;
+
+    const positions = resolvedNodes
+      .map((node) => node.position)
+      .filter((pos): pos is [number, number, number] => Array.isArray(pos));
+    if (!positions.length) return;
+
+    const points = positions.map((pos) => new THREE.Vector3(...pos));
+    const bounds = new THREE.Box3().setFromPoints(points);
+    const sphere = new THREE.Sphere();
+    bounds.getBoundingSphere(sphere);
+
+    const radius = Math.max(sphere.radius, 0.001);
+    const padding = resolvedCameraFit.padding;
+    const viewportFraction = Math.min(Math.max(resolvedCameraFit.viewportFraction, 0.05), 1);
+
+    const camera = sceneManager.camera as THREE.PerspectiveCamera;
+    const vFov = THREE.MathUtils.degToRad(camera.fov);
+    const aspect = camera.aspect || 1;
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * aspect);
+    const targetFov = Math.min(vFov, hFov);
+    const distance = (radius * (1 + padding)) / Math.tan((targetFov * viewportFraction) / 2);
+
+    const direction = camera.position.clone().sub(sceneManager.controls.target);
+    if (direction.lengthSq() < 0.0001) {
+      direction.set(0, 0, 1);
+    }
+    direction.normalize();
+
+    const targetPosition = sphere.center.clone().add(direction.multiplyScalar(distance));
+    animationController.focusOnPosition(targetPosition, sphere.center.clone());
+
+    fitStateRef.current = { hasFit: true, signature: fitSignature };
+  }, [sceneManager, animationController, resolvedCameraFit, resolvedNodes, fitSignature]);
 
   useEffect(() => {
     if (!sceneManager) return;

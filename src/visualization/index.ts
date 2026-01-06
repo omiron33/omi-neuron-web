@@ -21,6 +21,7 @@ export type {
   NeuronLayoutOptions,
   NeuronLayoutMode,
   HoverCardOptions,
+  CameraFitOptions,
 } from './types';
 
 // Layout helpers

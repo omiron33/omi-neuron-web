@@ -81,6 +81,17 @@ export interface HoverCardOptions {
   offset?: [number, number];
 }
 
+export interface CameraFitOptions {
+  /** Enable auto-fitting camera to node bounds */
+  enabled?: boolean;
+  /** Apply once on mount or whenever node positions change */
+  mode?: 'once' | 'onChange';
+  /** Fraction of viewport the graph should occupy (0-1). 0.33 ~= center third. */
+  viewportFraction?: number;
+  /** Extra padding applied to bounds (0.1 = 10%) */
+  padding?: number;
+}
+
 export interface NeuronWebProps {
   graphData: {
     nodes: NeuronVisualNode[];
@@ -106,6 +117,7 @@ export interface NeuronWebProps {
   studyPathRequest?: StudyPathRequest | null;
   onStudyPathComplete?: () => void;
   layout?: NeuronLayoutOptions;
+  cameraFit?: CameraFitOptions;
   theme?: NeuronWebThemeOverride;
   domainColors?: Record<string, string>;
   renderNodeHover?: (node: NeuronVisualNode) => React.ReactNode;

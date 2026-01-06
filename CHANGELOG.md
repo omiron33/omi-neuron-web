@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0
+
+### Minor Changes
+
+- minor change
+
+### Patch Changes
+
+- styling changes
+
+## 0.1.6
+
+### Patch Changes
+
+- further styling
+
+- styling change
+
 ## 0.1.4
 
 ### Patch Changes
