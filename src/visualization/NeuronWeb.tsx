@@ -25,6 +25,11 @@ export function NeuronWeb({
   layout,
   renderNodeHover,
   hoverCard,
+  onNodeHover,
+  onNodeClick,
+  onNodeDoubleClick,
+  onNodeFocused,
+  onBackgroundClick,
   performanceMode,
 }: NeuronWebProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
