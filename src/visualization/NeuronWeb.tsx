@@ -284,6 +284,62 @@ export function NeuronWeb({
     sceneManager.updateBackground(resolvedTheme.colors.background);
   }, [sceneManager, resolvedTheme.colors.background]);
 
+  useEffect(() => {
+    if (!sceneManager || !nodeRenderer) return;
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const tempDir = new THREE.Vector3();
+    const plane = new THREE.Plane();
+    const intersection = new THREE.Vector3();
+
+    const updatePointer = (event: PointerEvent) => {
+      const rect = sceneManager.renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      updatePointer(event);
+      raycaster.setFromCamera(pointer, sceneManager.camera);
+
+      const nodes = nodeRenderer.getNodeObjects();
+      if (nodes.length) {
+        const intersects = raycaster.intersectObjects(nodes, true);
+        if (intersects.length) {
+          const hit = intersects[0].object;
+          const nodeId = hit.userData?.nodeId as string | undefined;
+          if (nodeId) {
+            const nodePosition = nodeRenderer.getNodePosition(nodeId);
+            if (nodePosition) {
+              sceneManager.controls.target.copy(nodePosition);
+              sceneManager.controls.update();
+              return;
+            }
+          }
+          if (intersects[0].point) {
+            sceneManager.controls.target.copy(intersects[0].point);
+            sceneManager.controls.update();
+            return;
+          }
+        }
+      }
+
+      sceneManager.camera.getWorldDirection(tempDir).normalize();
+      plane.setFromNormalAndCoplanarPoint(tempDir, sceneManager.controls.target.clone());
+      if (raycaster.ray.intersectPlane(plane, intersection)) {
+        sceneManager.controls.target.copy(intersection);
+        sceneManager.controls.update();
+      }
+    };
+
+    const dom = sceneManager.renderer.domElement;
+    dom.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      dom.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [sceneManager, nodeRenderer]);
+
   const cameraFitSuspended = Boolean(selectedNodeId || focusNodeSlug);
 
   useEffect(() => {

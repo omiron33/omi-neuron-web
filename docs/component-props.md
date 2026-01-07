@@ -39,6 +39,10 @@ Example:
 When `isFullScreen` is true and `cameraFit.enabled` is omitted, auto-fit defaults to enabled.
 Auto-fit pauses whenever a node is selected/focused so the camera doesn't snap back to the full graph.
 
+Orbit pivot behavior:
+- On pointer down, the orbit target shifts to the cursor (or the node under it), so rotation
+  follows the cursor instead of staying locked to the last focused node.
+
 - `enabled`: toggle auto-fit (default: false)
 - `mode`: `'once' | 'onChange'` (default: `once`)
 - `viewportFraction`: fraction of the viewport to occupy (default: `0.33` = center third)

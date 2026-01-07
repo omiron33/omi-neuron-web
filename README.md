@@ -859,6 +859,10 @@ Enable a persistent card on click and optional zoom-to-node behavior:
 />
 ```
 
+Orbit pivot behavior:
+- On pointer down, the orbit target shifts to the cursor (or the node under it),
+  so rotating after a focus doesn’t stay locked to the previously focused node.
+
 ### Card mode (global override)
 
 `cardsMode` lets you force card behavior irrespective of `hoverCard.enabled` or `clickCard.enabled`
