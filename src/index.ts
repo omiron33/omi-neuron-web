@@ -35,4 +35,4 @@ export * from './react/hooks';
 export { NeuronWebProvider } from './react/NeuronWebProvider';
 
 // Version
-export const VERSION = '0.2.18';
+export const VERSION = '0.2.19';
