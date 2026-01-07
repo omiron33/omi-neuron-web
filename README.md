@@ -686,7 +686,7 @@ export interface NeuronWebProps {
 
 Props currently used inside `NeuronWeb` (others are reserved for future use):
 
-- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `renderNodeDetail`, `hoverCard`, `clickCard`, `clickZoom`, `cardsMode`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`, `focusNodeSlug`, `onFocusConsumed`, `visibleNodeSlugs`.
+- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `renderNodeDetail`, `hoverCard`, `clickCard`, `clickZoom`, `cardsMode`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`, `focusNodeSlug`, `onFocusConsumed`, `visibleNodeSlugs`, `studyPathRequest`, `onStudyPathComplete`.
 - Used: `cameraFit` (auto-fit bounds to a viewport fraction).
 - Reserved (declared but not used in the component yet): `selectedNode`, `onEdgeClick`, `onCameraChange`, `studyPathRequest`, `onStudyPathComplete`, `domainColors`, `graphData.storyBeats`.
 
@@ -845,6 +845,37 @@ Semantics:
 
 // Hide everything
 <NeuronWeb graphData={graphData} visibleNodeSlugs={[]} />;
+```
+
+### Study path playback (follow the path between nodes)
+
+Use `studyPathRequest` to step through an ordered list of nodes. Each step:
+- selects the node
+- tweens the camera to the node (if `clickZoom.enabled`)
+- highlights the edge between the current and next step
+
+```tsx
+<NeuronWeb
+  graphData={graphData}
+  studyPathRequest={{
+    steps: [
+      { nodeSlug: 'uap', label: 'Start' },
+      { nodeSlug: 'neph', label: 'Next' },
+      { nodeSlug: 'jude6', label: 'Finish' },
+    ],
+    stepDurationMs: 4200,
+  }}
+  onStudyPathComplete={() => console.log('study path done')}
+/>
+```
+
+Fallback form (two-step path):
+
+```tsx
+<NeuronWeb
+  graphData={graphData}
+  studyPathRequest={{ fromNodeId: 'uap', toNodeId: 'neph' }}
+/>
 ```
 
 ### Click cards + click zoom

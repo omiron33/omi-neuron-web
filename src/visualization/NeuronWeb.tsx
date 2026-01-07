@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import type { NeuronWebProps } from './types';
+import type { NeuronWebProps, StudyPathStep } from './types';
 import type { NeuronNode } from '../core/types';
 import { DEFAULT_THEME } from './constants';
 import { useSceneManager } from './hooks/useSceneManager';
@@ -11,6 +11,13 @@ import { EdgeRenderer } from './scene/edge-renderer';
 import { applyFuzzyLayout } from './layouts/fuzzy-layout';
 import { InteractionManager } from './interactions/interaction-manager';
 import { AnimationController } from './animations/animation-controller';
+
+type StudyPathPlayer = {
+  steps: StudyPathStep[];
+  index: number;
+  playing: boolean;
+  stepDurationMs: number;
+};
 
 export function NeuronWeb({
   graphData,
@@ -32,6 +39,8 @@ export function NeuronWeb({
   cardsMode,
   clickCard,
   clickZoom,
+  studyPathRequest,
+  onStudyPathComplete,
   renderNodeHover,
   renderNodeDetail,
   hoverCard,
@@ -47,9 +56,12 @@ export function NeuronWeb({
   const clickCardRef = useRef<HTMLDivElement>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [studyPathPlayer, setStudyPathPlayer] = useState<StudyPathPlayer | null>(null);
   const fitStateRef = useRef<{ hasFit: boolean; signature: string }>({ hasFit: false, signature: '' });
   const firstFilterChangeRef = useRef(true);
   const [filterTransitioning, setFilterTransitioning] = useState(false);
+  const pathEdgeIdsRef = useRef<string[]>([]);
+  const focusEdgesRef = useRef<string[] | null>(null);
 
   const filteredGraphData = useMemo(() => {
     if (visibleNodeSlugs === null || visibleNodeSlugs === undefined) {
@@ -213,6 +225,21 @@ export function NeuronWeb({
     };
   }, [cameraFit, isFullScreen]);
 
+  useEffect(() => {
+    if (!resolvedStudyPathSteps || resolvedStudyPathSteps.length === 0) {
+      setStudyPathPlayer(null);
+      pathEdgeIdsRef.current = [];
+      applyFocusEdges(focusEdgesRef.current);
+      return;
+    }
+    setStudyPathPlayer({
+      steps: resolvedStudyPathSteps,
+      index: 0,
+      playing: true,
+      stepDurationMs: studyPathRequest?.stepDurationMs ?? 4200,
+    });
+  }, [resolvedStudyPathSteps, studyPathRequest?.stepDurationMs, applyFocusEdges]);
+
   const fitSignature = useMemo(
     () =>
       resolvedNodes
@@ -246,6 +273,31 @@ export function NeuronWeb({
     return map;
   }, [workingGraph.edges]);
 
+  const applyFocusEdges = useCallback(
+    (edgeIds: string[] | null) => {
+      if (!edgeRenderer) return;
+      focusEdgesRef.current = edgeIds;
+      const merged = new Set(edgeIds ?? []);
+      pathEdgeIdsRef.current.forEach((id) => merged.add(id));
+      edgeRenderer.setFocusEdges(merged.size ? Array.from(merged) : null);
+    },
+    [edgeRenderer]
+  );
+
+  const resolvedStudyPathSteps = useMemo<StudyPathStep[] | null>(() => {
+    if (!studyPathRequest) return null;
+    if (studyPathRequest.steps && studyPathRequest.steps.length) {
+      return studyPathRequest.steps;
+    }
+    if (studyPathRequest.fromNodeId && studyPathRequest.toNodeId) {
+      return [
+        { nodeId: studyPathRequest.fromNodeId },
+        { nodeId: studyPathRequest.toNodeId },
+      ];
+    }
+    return null;
+  }, [studyPathRequest]);
+
   const nodeByIdentifier = useMemo(() => {
     const map = new Map<string, typeof resolvedNodes[number]>();
     resolvedNodes.forEach((node) => {
@@ -254,6 +306,7 @@ export function NeuronWeb({
     });
     return map;
   }, [resolvedNodes]);
+
 
   const hoveredNode = hoveredNodeId ? nodeMap.get(hoveredNodeId) ?? null : null;
   const hoverCardEnabled =
@@ -267,6 +320,84 @@ export function NeuronWeb({
   const clickCardOffset = clickCard?.offset ?? [24, 24];
   const clickCardWidth = clickCard?.width ?? 320;
   const clickZoomEnabled = clickZoom?.enabled ?? true;
+
+  useEffect(() => {
+    if (!studyPathPlayer) return;
+    const step = studyPathPlayer.steps[studyPathPlayer.index];
+    const stepKey = step?.nodeSlug ?? step?.nodeId ?? null;
+    const node = stepKey ? nodeByIdentifier.get(stepKey) ?? null : null;
+
+    if (node && nodeRenderer && edgeRenderer) {
+      setSelectedNodeId(node.id);
+      nodeRenderer.setSelectedNode(node.id);
+      nodeRenderer.pulseNode(node.id);
+      if (clickZoomEnabled) {
+        const nodePosition = nodeRenderer.getNodePosition(node.id);
+        if (nodePosition) {
+          animationController?.focusOnNode(nodePosition, () => {
+            if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
+          });
+        }
+      }
+      const slug = node.slug;
+      applyFocusEdges(slug ? edgesBySlug.get(slug) ?? [] : []);
+    }
+
+    const nextStep =
+      studyPathPlayer.index < studyPathPlayer.steps.length - 1
+        ? studyPathPlayer.steps[studyPathPlayer.index + 1]
+        : null;
+    const currentSlug = node?.slug ?? (step?.nodeSlug ?? null);
+    const nextKey = nextStep?.nodeSlug ?? nextStep?.nodeId ?? null;
+    const nextNode = nextKey ? nodeByIdentifier.get(nextKey) ?? null : null;
+    const nextSlug = nextNode?.slug ?? (nextStep?.nodeSlug ?? null);
+
+    if (currentSlug && nextSlug) {
+      pathEdgeIdsRef.current = workingGraph.edges
+        .filter(
+          (edge) =>
+            (edge.from === currentSlug && edge.to === nextSlug) ||
+            (edge.to === currentSlug && edge.from === nextSlug)
+        )
+        .map((edge) => edge.id);
+    } else {
+      pathEdgeIdsRef.current = [];
+    }
+
+    applyFocusEdges(focusEdgesRef.current);
+  }, [
+    studyPathPlayer,
+    nodeByIdentifier,
+    nodeRenderer,
+    edgeRenderer,
+    edgesBySlug,
+    workingGraph.edges,
+    animationController,
+    clickZoomEnabled,
+    onNodeFocused,
+    applyFocusEdges,
+  ]);
+
+  useEffect(() => {
+    if (!studyPathPlayer || !studyPathPlayer.playing) return;
+    const timer = window.setTimeout(() => {
+      setStudyPathPlayer((prev) => {
+        if (!prev) return prev;
+        if (prev.index >= prev.steps.length - 1) {
+          if (onStudyPathComplete) onStudyPathComplete();
+          return { ...prev, playing: false };
+        }
+        return { ...prev, index: prev.index + 1 };
+      });
+    }, studyPathPlayer.stepDurationMs);
+    return () => window.clearTimeout(timer);
+  }, [studyPathPlayer, onStudyPathComplete]);
+
+  useEffect(() => {
+    if (!studyPathPlayer || studyPathPlayer.playing) return;
+    pathEdgeIdsRef.current = [];
+    applyFocusEdges(focusEdgesRef.current);
+  }, [studyPathPlayer, applyFocusEdges]);
 
   useEffect(() => {
     if (!sceneManager || !nodeRenderer || !edgeRenderer) return;
@@ -470,9 +601,9 @@ export function NeuronWeb({
     if (selectedNodeId && !nodeMap.has(selectedNodeId)) {
       setSelectedNodeId(null);
       nodeRenderer.setSelectedNode(null);
-      edgeRenderer.setFocusEdges(null);
+      applyFocusEdges(null);
     }
-  }, [selectedNodeId, nodeMap, nodeRenderer, edgeRenderer]);
+  }, [selectedNodeId, nodeMap, nodeRenderer, edgeRenderer, applyFocusEdges]);
 
   useEffect(() => {
     if (!focusNodeSlug || !nodeRenderer || !edgeRenderer) return;
@@ -484,7 +615,7 @@ export function NeuronWeb({
     setSelectedNodeId(node.id);
     nodeRenderer.setSelectedNode(node.id);
     nodeRenderer.pulseNode(node.id);
-    edgeRenderer.setFocusEdges(node.slug ? edgesBySlug.get(node.slug) ?? [] : []);
+    applyFocusEdges(node.slug ? edgesBySlug.get(node.slug) ?? [] : []);
     if (clickZoomEnabled) {
       const nodePosition = nodeRenderer.getNodePosition(node.id);
       if (nodePosition) {
@@ -508,6 +639,7 @@ export function NeuronWeb({
     animationController,
     onNodeFocused,
     onFocusConsumed,
+    applyFocusEdges,
   ]);
 
   useEffect(() => {
@@ -518,13 +650,13 @@ export function NeuronWeb({
       nodeRenderer.setHoveredNode(nodeId);
       if (nodeId) {
         const slug = nodeSlugById.get(nodeId);
-        edgeRenderer.setFocusEdges(slug ? edgesBySlug.get(slug) ?? [] : []);
+        applyFocusEdges(slug ? edgesBySlug.get(slug) ?? [] : []);
       } else {
         const selectedSlug = selectedNodeId ? nodeSlugById.get(selectedNodeId) : null;
         if (selectedSlug) {
-          edgeRenderer.setFocusEdges(edgesBySlug.get(selectedSlug) ?? []);
+          applyFocusEdges(edgesBySlug.get(selectedSlug) ?? []);
         } else {
-          edgeRenderer.setFocusEdges(null);
+          applyFocusEdges(null);
         }
       }
       if (onNodeHover) {
@@ -544,7 +676,7 @@ export function NeuronWeb({
         }
       }
       const slug = nodeSlugById.get(node.id);
-      edgeRenderer.setFocusEdges(slug ? edgesBySlug.get(slug) ?? [] : []);
+      applyFocusEdges(slug ? edgesBySlug.get(slug) ?? [] : []);
       if (onNodeClick) {
         onNodeClick(node as unknown as NeuronNode);
       }
@@ -564,7 +696,7 @@ export function NeuronWeb({
       setSelectedNodeId(null);
       nodeRenderer.setSelectedNode(null);
       if (!hoveredNodeId) {
-        edgeRenderer.setFocusEdges(null);
+        applyFocusEdges(null);
       }
       if (onBackgroundClick) onBackgroundClick();
     };
@@ -583,6 +715,7 @@ export function NeuronWeb({
     onNodeDoubleClick,
     onNodeFocused,
     onBackgroundClick,
+    applyFocusEdges,
   ]);
 
   useEffect(() => {

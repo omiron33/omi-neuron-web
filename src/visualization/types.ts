@@ -7,9 +7,31 @@ export interface NeuronStoryBeat {
   nodeIds: string[];
 }
 
+export interface StudyPathStep {
+  nodeSlug?: string;
+  nodeId?: string;
+  label?: string;
+  summary?: string;
+}
+
 export interface StudyPathRequest {
-  fromNodeId: string;
-  toNodeId: string;
+  /**
+   * Ordered steps to follow (slugs or ids). When provided, this takes precedence.
+   */
+  steps?: StudyPathStep[];
+  /**
+   * Optional label for the study path (consumer UI usage).
+   */
+  label?: string;
+  /**
+   * Time to hold each step before advancing (ms). Defaults to 4200.
+   */
+  stepDurationMs?: number;
+  /**
+   * Minimal fallback when steps are not provided.
+   */
+  fromNodeId?: string;
+  toNodeId?: string;
 }
 
 export interface NeuronWebTheme {

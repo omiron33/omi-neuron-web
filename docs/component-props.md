@@ -126,6 +126,28 @@ When `cardsMode` is set, it takes precedence over `hoverCard.enabled` and `click
 <NeuronWeb graphData={{ nodes, edges }} clickZoom={{ enabled: false }} />
 ```
 
+### Study Path Playback
+
+`NeuronWebProps.studyPathRequest` plays an ordered path of nodes. Each step:
+- selects the node
+- moves the camera (if `clickZoom.enabled`)
+- highlights the edge between current and next step
+
+Fields:
+- `steps`: array of `{ nodeSlug?: string; nodeId?: string; label?: string; summary?: string }`
+- `stepDurationMs`: time per step (default: 4200)
+- `fromNodeId`/`toNodeId`: fallback two-step path if `steps` is omitted
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  studyPathRequest={{
+    steps: [{ nodeSlug: 'alpha' }, { nodeSlug: 'beta' }],
+    stepDurationMs: 3200,
+  }}
+/>
+```
+
 ## NeuronWebProvider
 
 See `NeuronWebProviderProps` in `src/react/NeuronWebProvider.tsx`.
