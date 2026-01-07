@@ -37,6 +37,7 @@ Example:
 
 `NeuronWebProps.cameraFit` centers and zooms the camera so all nodes fit within a chosen viewport fraction.
 When `isFullScreen` is true and `cameraFit.enabled` is omitted, auto-fit defaults to enabled.
+Auto-fit pauses whenever a node is selected/focused so the camera doesn't snap back to the full graph.
 
 - `enabled`: toggle auto-fit (default: false)
 - `mode`: `'once' | 'onChange'` (default: `once`)

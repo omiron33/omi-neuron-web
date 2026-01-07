@@ -284,8 +284,11 @@ export function NeuronWeb({
     sceneManager.updateBackground(resolvedTheme.colors.background);
   }, [sceneManager, resolvedTheme.colors.background]);
 
+  const cameraFitSuspended = Boolean(selectedNodeId || focusNodeSlug);
+
   useEffect(() => {
     if (!sceneManager || !animationController || !resolvedCameraFit.enabled) return;
+    if (cameraFitSuspended) return;
 
     const mode = resolvedCameraFit.mode;
     if (mode === 'once' && fitStateRef.current.hasFit) return;
@@ -322,7 +325,14 @@ export function NeuronWeb({
     animationController.focusOnPosition(targetPosition, sphere.center.clone());
 
     fitStateRef.current = { hasFit: true, signature: fitSignature };
-  }, [sceneManager, animationController, resolvedCameraFit, resolvedNodes, fitSignature]);
+  }, [
+    sceneManager,
+    animationController,
+    resolvedCameraFit,
+    resolvedNodes,
+    fitSignature,
+    cameraFitSuspended,
+  ]);
 
   useEffect(() => {
     if (!sceneManager) return;

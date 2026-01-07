@@ -720,6 +720,8 @@ Layout options:
 
 Use `cameraFit` to center and zoom so all nodes sit inside a specific viewport fraction (default: 0.33 = center third).
 When `isFullScreen` is true and `cameraFit.enabled` is not specified, auto-fit is enabled by default.
+Auto-fit pauses whenever a node is selected/focused (click or programmatic focus) so the camera
+doesn't snap back to the full graph. Clear selection (background click) to allow future fits.
 
 ```tsx
 <NeuronWeb
