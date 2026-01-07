@@ -1,6 +1,6 @@
 # Migration Guide
 
-## From Technochristian
+## From Technochristian (www.technochristianity.com)
 - Export nodes and edges
 - Map fields to `NeuronNodeCreate`
 

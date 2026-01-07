@@ -7,7 +7,7 @@ See `NeuronWebProps` in `src/visualization/types.ts`.
 ### Layout
 
 `NeuronWebProps.layout` provides layout strategies when nodes lack explicit positions. The `atlas`
-mode mirrors the Technochristian golden-sphere arrangement (canonical nodes on a wider sphere,
+mode mirrors the Technochristian (www.technochristianity.com) golden-sphere arrangement (canonical nodes on a wider sphere,
 insight nodes on a tighter sphere) and ships with the default Technochristian position map.
 
 - `mode`: `'auto' | 'positioned' | 'fuzzy' | 'atlas'` (default: `atlas`)

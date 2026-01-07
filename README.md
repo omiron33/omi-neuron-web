@@ -734,11 +734,13 @@ When `isFullScreen` is true and `cameraFit.enabled` is not specified, auto-fit i
 />
 ```
 
-### Technochristian-style settings (agent example)
+### Technochristian (www.technochristianity.com)-style settings (agent example)
 
-Use this preset to match the Technochristian look/behavior in a consuming app
+Use this preset to match the Technochristian (www.technochristianity.com) look/behavior in a consuming app
 without introducing any new props. This combines fullscreen, center-third framing,
 stable atlas layout, click-to-zoom, and restrained visuals:
+
+![Technochristian-style NeuronWeb](docs/assets/technochristian-neuronweb.png)
 
 ```tsx
 <NeuronWeb
@@ -797,7 +799,7 @@ stable atlas layout, click-to-zoom, and restrained visuals:
 ### Programmatic focus (focusNodeSlug)
 
 Use `focusNodeSlug` to drive selection + camera focus from outside the component
-(mirrors Technochristian’s “focus a node when something else happens” behavior).
+(mirrors Technochristian (www.technochristianity.com)’s “focus a node when something else happens” behavior).
 
 Behavior:
 - Looks up by **slug**, with **id fallback**.
@@ -819,7 +821,7 @@ Behavior:
 ### Filtered views (visibleNodeSlugs)
 
 `visibleNodeSlugs` limits the graph to a subset of nodes (and their edges).
-This is the mechanism Technochristian uses for filtered views and decluttering.
+This is the mechanism Technochristian (www.technochristianity.com) uses for filtered views and decluttering.
 
 Semantics:
 - `null` or `undefined` → show **all** nodes/edges.
