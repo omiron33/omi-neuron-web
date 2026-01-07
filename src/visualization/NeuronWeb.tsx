@@ -225,21 +225,6 @@ export function NeuronWeb({
     };
   }, [cameraFit, isFullScreen]);
 
-  useEffect(() => {
-    if (!resolvedStudyPathSteps || resolvedStudyPathSteps.length === 0) {
-      setStudyPathPlayer(null);
-      pathEdgeIdsRef.current = [];
-      applyFocusEdges(focusEdgesRef.current);
-      return;
-    }
-    setStudyPathPlayer({
-      steps: resolvedStudyPathSteps,
-      index: 0,
-      playing: true,
-      stepDurationMs: studyPathRequest?.stepDurationMs ?? 4200,
-    });
-  }, [resolvedStudyPathSteps, studyPathRequest?.stepDurationMs, applyFocusEdges]);
-
   const fitSignature = useMemo(
     () =>
       resolvedNodes
@@ -297,6 +282,21 @@ export function NeuronWeb({
     }
     return null;
   }, [studyPathRequest]);
+
+  useEffect(() => {
+    if (!resolvedStudyPathSteps || resolvedStudyPathSteps.length === 0) {
+      setStudyPathPlayer(null);
+      pathEdgeIdsRef.current = [];
+      applyFocusEdges(focusEdgesRef.current);
+      return;
+    }
+    setStudyPathPlayer({
+      steps: resolvedStudyPathSteps,
+      index: 0,
+      playing: true,
+      stepDurationMs: studyPathRequest?.stepDurationMs ?? 4200,
+    });
+  }, [resolvedStudyPathSteps, studyPathRequest?.stepDurationMs, applyFocusEdges]);
 
   const nodeByIdentifier = useMemo(() => {
     const map = new Map<string, typeof resolvedNodes[number]>();
