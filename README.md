@@ -656,6 +656,7 @@ export interface NeuronWebProps {
   error?: string | null;
   selectedNode?: NeuronNode | null;
   focusNodeSlug?: string | null;
+  onFocusConsumed?: () => void;
   visibleNodeSlugs?: string[] | null;
   onNodeClick?: (node: NeuronNode) => void;
   onNodeDoubleClick?: (node: NeuronNode) => void;
@@ -685,9 +686,9 @@ export interface NeuronWebProps {
 
 Props currently used inside `NeuronWeb` (others are reserved for future use):
 
-- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `renderNodeDetail`, `hoverCard`, `clickCard`, `clickZoom`, `cardsMode`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`.
+- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `renderNodeDetail`, `hoverCard`, `clickCard`, `clickZoom`, `cardsMode`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`, `focusNodeSlug`, `onFocusConsumed`, `visibleNodeSlugs`.
 - Used: `cameraFit` (auto-fit bounds to a viewport fraction).
-- Reserved (declared but not used in the component yet): `selectedNode`, `focusNodeSlug`, `visibleNodeSlugs`, `onEdgeClick`, `onCameraChange`, `studyPathRequest`, `onStudyPathComplete`, `domainColors`, `graphData.storyBeats`.
+- Reserved (declared but not used in the component yet): `selectedNode`, `onEdgeClick`, `onCameraChange`, `studyPathRequest`, `onStudyPathComplete`, `domainColors`, `graphData.storyBeats`.
 
 ### Layout modes
 
@@ -731,6 +732,55 @@ When `isFullScreen` is true and `cameraFit.enabled` is not specified, auto-fit i
     padding: 0.15,          // 15% padding around bounds
   }}
 />
+```
+
+### Programmatic focus (focusNodeSlug)
+
+Use `focusNodeSlug` to drive selection + camera focus from outside the component
+(mirrors Technochristian’s “focus a node when something else happens” behavior).
+
+Behavior:
+- Looks up by **slug**, with **id fallback**.
+- Sets selection, pulses the node, and emphasizes connected edges.
+- If `clickZoom.enabled` is true (default), the camera tween runs.
+- Fires `onNodeFocused(node)` after the focus tween.
+- Calls `onFocusConsumed()` so the parent can clear the request.
+
+```tsx
+<NeuronWeb
+  graphData={graphData}
+  focusNodeSlug={focusSlug}
+  onFocusConsumed={() => setFocusSlug(null)}
+  onNodeFocused={(node) => console.log('focused', node.slug)}
+  clickZoom={{ enabled: true }}
+/>
+```
+
+### Filtered views (visibleNodeSlugs)
+
+`visibleNodeSlugs` limits the graph to a subset of nodes (and their edges).
+This is the mechanism Technochristian uses for filtered views and decluttering.
+
+Semantics:
+- `null` or `undefined` → show **all** nodes/edges.
+- `[]` (empty array) → show **none**.
+- Filters nodes by **slug or id**; edges are kept only if **both endpoints** are visible.
+- `storyBeats` (if present) are filtered to beats with ≥ 2 visible nodeIds.
+- A subtle fade/scale/blur transition is applied on each filter change.
+- If the currently selected node disappears, selection is cleared.
+
+```tsx
+// Show only a curated slice
+<NeuronWeb
+  graphData={graphData}
+  visibleNodeSlugs={['uap', 'neph', 'jude6']}
+/>;
+
+// Show everything (default)
+<NeuronWeb graphData={graphData} visibleNodeSlugs={null} />;
+
+// Hide everything
+<NeuronWeb graphData={graphData} visibleNodeSlugs={[]} />;
 ```
 
 ### Click cards + click zoom

@@ -117,7 +117,11 @@ export interface NeuronWebProps {
   isLoading?: boolean;
   error?: string | null;
   selectedNode?: NeuronNode | null;
+  /** Programmatically focus/select a node by slug (or id fallback). */
   focusNodeSlug?: string | null;
+  /** Called after a focusNodeSlug request is processed. */
+  onFocusConsumed?: () => void;
+  /** Limit the rendered graph to these node slugs/ids; null shows all, empty array shows none. */
   visibleNodeSlugs?: string[] | null;
   onNodeClick?: (node: NeuronNode) => void;
   onNodeDoubleClick?: (node: NeuronNode) => void;

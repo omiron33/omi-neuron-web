@@ -20,6 +20,9 @@ export function NeuronWeb({
   isFullScreen,
   isLoading,
   error,
+  focusNodeSlug,
+  onFocusConsumed,
+  visibleNodeSlugs,
   renderEmptyState,
   renderLoadingState,
   ariaLabel,
@@ -45,6 +48,33 @@ export function NeuronWeb({
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const fitStateRef = useRef<{ hasFit: boolean; signature: string }>({ hasFit: false, signature: '' });
+  const firstFilterChangeRef = useRef(true);
+  const [filterTransitioning, setFilterTransitioning] = useState(false);
+
+  const filteredGraphData = useMemo(() => {
+    if (visibleNodeSlugs === null || visibleNodeSlugs === undefined) {
+      return graphData;
+    }
+    const allowed = new Set(visibleNodeSlugs);
+    const filteredNodes = graphData.nodes.filter(
+      (node) => allowed.has(node.slug) || allowed.has(node.id)
+    );
+    const filteredEdges = graphData.edges.filter(
+      (edge) => allowed.has(edge.from) && allowed.has(edge.to)
+    );
+    const filteredStoryBeats = graphData.storyBeats
+      ?.map((beat) => ({
+        ...beat,
+        nodeIds: beat.nodeIds.filter((id) => allowed.has(id)),
+      }))
+      .filter((beat) => beat.nodeIds.length >= 2);
+    return {
+      ...graphData,
+      nodes: filteredNodes,
+      edges: filteredEdges,
+      storyBeats: filteredStoryBeats,
+    };
+  }, [graphData, visibleNodeSlugs]);
 
   const resolvedTheme = useMemo(
     () => ({
@@ -57,13 +87,30 @@ export function NeuronWeb({
     [theme]
   );
 
+  const filterSignature = useMemo(() => {
+    if (visibleNodeSlugs === null || visibleNodeSlugs === undefined) return 'all';
+    return visibleNodeSlugs.length ? visibleNodeSlugs.join('|') : 'none';
+  }, [visibleNodeSlugs]);
+
+  useEffect(() => {
+    if (firstFilterChangeRef.current) {
+      firstFilterChangeRef.current = false;
+      return;
+    }
+    setFilterTransitioning(true);
+    const timer = setTimeout(() => setFilterTransitioning(false), resolvedTheme.animation.transitionDuration);
+    return () => clearTimeout(timer);
+  }, [filterSignature, resolvedTheme.animation.transitionDuration]);
+
+  const workingGraph = filteredGraphData;
+
   const resolvedPerformanceMode = useMemo(() => {
     if (performanceMode && performanceMode !== 'auto') return performanceMode;
-    const count = graphData.nodes.length;
+    const count = workingGraph.nodes.length;
     if (count > 360) return 'fallback';
     if (count > 180) return 'degraded';
     return 'normal';
-  }, [performanceMode, graphData.nodes.length]);
+  }, [performanceMode, workingGraph.nodes.length]);
 
   const sceneManager = useSceneManager(containerRef, {
     backgroundColor: resolvedTheme.colors.background,
@@ -152,8 +199,8 @@ export function NeuronWeb({
   }, [sceneManager, resolvedTheme]);
 
   const resolvedNodes = useMemo(
-    () => applyFuzzyLayout(graphData.nodes, layout),
-    [graphData.nodes, layout]
+    () => applyFuzzyLayout(workingGraph.nodes, layout),
+    [workingGraph.nodes, layout]
   );
 
   const resolvedCameraFit = useMemo(() => {
@@ -187,7 +234,7 @@ export function NeuronWeb({
 
   const edgesBySlug = useMemo(() => {
     const map = new Map<string, string[]>();
-    graphData.edges.forEach((edge) => {
+    workingGraph.edges.forEach((edge) => {
       const add = (slug: string) => {
         const list = map.get(slug);
         if (list) list.push(edge.id);
@@ -197,7 +244,16 @@ export function NeuronWeb({
       add(edge.to);
     });
     return map;
-  }, [graphData.edges]);
+  }, [workingGraph.edges]);
+
+  const nodeByIdentifier = useMemo(() => {
+    const map = new Map<string, typeof resolvedNodes[number]>();
+    resolvedNodes.forEach((node) => {
+      map.set(node.slug, node);
+      map.set(node.id, node);
+    });
+    return map;
+  }, [resolvedNodes]);
 
   const hoveredNode = hoveredNodeId ? nodeMap.get(hoveredNodeId) ?? null : null;
   const hoverCardEnabled =
@@ -220,8 +276,8 @@ export function NeuronWeb({
       if (!node.position) return;
       positions.set(node.slug, new THREE.Vector3(...node.position));
     });
-    edgeRenderer.renderEdges(graphData.edges, positions);
-  }, [resolvedNodes, graphData.edges, sceneManager, nodeRenderer, edgeRenderer]);
+    edgeRenderer.renderEdges(workingGraph.edges, positions);
+  }, [resolvedNodes, workingGraph.edges, sceneManager, nodeRenderer, edgeRenderer]);
 
   useEffect(() => {
     if (!sceneManager) return;
@@ -334,6 +390,59 @@ export function NeuronWeb({
     if (!interactionManager || !nodeRenderer) return;
     interactionManager.setTargets(nodeRenderer.getNodeObjects(), nodeMap);
   }, [interactionManager, nodeRenderer, nodeMap]);
+
+  useEffect(() => {
+    if (!nodeRenderer) return;
+    if (hoveredNodeId && !nodeMap.has(hoveredNodeId)) {
+      setHoveredNodeId(null);
+      nodeRenderer.setHoveredNode(null);
+    }
+  }, [hoveredNodeId, nodeMap, nodeRenderer]);
+
+  useEffect(() => {
+    if (!nodeRenderer || !edgeRenderer) return;
+    if (selectedNodeId && !nodeMap.has(selectedNodeId)) {
+      setSelectedNodeId(null);
+      nodeRenderer.setSelectedNode(null);
+      edgeRenderer.setFocusEdges(null);
+    }
+  }, [selectedNodeId, nodeMap, nodeRenderer, edgeRenderer]);
+
+  useEffect(() => {
+    if (!focusNodeSlug || !nodeRenderer || !edgeRenderer) return;
+    const node = nodeByIdentifier.get(focusNodeSlug);
+    if (!node) {
+      onFocusConsumed?.();
+      return;
+    }
+    setSelectedNodeId(node.id);
+    nodeRenderer.setSelectedNode(node.id);
+    nodeRenderer.pulseNode(node.id);
+    edgeRenderer.setFocusEdges(node.slug ? edgesBySlug.get(node.slug) ?? [] : []);
+    if (clickZoomEnabled) {
+      const nodePosition = nodeRenderer.getNodePosition(node.id);
+      if (nodePosition) {
+        animationController?.focusOnNode(nodePosition, () => {
+          if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
+        });
+      } else if (onNodeFocused) {
+        onNodeFocused(node as unknown as NeuronNode);
+      }
+    } else if (onNodeFocused) {
+      onNodeFocused(node as unknown as NeuronNode);
+    }
+    onFocusConsumed?.();
+  }, [
+    focusNodeSlug,
+    nodeByIdentifier,
+    nodeRenderer,
+    edgeRenderer,
+    edgesBySlug,
+    clickZoomEnabled,
+    animationController,
+    onNodeFocused,
+    onFocusConsumed,
+  ]);
 
   useEffect(() => {
     if (!interactionManager || !nodeRenderer || !edgeRenderer) return;
@@ -450,6 +559,29 @@ export function NeuronWeb({
     );
   }
 
+  const sceneTransitionStyle: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    transition: `opacity ${resolvedTheme.animation.transitionDuration}ms ease, transform ${resolvedTheme.animation.transitionDuration}ms ease, filter ${resolvedTheme.animation.transitionDuration}ms ease`,
+    opacity: filterTransitioning ? 0.85 : 1,
+    transform: filterTransitioning ? 'scale(0.985)' : 'scale(1)',
+    filter: filterTransitioning ? 'blur(1px)' : 'blur(0px)',
+    transformOrigin: 'center',
+    willChange: 'transform, filter, opacity',
+  };
+
+  const filterOverlayStyle: React.CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    background: 'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.35), transparent 60%)',
+    opacity: filterTransitioning ? 1 : 0,
+    transition: `opacity ${resolvedTheme.animation.transitionDuration}ms ease`,
+    zIndex: 2,
+  };
+
   const resolvedStyle: React.CSSProperties = {
     position: isFullScreen ? 'fixed' : 'relative',
     inset: isFullScreen ? 0 : undefined,
@@ -469,8 +601,9 @@ export function NeuronWeb({
     >
       <div
         ref={containerRef}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        style={sceneTransitionStyle}
       />
+      <div style={filterOverlayStyle} />
       {hoverCardEnabled && hoveredNode && (
         <div
           ref={hoverCardRef}
