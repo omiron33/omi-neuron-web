@@ -734,6 +734,66 @@ When `isFullScreen` is true and `cameraFit.enabled` is not specified, auto-fit i
 />
 ```
 
+### Technochristian-style settings (agent example)
+
+Use this preset to match the Technochristian look/behavior in a consuming app
+without introducing any new props. This combines fullscreen, center-third framing,
+stable atlas layout, click-to-zoom, and restrained visuals:
+
+```tsx
+<NeuronWeb
+  graphData={graphData}
+  isFullScreen
+  cameraFit={{
+    enabled: true,
+    mode: 'once',
+    viewportFraction: 0.33,
+    padding: 0.15,
+  }}
+  layout={{
+    mode: 'atlas',
+    spread: 1.15,
+    jitter: 0.15,
+    zSpread: 1.1,
+  }}
+  clickZoom={{ enabled: true }}
+  clickCard={{ enabled: true, width: 320, offset: [24, 24] }}
+  hoverCard={{ enabled: false }}
+  cardsMode="click"
+  theme={{
+    colors: {
+      background: '#0b0f1f',
+      edgeDefault: 'rgba(130, 150, 190, 0.4)',
+      edgeActive: 'rgba(160, 190, 255, 0.7)',
+      labelText: 'rgba(230, 235, 245, 0.92)',
+      labelBackground: 'rgba(20, 24, 40, 0.8)',
+    },
+    effects: {
+      starfieldEnabled: true,
+      glowEnabled: true,
+      glowIntensity: 0.55,
+      ambientMotionEnabled: true,
+      ambientMotionSpeed: 0.25,
+      ambientMotionAmplitude: 0.3,
+      edgeFlowEnabled: true,
+      edgeFlowSpeed: 0.6,
+      fogEnabled: true,
+      fogColor: '#0b0f1f',
+      fogNear: 20,
+      fogFar: 80,
+    },
+    animation: {
+      focusDuration: 900,
+      transitionDuration: 600,
+      hoverScale: 1.05,
+      selectedScale: 1.08,
+      selectionPulseScale: 1.12,
+      selectionPulseDuration: 1200,
+    },
+  }}
+/>
+```
+
 ### Programmatic focus (focusNodeSlug)
 
 Use `focusNodeSlug` to drive selection + camera focus from outside the component

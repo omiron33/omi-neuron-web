@@ -233,5 +233,3 @@ pnpm install
 - Everything should be configurable
 - Peer dependencies (React, Three.js) are external
 - The CLI is the main user entry point
-
-
