@@ -68,6 +68,14 @@
     "neuron-web",
     "data-analysis"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omiron33/omi-neuron-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/omiron33/omi-neuron-web/issues"
+  },
+  "homepage": "https://github.com/omiron33/omi-neuron-web#readme",
   "author": "",
   "license": "MIT",
   "peerDependencies": {
