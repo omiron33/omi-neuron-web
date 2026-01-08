@@ -121,9 +121,16 @@ When `cardsMode` is set, it takes precedence over `hoverCard.enabled` and `click
 `NeuronWebProps.clickZoom` controls whether clicking a node zooms the camera to it.
 
 - `enabled`: toggle click zoom (default: true)
+- `distance`: fixed camera distance from the focused node (overrides the current distance)
+- `offset`: fixed `[x, y, z]` offset added to the focused node (overrides `distance`)
 
 ```tsx
 <NeuronWeb graphData={{ nodes, edges }} clickZoom={{ enabled: false }} />
+
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  clickZoom={{ enabled: true, offset: [0, 2, 8] }}
+/>
 ```
 
 ### Study Path Playback

@@ -111,6 +111,16 @@ export interface ClickCardOptions {
 
 export interface ClickZoomOptions {
   enabled?: boolean;
+  /**
+   * Fixed distance from the focused node (camera stays this far away).
+   * If omitted, focus preserves the current camera distance.
+   */
+  distance?: number;
+  /**
+   * Fixed offset added to the focused node position (e.g. [0, 2, 8]).
+   * Overrides distance when provided.
+   */
+  offset?: [number, number, number];
 }
 
 export type CardsMode = 'none' | 'hover' | 'click' | 'both';

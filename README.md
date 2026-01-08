@@ -760,7 +760,7 @@ stable atlas layout, click-to-zoom, and restrained visuals:
     jitter: 0.15,
     zSpread: 1.1,
   }}
-  clickZoom={{ enabled: true }}
+  clickZoom={{ enabled: true, offset: [0, 2, 8] }}
   clickCard={{ enabled: true, width: 320, offset: [24, 24] }}
   hoverCard={{ enabled: false }}
   cardsMode="click"
@@ -807,6 +807,7 @@ Behavior:
 - Looks up by **slug**, with **id fallback**.
 - Sets selection, pulses the node, and emphasizes connected edges.
 - If `clickZoom.enabled` is true (default), the camera tween runs.
+- `clickZoom.distance` locks the camera distance for focus; `clickZoom.offset` uses a fixed offset.
 - Fires `onNodeFocused(node)` after the focus tween.
 - Calls `onFocusConsumed()` so the parent can clear the request.
 
@@ -880,13 +881,14 @@ Fallback form (two-step path):
 
 ### Click cards + click zoom
 
-Enable a persistent card on click and optional zoom-to-node behavior:
+Enable a persistent card on click and optional zoom-to-node behavior.
+You can lock the focus distance or offset to mimic Technochristian-style snaps:
 
 ```tsx
 <NeuronWeb
   graphData={graphData}
   clickCard={{ enabled: true, width: 320, offset: [24, 24] }}
-  clickZoom={{ enabled: true }}
+  clickZoom={{ enabled: true, offset: [0, 2, 8] }}
 />
 ```
 

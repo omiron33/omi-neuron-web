@@ -320,6 +320,36 @@ export function NeuronWeb({
   const clickCardOffset = clickCard?.offset ?? [24, 24];
   const clickCardWidth = clickCard?.width ?? 320;
   const clickZoomEnabled = clickZoom?.enabled ?? true;
+  const clickZoomDistance = clickZoom?.distance;
+  const clickZoomOffset = clickZoom?.offset;
+
+  const focusOnNodePosition = useCallback(
+    (nodePosition: THREE.Vector3, callback?: () => void) => {
+      if (!animationController) return;
+      if (Array.isArray(clickZoomOffset) && clickZoomOffset.length === 3) {
+        const offset = new THREE.Vector3(...clickZoomOffset);
+        const targetPosition = nodePosition.clone().add(offset);
+        animationController.focusOnPosition(targetPosition, nodePosition, callback);
+        return;
+      }
+      if (typeof clickZoomDistance === 'number' && Number.isFinite(clickZoomDistance)) {
+        if (!sceneManager) {
+          animationController.focusOnNode(nodePosition, callback);
+          return;
+        }
+        const direction = sceneManager.camera.position.clone().sub(sceneManager.controls.target);
+        if (direction.lengthSq() < 0.0001) {
+          direction.set(0, 0, 1);
+        }
+        direction.normalize();
+        const targetPosition = nodePosition.clone().add(direction.multiplyScalar(clickZoomDistance));
+        animationController.focusOnPosition(targetPosition, nodePosition, callback);
+        return;
+      }
+      animationController.focusOnNode(nodePosition, callback);
+    },
+    [animationController, clickZoomOffset, clickZoomDistance, sceneManager]
+  );
 
   useEffect(() => {
     if (!studyPathPlayer) return;
@@ -334,7 +364,7 @@ export function NeuronWeb({
       if (clickZoomEnabled) {
         const nodePosition = nodeRenderer.getNodePosition(node.id);
         if (nodePosition) {
-          animationController?.focusOnNode(nodePosition, () => {
+          focusOnNodePosition(nodePosition, () => {
             if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
           });
         }
@@ -443,9 +473,11 @@ export function NeuronWeb({
           if (nodeId) {
             const nodePosition = nodeRenderer.getNodePosition(nodeId);
             if (nodePosition) {
-              sceneManager.controls.target.copy(nodePosition);
-              sceneManager.controls.update();
-              return;
+              if (!clickZoomEnabled) {
+                sceneManager.controls.target.copy(nodePosition);
+                sceneManager.controls.update();
+                return;
+              }
             }
           }
           if (intersects[0].point) {
@@ -469,7 +501,7 @@ export function NeuronWeb({
     return () => {
       dom.removeEventListener('pointerdown', onPointerDown);
     };
-  }, [sceneManager, nodeRenderer]);
+  }, [sceneManager, nodeRenderer, clickZoomEnabled]);
 
   const cameraFitSuspended = Boolean(selectedNodeId || focusNodeSlug);
 
@@ -619,7 +651,7 @@ export function NeuronWeb({
     if (clickZoomEnabled) {
       const nodePosition = nodeRenderer.getNodePosition(node.id);
       if (nodePosition) {
-        animationController?.focusOnNode(nodePosition, () => {
+        focusOnNodePosition(nodePosition, () => {
           if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
         });
       } else if (onNodeFocused) {
@@ -670,7 +702,7 @@ export function NeuronWeb({
       if (clickZoomEnabled) {
         const nodePosition = nodeRenderer.getNodePosition(node.id);
         if (nodePosition) {
-          animationController?.focusOnNode(nodePosition, () => {
+          focusOnNodePosition(nodePosition, () => {
             if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
           });
         }
@@ -684,7 +716,7 @@ export function NeuronWeb({
     interactionManager.onNodeDoubleClick = (node) => {
       const nodePosition = nodeRenderer.getNodePosition(node.id);
       if (nodePosition) {
-        animationController?.focusOnNode(nodePosition, () => {
+        focusOnNodePosition(nodePosition, () => {
           if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
         });
       }
