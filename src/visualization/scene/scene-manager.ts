@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 
 export interface SceneConfig {
   backgroundColor: string;
@@ -13,6 +18,17 @@ export interface SceneConfig {
   starfieldCount: number;
   starfieldColor: string;
   pixelRatioCap: number;
+  backgroundIntensity?: number;
+  postprocessingEnabled?: boolean;
+  bloomEnabled?: boolean;
+  bloomStrength?: number;
+  bloomRadius?: number;
+  bloomThreshold?: number;
+  vignetteEnabled?: boolean;
+  vignetteDarkness?: number;
+  vignetteOffset?: number;
+  colorGradeEnabled?: boolean;
+  colorGradeIntensity?: number;
   ambientLightIntensity?: number;
   keyLightIntensity?: number;
   fillLightIntensity?: number;
@@ -21,6 +37,39 @@ export interface SceneConfig {
   fogNear?: number;
   fogFar?: number;
 }
+
+const VIGNETTE_SHADER = {
+  uniforms: {
+    tDiffuse: { value: null },
+    offset: { value: 0.35 },
+    darkness: { value: 0.6 },
+    gradeIntensity: { value: 0.2 },
+    gradeColor: { value: new THREE.Color('#9fb0ff') },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float offset;
+    uniform float darkness;
+    uniform float gradeIntensity;
+    uniform vec3 gradeColor;
+    varying vec2 vUv;
+    void main() {
+      vec4 texel = texture2D(tDiffuse, vUv);
+      float dist = distance(vUv, vec2(0.5, 0.5));
+      float vignette = smoothstep(offset, offset + 0.5, dist);
+      vec3 color = texel.rgb * mix(1.0, 1.0 - darkness, vignette);
+      color = mix(color, color * gradeColor, gradeIntensity);
+      gl_FragColor = vec4(color, texel.a);
+    }
+  `,
+};
 
 export class SceneManager {
   scene: THREE.Scene;
@@ -37,6 +86,8 @@ export class SceneManager {
   private keyLight: THREE.DirectionalLight | null = null;
   private fillLight: THREE.PointLight | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private composer: EffectComposer | null = null;
+  private vignettePass: ShaderPass | null = null;
 
   constructor(private container: HTMLElement, private config: SceneConfig) {
     this.scene = new THREE.Scene();
@@ -84,6 +135,9 @@ export class SceneManager {
     if (this.config.enableStarfield) {
       this.initStarfield();
     }
+    if (this.config.postprocessingEnabled) {
+      this.initPostprocessing();
+    }
 
     window.addEventListener('resize', this.resize);
     if (typeof ResizeObserver !== 'undefined') {
@@ -106,6 +160,8 @@ export class SceneManager {
     this.ambientLight = null;
     this.keyLight = null;
     this.fillLight = null;
+    this.composer = null;
+    this.vignettePass = null;
   }
 
   startAnimationLoop(): void {
@@ -132,7 +188,11 @@ export class SceneManager {
 
   render(): void {
     this.controls.update();
-    this.renderer.render(this.scene, this.camera);
+    if (this.composer) {
+      this.composer.render();
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
     this.labelRenderer.render(this.scene, this.camera);
   }
 
@@ -144,6 +204,9 @@ export class SceneManager {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
     this.labelRenderer.setSize(width, height);
+    if (this.composer) {
+      this.composer.setSize(width, height);
+    }
   };
 
   updateBackground(color: string): void {
@@ -197,6 +260,7 @@ export class SceneManager {
   private initStarfield(): void {
     const count = Math.max(0, this.config.starfieldCount);
     if (!count) return;
+    const intensity = this.config.backgroundIntensity ?? 1;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i += 1) {
@@ -210,7 +274,7 @@ export class SceneManager {
       size: 0.22,
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.5 * intensity,
       depthWrite: false,
     });
     this.starfield = new THREE.Points(geometry, material);
@@ -219,9 +283,10 @@ export class SceneManager {
   }
 
   private initLights(): void {
-    const ambientIntensity = this.config.ambientLightIntensity ?? 0.65;
-    const keyIntensity = this.config.keyLightIntensity ?? 1.0;
-    const fillIntensity = this.config.fillLightIntensity ?? 0.45;
+    const intensityScale = this.config.backgroundIntensity ?? 1;
+    const ambientIntensity = (this.config.ambientLightIntensity ?? 0.65) * intensityScale;
+    const keyIntensity = (this.config.keyLightIntensity ?? 1.0) * intensityScale;
+    const fillIntensity = (this.config.fillLightIntensity ?? 0.45) * intensityScale;
 
     this.ambientLight = new THREE.AmbientLight('#ffffff', ambientIntensity);
     this.keyLight = new THREE.DirectionalLight('#b6c6ff', keyIntensity);
@@ -230,5 +295,35 @@ export class SceneManager {
     this.fillLight.position.set(-18, -6, 10);
 
     this.scene.add(this.ambientLight, this.keyLight, this.fillLight);
+  }
+
+  private initPostprocessing(): void {
+    const width = this.container.clientWidth;
+    const height = this.container.clientHeight;
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.setSize(width, height);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+
+    if (this.config.bloomEnabled) {
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(width, height),
+        this.config.bloomStrength ?? 0.6,
+        this.config.bloomRadius ?? 0.35,
+        this.config.bloomThreshold ?? 0.2
+      );
+      this.composer.addPass(bloom);
+    }
+
+    if (this.config.vignetteEnabled || this.config.colorGradeEnabled) {
+      this.vignettePass = new ShaderPass(VIGNETTE_SHADER);
+      this.vignettePass.uniforms.offset.value = this.config.vignetteOffset ?? 0.35;
+      this.vignettePass.uniforms.darkness.value = this.config.vignetteDarkness ?? 0.6;
+      this.vignettePass.uniforms.gradeIntensity.value = this.config.colorGradeEnabled
+        ? this.config.colorGradeIntensity ?? 0.2
+        : 0;
+      this.composer.addPass(this.vignettePass);
+    }
+
+    this.composer.addPass(new ShaderPass(GammaCorrectionShader));
   }
 }

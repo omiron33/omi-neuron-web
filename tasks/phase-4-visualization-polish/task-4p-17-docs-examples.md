@@ -1,6 +1,6 @@
 ---
 title: Documentation and examples for visualization polish
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

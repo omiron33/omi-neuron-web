@@ -9,6 +9,8 @@ export interface EdgeRenderConfig {
   strengthOpacityScale: boolean;
   edgeFlowEnabled: boolean;
   edgeFlowSpeed: number;
+  focusFadeOpacity: number;
+  minStrength: number;
 }
 
 interface EdgeRenderState {
@@ -29,6 +31,7 @@ export class EdgeRenderer {
   renderEdges(edges: NeuronVisualEdge[], nodePositions: Map<string, THREE.Vector3>): void {
     this.clear();
     edges.forEach((edge) => {
+      if (this.config.minStrength > 0 && edge.strength < this.config.minStrength) return;
       const from = nodePositions.get(edge.from);
       const to = nodePositions.get(edge.to);
       if (!from || !to) return;
@@ -134,7 +137,7 @@ export class EdgeRenderer {
           opacity = Math.min(1, state.baseOpacity + pulse * 0.4);
           material.color = new THREE.Color(this.config.activeColor);
         } else {
-          opacity = Math.max(0.05, state.baseOpacity * 0.2);
+          opacity = Math.max(0.05, state.baseOpacity * this.config.focusFadeOpacity);
           material.color = new THREE.Color(this.config.defaultColor);
         }
       } else {

@@ -71,6 +71,17 @@ Disable auto-fit in fullscreen:
 - `enabled`: toggle hover cards (default: true)
 - `width`: card width in pixels
 - `offset`: `[x, y]` offset from the node
+- `showTags`: show tag chips (default: true)
+- `showMetrics`: show metrics row (default: true)
+- `maxSummaryLength`: truncate summary length (default: 140)
+
+Slot-level customization:
+
+- `hoverCardSlots.header`
+- `hoverCardSlots.summary`
+- `hoverCardSlots.tags`
+- `hoverCardSlots.metrics`
+- `hoverCardSlots.footer`
 
 You can customize content with `renderNodeHover`:
 
@@ -83,6 +94,18 @@ You can customize content with `renderNodeHover`:
       <div style={{ opacity: 0.7 }}>{node.metadata?.summary}</div>
     </div>
   )}
+/>
+```
+
+Slot example:
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  hoverCardSlots={{
+    header: (node) => <strong>{node.label}</strong>,
+    metrics: (node) => <div>Connections: {node.connectionCount}</div>,
+  }}
 />
 ```
 
@@ -130,6 +153,43 @@ When `cardsMode` is set, it takes precedence over `hoverCard.enabled` and `click
 <NeuronWeb
   graphData={{ nodes, edges }}
   clickZoom={{ enabled: true, offset: [0, 2, 8] }}
+/>
+```
+
+### Density Controls
+
+`NeuronWebProps.density` adjusts spacing and decluttering in dense graphs.
+
+- `mode`: `'relaxed' | 'balanced' | 'compact'`
+- `spread`: layout spacing multiplier
+- `edgeFade`: non-focused edge opacity multiplier
+- `minEdgeStrength`: hide weak edges below threshold
+- `focusExpansion`: extra spacing around selected node
+- `labelMaxCount`: cap visible labels
+- `labelDistance`: override label distance threshold
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  density={{ mode: 'relaxed', focusExpansion: 0.2 }}
+/>
+```
+
+### Effects + Animation Overrides
+
+Use `theme.effects` and `theme.animation` to toggle polish features:
+
+- `effects.postprocessingEnabled`, `effects.bloomEnabled`, `effects.vignetteEnabled`
+- `effects.ambientMotionEnabled`, `effects.edgeFlowEnabled`
+- `animation.enableCameraTween`, `animation.enableSelectionPulse`, `animation.enableSelectionRipple`
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  theme={{
+    effects: { postprocessingEnabled: false, ambientMotionEnabled: false },
+    animation: { enableCameraTween: false },
+  }}
 />
 ```
 

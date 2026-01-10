@@ -1,6 +1,6 @@
 ---
 title: Extend visualization config for animations and effects
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

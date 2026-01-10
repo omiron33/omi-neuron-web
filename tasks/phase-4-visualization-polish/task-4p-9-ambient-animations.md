@@ -1,6 +1,6 @@
 ---
 title: Ambient node motion and edge flow animations
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

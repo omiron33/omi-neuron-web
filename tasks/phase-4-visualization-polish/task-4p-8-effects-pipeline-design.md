@@ -1,6 +1,6 @@
 ---
 title: Effects pipeline design and gating
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

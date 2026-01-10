@@ -5,6 +5,10 @@ node_modules/
 # Build output
 dist/
 *.tsbuildinfo
+examples/**/.next/
+examples/**/next-env.d.ts
+examples/**/pnpm-lock.yaml
+examples/**/tsconfig.json
 
 # Environment
 .env

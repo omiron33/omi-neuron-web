@@ -1,6 +1,6 @@
 ---
 title: Click and focus animation sequence
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

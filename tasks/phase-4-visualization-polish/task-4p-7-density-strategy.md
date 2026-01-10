@@ -1,6 +1,6 @@
 ---
 title: De-densification strategy and API design
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

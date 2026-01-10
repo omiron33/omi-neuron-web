@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import type { NeuronVisualNode, NodeTier } from '../../core/types';
+import { computeAmbientDrift } from '../animations/ambient-motion';
 
 export interface NodeRenderConfig {
   domainColors: Record<string, string>;
@@ -23,6 +24,8 @@ export interface NodeRenderConfig {
   selectedScale: number;
   pulseScale: number;
   pulseDuration: number;
+  enableHoverScale: boolean;
+  enableSelectionPulse: boolean;
 }
 
 interface NodeRenderState {
@@ -356,17 +359,12 @@ export class NodeRenderer {
     const now = performance.now() / 1000;
     this.nodeStates.forEach((state) => {
       if (this.config.ambientMotionEnabled) {
-        const drift =
-          Math.sin(elapsed * this.config.ambientMotionSpeed + state.phase) *
-          this.config.ambientMotionAmplitude;
-        const driftX =
-          Math.cos(elapsed * this.config.ambientMotionSpeed * 0.6 + state.phase) *
-          this.config.ambientMotionAmplitude *
-          0.45;
-        const driftZ =
-          Math.sin(elapsed * this.config.ambientMotionSpeed * 0.4 + state.phase) *
-          this.config.ambientMotionAmplitude *
-          0.35;
+        const { x: driftX, y: drift, z: driftZ } = computeAmbientDrift(
+          elapsed,
+          state.phase,
+          this.config.ambientMotionSpeed,
+          this.config.ambientMotionAmplitude
+        );
         state.sprite.position.set(
           state.basePosition.x + driftX,
           state.basePosition.y + drift,
@@ -380,10 +378,11 @@ export class NodeRenderer {
         state.label.position.copy(state.sprite.position).add(this.labelOffset);
       }
 
-      const hoverScale = state.hovered ? this.config.hoverScale : 1;
+      const hoverScale =
+        state.hovered && this.config.enableHoverScale ? this.config.hoverScale : 1;
       const selectedScale = state.selected ? this.config.selectedScale : 1;
       let pulseScale = 0;
-      if (state.pulseStart !== null) {
+      if (state.pulseStart !== null && this.config.enableSelectionPulse) {
         const progress = (now - state.pulseStart) / this.config.pulseDuration;
         if (progress >= 1) {
           state.pulseStart = null;

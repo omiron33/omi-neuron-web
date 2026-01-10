@@ -23,6 +23,8 @@ export type {
   NeuronWebTheme,
   NeuronLayoutOptions,
   NeuronLayoutMode,
+  DensityOptions,
+  DensityMode,
   ClickCardOptions,
   ClickZoomOptions,
   CardsMode,

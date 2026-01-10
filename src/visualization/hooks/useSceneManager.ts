@@ -18,7 +18,17 @@ export function useSceneManager(
       sceneManager.dispose();
       setManager(null);
     };
-  }, [containerRef, config.backgroundColor]);
+  }, [
+    containerRef,
+    config.backgroundColor,
+    config.enableStarfield,
+    config.starfieldCount,
+    config.postprocessingEnabled,
+    config.bloomEnabled,
+    config.vignetteEnabled,
+    config.colorGradeEnabled,
+    config.fogEnabled,
+  ]);
 
   return manager;
 }

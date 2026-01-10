@@ -1,6 +1,6 @@
 ---
 title: Density controls and layout spacing
-status: not_started
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

@@ -20,6 +20,8 @@ export type {
   NeuronWebThemeOverride,
   NeuronLayoutOptions,
   NeuronLayoutMode,
+  DensityOptions,
+  DensityMode,
   HoverCardOptions,
   CameraFitOptions,
   ClickCardOptions,

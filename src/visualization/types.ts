@@ -60,6 +60,17 @@ export interface NeuronWebTheme {
     ambientMotionAmplitude: number;
     edgeFlowEnabled: boolean;
     edgeFlowSpeed: number;
+    postprocessingEnabled: boolean;
+    bloomEnabled: boolean;
+    bloomStrength: number;
+    bloomRadius: number;
+    bloomThreshold: number;
+    vignetteEnabled: boolean;
+    vignetteDarkness: number;
+    vignetteOffset: number;
+    colorGradeEnabled: boolean;
+    colorGradeIntensity: number;
+    backgroundIntensity: number;
     fogEnabled: boolean;
     fogColor: string;
     fogNear: number;
@@ -74,6 +85,11 @@ export interface NeuronWebTheme {
     selectionPulseScale: number;
     selectionPulseDuration: number;
     hoverCardFadeDuration: number;
+    hoverCardSlideDistance: number;
+    enableCameraTween: boolean;
+    enableHoverScale: boolean;
+    enableSelectionPulse: boolean;
+    enableSelectionRipple: boolean;
   };
 }
 
@@ -97,10 +113,25 @@ export interface NeuronLayoutOptions {
   overrides?: Record<string, [number, number, number]>;
 }
 
+export type DensityMode = 'relaxed' | 'balanced' | 'compact';
+
+export interface DensityOptions {
+  mode?: DensityMode;
+  spread?: number;
+  edgeFade?: number;
+  minEdgeStrength?: number;
+  focusExpansion?: number;
+  labelMaxCount?: number;
+  labelDistance?: number;
+}
+
 export interface HoverCardOptions {
   enabled?: boolean;
   width?: number;
   offset?: [number, number];
+  showTags?: boolean;
+  showMetrics?: boolean;
+  maxSummaryLength?: number;
 }
 
 export interface ClickCardOptions {
@@ -173,9 +204,18 @@ export interface NeuronWebProps {
   domainColors?: Record<string, string>;
   renderNodeHover?: (node: NeuronVisualNode) => React.ReactNode;
   hoverCard?: HoverCardOptions;
+  hoverCardSlots?: {
+    header?: (node: NeuronVisualNode) => React.ReactNode;
+    summary?: (node: NeuronVisualNode) => React.ReactNode;
+    tags?: (node: NeuronVisualNode) => React.ReactNode;
+    metrics?: (node: NeuronVisualNode) => React.ReactNode;
+    footer?: (node: NeuronVisualNode) => React.ReactNode;
+  };
   renderNodeDetail?: (node: NeuronNode) => React.ReactNode;
   renderEmptyState?: () => React.ReactNode;
   renderLoadingState?: () => React.ReactNode;
   performanceMode?: 'auto' | 'normal' | 'degraded' | 'fallback';
+  /** Controls spacing and declutter behavior for dense graphs. */
+  density?: DensityOptions;
   ariaLabel?: string;
 }
