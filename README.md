@@ -665,6 +665,9 @@ export interface NeuronWebProps {
   onEdgeClick?: (edge: NeuronEdge) => void;
   onBackgroundClick?: () => void;
   onCameraChange?: (position: [number, number, number]) => void;
+  activeStoryBeatId?: string | null;
+  storyBeatStepDurationMs?: number;
+  onStoryBeatComplete?: () => void;
   studyPathRequest?: StudyPathRequest | null;
   onStudyPathComplete?: () => void;
   layout?: NeuronLayoutOptions;
@@ -684,11 +687,21 @@ export interface NeuronWebProps {
 }
 ```
 
-Props currently used inside `NeuronWeb` (others are reserved for future use):
+Props currently used inside `NeuronWeb`:
 
-- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `renderNodeDetail`, `hoverCard`, `clickCard`, `clickZoom`, `cardsMode`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`, `focusNodeSlug`, `onFocusConsumed`, `visibleNodeSlugs`, `studyPathRequest`, `onStudyPathComplete`.
+- Used: `graphData`, `className`, `style`, `fullHeight`, `isFullScreen`, `isLoading`, `error`, `renderEmptyState`, `renderLoadingState`, `ariaLabel`, `theme`, `layout`, `renderNodeHover`, `renderNodeDetail`, `hoverCard`, `clickCard`, `clickZoom`, `cardsMode`, `onNodeHover`, `onNodeClick`, `onNodeDoubleClick`, `onNodeFocused`, `onBackgroundClick`, `performanceMode`, `focusNodeSlug`, `onFocusConsumed`, `visibleNodeSlugs`, `selectedNode`, `onEdgeClick`, `onCameraChange`, `domainColors`, `studyPathRequest`, `onStudyPathComplete`, `activeStoryBeatId`, `storyBeatStepDurationMs`, `onStoryBeatComplete`, `graphData.storyBeats`.
 - Used: `cameraFit` (auto-fit bounds to a viewport fraction).
-- Reserved (declared but not used in the component yet): `selectedNode`, `onEdgeClick`, `onCameraChange`, `studyPathRequest`, `onStudyPathComplete`, `domainColors`, `graphData.storyBeats`.
+- Reserved: none (all props are live).
+
+### Visualization abilities (agent quick reference)
+
+- Controlled selection: pass `selectedNode` to mirror selection state; background clicks only call `onBackgroundClick` (clearing selection is up to the consumer when controlled).
+- Node focus: `focusNodeSlug` triggers camera focus + selection; `onFocusConsumed` fires after the focus is applied.
+- Edge clicks: `onEdgeClick(edge)` fires when the user clicks a rendered edge line.
+- Camera updates: `onCameraChange(position)` fires on OrbitControls changes (RAF-throttled) with the camera position.
+- Story beats: provide `graphData.storyBeats` and set `activeStoryBeatId` to play; `storyBeatStepDurationMs` overrides per-step duration; `onStoryBeatComplete` fires when playback ends. If `studyPathRequest` is set, it takes precedence.
+- Domain colors: `domainColors` merges into the theme's `colors.domainColors` (overrides defaults per domain key).
+- Visibility filtering: `visibleNodeSlugs = null` shows all nodes; `[]` hides all nodes; explicit slugs filter the view.
 
 ### Layout modes
 

@@ -32,7 +32,9 @@ export class InteractionManager {
     private camera: THREE.Camera,
     private renderer: THREE.WebGLRenderer,
     private config: InteractionConfig
-  ) {}
+  ) {
+    this.raycaster.params.Line = { threshold: 0.25 };
+  }
 
   onPointerMove(event: PointerEvent): void {
     if (!this.config.enableHover) return;
@@ -69,7 +71,12 @@ export class InteractionManager {
         this.onNodeClick(node);
       }
     } else {
-      this.onBackgroundClick();
+      const edge = this.getIntersectedEdge(this.pointer);
+      if (edge) {
+        this.onEdgeClick(edge);
+      } else {
+        this.onBackgroundClick();
+      }
     }
   }
 
@@ -97,8 +104,16 @@ export class InteractionManager {
     return this.nodeLookup.get(hit.userData.nodeId) ?? null;
   }
 
-  getIntersectedEdge(): NeuronVisualEdge | null {
-    return null;
+  getIntersectedEdge(point: THREE.Vector2): NeuronVisualEdge | null {
+    this.raycaster.setFromCamera(point, this.camera);
+    const intersects = this.raycaster.intersectObjects(this.edgeObjects, true);
+    if (!intersects.length) return null;
+    let hit: THREE.Object3D | null = intersects[0].object;
+    while (hit && !hit.userData?.edgeId) {
+      hit = hit.parent;
+    }
+    if (!hit?.userData?.edgeId) return null;
+    return this.edgeLookup.get(hit.userData.edgeId) ?? null;
   }
 
   dispose(): void {

@@ -33,6 +33,22 @@ Example:
 - `isFullScreen`: covers the full viewport (`position: fixed; inset: 0`)
 - `fullHeight`: stretches to `100vh` when embedded in a normal layout
 
+### Selection
+
+- `selectedNode`: controlled selection (when provided, it overrides internal click selection)
+- `focusNodeSlug`: programmatic focus/selection by slug/id
+- `visibleNodeSlugs`: filter nodes by slug/id
+
+When `selectedNode` is provided, the component behaves as controlled selection:
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  selectedNode={selectedNode}
+  onNodeClick={(node) => setSelectedNode(node)}
+/>
+```
+
 ### Camera Auto-Fit
 
 `NeuronWebProps.cameraFit` centers and zooms the camera so all nodes fit within a chosen viewport fraction.
@@ -62,6 +78,17 @@ Disable auto-fit in fullscreen:
 
 ```tsx
 <NeuronWeb graphData={{ nodes, edges }} isFullScreen cameraFit={{ enabled: false }} />
+```
+
+### Domain Colors
+
+Override domain color mapping without supplying a full theme:
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  domainColors={{ core: '#7ea6ff', insight: '#b08cff' }}
+/>
 ```
 
 ### Hover Cards
@@ -153,6 +180,36 @@ When `cardsMode` is set, it takes precedence over `hoverCard.enabled` and `click
 <NeuronWeb
   graphData={{ nodes, edges }}
   clickZoom={{ enabled: true, offset: [0, 2, 8] }}
+/>
+```
+
+### Story Beats
+
+`graphData.storyBeats` provides external UI metadata and can also drive built-in playback
+when paired with `activeStoryBeatId`.
+
+- `activeStoryBeatId`: selects a beat to play
+- `storyBeatStepDurationMs`: optional override per-step duration
+- `onStoryBeatComplete`: callback when playback ends
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges, storyBeats }}
+  activeStoryBeatId="beat-1"
+  onStoryBeatComplete={(beat) => console.log('done', beat)}
+/>
+```
+
+### Callbacks
+
+- `onEdgeClick`: fired when a line edge is clicked
+- `onCameraChange`: fired on OrbitControls changes (camera position array)
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  onEdgeClick={(edge) => console.log(edge)}
+  onCameraChange={(pos) => console.log('camera', pos)}
 />
 ```
 

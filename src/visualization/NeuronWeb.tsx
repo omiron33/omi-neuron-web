@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import type { NeuronWebProps, StudyPathStep } from './types';
-import type { NeuronNode } from '../core/types';
+import type { NeuronStoryBeat, NeuronWebProps, StudyPathStep } from './types';
+import type { NeuronEdge, NeuronNode } from '../core/types';
 import { DEFAULT_THEME } from './constants';
 import { useSceneManager } from './hooks/useSceneManager';
 import { NodeRenderer } from './scene/node-renderer';
@@ -28,6 +28,7 @@ export function NeuronWeb({
   isFullScreen,
   isLoading,
   error,
+  selectedNode,
   focusNodeSlug,
   onFocusConsumed,
   visibleNodeSlugs,
@@ -35,6 +36,7 @@ export function NeuronWeb({
   renderLoadingState,
   ariaLabel,
   theme,
+  domainColors,
   layout,
   cameraFit,
   cardsMode,
@@ -50,9 +52,14 @@ export function NeuronWeb({
   onNodeClick,
   onNodeDoubleClick,
   onNodeFocused,
+  onEdgeClick,
   onBackgroundClick,
+  onCameraChange,
   performanceMode,
   density,
+  activeStoryBeatId,
+  storyBeatStepDurationMs,
+  onStoryBeatComplete,
 }: NeuronWebProps): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const hoverCardRef = useRef<HTMLDivElement>(null);
@@ -69,6 +76,7 @@ export function NeuronWeb({
   const hoverCardHideTimeout = useRef<number | null>(null);
   const hoverCardPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const activeStoryBeatRef = useRef<NeuronStoryBeat | null>(null);
 
   const filteredGraphData = useMemo(() => {
     if (visibleNodeSlugs === null || visibleNodeSlugs === undefined) {
@@ -98,12 +106,20 @@ export function NeuronWeb({
   const resolvedTheme = useMemo(
     () => ({
       ...DEFAULT_THEME,
-      colors: { ...DEFAULT_THEME.colors, ...(theme?.colors ?? {}) },
+      colors: {
+        ...DEFAULT_THEME.colors,
+        ...(theme?.colors ?? {}),
+        domainColors: {
+          ...DEFAULT_THEME.colors.domainColors,
+          ...(theme?.colors?.domainColors ?? {}),
+          ...(domainColors ?? {}),
+        },
+      },
       typography: { ...DEFAULT_THEME.typography, ...(theme?.typography ?? {}) },
       effects: { ...DEFAULT_THEME.effects, ...(theme?.effects ?? {}) },
       animation: { ...DEFAULT_THEME.animation, ...(theme?.animation ?? {}) },
     }),
-    [theme]
+    [theme, domainColors]
   );
 
   useEffect(() => {
@@ -330,7 +346,7 @@ export function NeuronWeb({
         .sub(anchor)
         .multiplyScalar(expansion)
         .add(anchor);
-      return { ...node, position: [position.x, position.y, position.z] };
+      return { ...node, position: [position.x, position.y, position.z] as [number, number, number] };
     });
   }, [resolvedNodes, selectedNodeId, resolvedDensity.focusExpansion]);
 
@@ -355,6 +371,11 @@ export function NeuronWeb({
   const nodeMap = useMemo(
     () => new Map(resolvedNodes.map((node) => [node.id, node])),
     [resolvedNodes]
+  );
+
+  const edgeMap = useMemo(
+    () => new Map(workingGraph.edges.map((edge) => [edge.id, edge])),
+    [workingGraph.edges]
   );
 
   const nodeSlugById = useMemo(() => {
@@ -402,20 +423,44 @@ export function NeuronWeb({
     return null;
   }, [studyPathRequest]);
 
+  const activeStoryBeat = useMemo(() => {
+    if (!activeStoryBeatId || !workingGraph.storyBeats) return null;
+    return workingGraph.storyBeats.find((beat) => beat.id === activeStoryBeatId) ?? null;
+  }, [activeStoryBeatId, workingGraph.storyBeats]);
+
+  const resolvedBeatSteps = useMemo<StudyPathStep[] | null>(() => {
+    if (!activeStoryBeat) return null;
+    if (!activeStoryBeat.nodeIds || activeStoryBeat.nodeIds.length === 0) return null;
+    return activeStoryBeat.nodeIds.map((nodeId) => ({ nodeId }));
+  }, [activeStoryBeat]);
+
   useEffect(() => {
-    if (!resolvedStudyPathSteps || resolvedStudyPathSteps.length === 0) {
+    const steps = resolvedStudyPathSteps ?? resolvedBeatSteps;
+    if (!steps || steps.length === 0) {
       setStudyPathPlayer(null);
       pathEdgeIdsRef.current = [];
       applyFocusEdges(focusEdgesRef.current);
+      activeStoryBeatRef.current = null;
       return;
     }
+    activeStoryBeatRef.current = resolvedBeatSteps ? activeStoryBeat : null;
     setStudyPathPlayer({
-      steps: resolvedStudyPathSteps,
+      steps,
       index: 0,
       playing: true,
-      stepDurationMs: studyPathRequest?.stepDurationMs ?? 4200,
+      stepDurationMs:
+        resolvedBeatSteps && storyBeatStepDurationMs
+          ? storyBeatStepDurationMs
+          : studyPathRequest?.stepDurationMs ?? 4200,
     });
-  }, [resolvedStudyPathSteps, studyPathRequest?.stepDurationMs, applyFocusEdges]);
+  }, [
+    resolvedStudyPathSteps,
+    resolvedBeatSteps,
+    studyPathRequest?.stepDurationMs,
+    storyBeatStepDurationMs,
+    activeStoryBeat,
+    applyFocusEdges,
+  ]);
 
   const nodeByIdentifier = useMemo(() => {
     const map = new Map<string, typeof resolvedNodes[number]>();
@@ -426,8 +471,9 @@ export function NeuronWeb({
     return map;
   }, [resolvedNodes]);
 
+  const selectionControlled = selectedNode !== undefined;
 
-  const hoveredNode = hoveredNodeId ? nodeMap.get(hoveredNodeId) ?? null : null;
+
   const hoverCardEnabled =
     (cardsMode ? (cardsMode === 'hover' || cardsMode === 'both') : (hoverCard?.enabled ?? true)) &&
     resolvedPerformanceMode !== 'fallback';
@@ -640,6 +686,9 @@ export function NeuronWeb({
       setStudyPathPlayer((prev) => {
         if (!prev) return prev;
         if (prev.index >= prev.steps.length - 1) {
+          if (activeStoryBeatRef.current && onStoryBeatComplete) {
+            onStoryBeatComplete(activeStoryBeatRef.current);
+          }
           if (onStudyPathComplete) onStudyPathComplete();
           return { ...prev, playing: false };
         }
@@ -647,7 +696,7 @@ export function NeuronWeb({
       });
     }, studyPathPlayer.stepDurationMs);
     return () => window.clearTimeout(timer);
-  }, [studyPathPlayer, onStudyPathComplete]);
+  }, [studyPathPlayer, onStudyPathComplete, onStoryBeatComplete]);
 
   useEffect(() => {
     if (!studyPathPlayer || studyPathPlayer.playing) return;
@@ -786,6 +835,27 @@ export function NeuronWeb({
   }, [sceneManager]);
 
   useEffect(() => {
+    if (!sceneManager || !onCameraChange) return;
+    let frame: number | null = null;
+    const handler = () => {
+      if (frame !== null) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        const pos = sceneManager.camera.position;
+        onCameraChange([pos.x, pos.y, pos.z]);
+      });
+    };
+    sceneManager.controls.addEventListener('change', handler);
+    handler();
+    return () => {
+      sceneManager.controls.removeEventListener('change', handler);
+      if (frame !== null) {
+        window.cancelAnimationFrame(frame);
+      }
+    };
+  }, [sceneManager, onCameraChange]);
+
+  useEffect(() => {
     if (!sceneManager) return;
     sceneManager.renderer.domElement.style.cursor = hoveredNodeId ? 'pointer' : 'grab';
   }, [sceneManager, hoveredNodeId]);
@@ -853,8 +923,9 @@ export function NeuronWeb({
 
   useEffect(() => {
     if (!interactionManager || !nodeRenderer) return;
-    interactionManager.setTargets(nodeRenderer.getNodeObjects(), nodeMap);
-  }, [interactionManager, nodeRenderer, nodeMap]);
+    const edgeObjects = edgeRenderer ? edgeRenderer.getEdgeObjects() : [];
+    interactionManager.setTargets(nodeRenderer.getNodeObjects(), nodeMap, edgeObjects, edgeMap);
+  }, [interactionManager, nodeRenderer, edgeRenderer, nodeMap, edgeMap]);
 
   useEffect(() => {
     if (!nodeRenderer) return;
@@ -872,6 +943,35 @@ export function NeuronWeb({
       applyFocusEdges(null);
     }
   }, [selectedNodeId, nodeMap, nodeRenderer, edgeRenderer, applyFocusEdges]);
+
+  useEffect(() => {
+    if (!selectionControlled || !nodeRenderer || !edgeRenderer) return;
+    if (!selectedNode) {
+      setSelectedNodeId(null);
+      nodeRenderer.setSelectedNode(null);
+      applyFocusEdges(null);
+      return;
+    }
+    const key = selectedNode.slug ?? selectedNode.id;
+    const next = nodeByIdentifier.get(key) ?? null;
+    if (!next) {
+      setSelectedNodeId(null);
+      nodeRenderer.setSelectedNode(null);
+      applyFocusEdges(null);
+      return;
+    }
+    setSelectedNodeId(next.id);
+    nodeRenderer.setSelectedNode(next.id);
+    applyFocusEdges(next.slug ? edgesBySlug.get(next.slug) ?? [] : []);
+  }, [
+    selectionControlled,
+    selectedNode,
+    nodeByIdentifier,
+    nodeRenderer,
+    edgeRenderer,
+    edgesBySlug,
+    applyFocusEdges,
+  ]);
 
   useEffect(() => {
     if (!focusNodeSlug || !nodeRenderer || !edgeRenderer) return;
@@ -940,8 +1040,10 @@ export function NeuronWeb({
       }
     };
     interactionManager.onNodeClick = (node) => {
-      setSelectedNodeId(node.id);
-      nodeRenderer.setSelectedNode(node.id);
+      if (!selectionControlled) {
+        setSelectedNodeId(node.id);
+        nodeRenderer.setSelectedNode(node.id);
+      }
       nodeRenderer.pulseNode(node.id);
       if (selectionRipple) {
         const nodePosition = nodeRenderer.getNodePosition(node.id);
@@ -976,12 +1078,19 @@ export function NeuronWeb({
       }
     };
     interactionManager.onBackgroundClick = () => {
-      setSelectedNodeId(null);
-      nodeRenderer.setSelectedNode(null);
+      if (!selectionControlled) {
+        setSelectedNodeId(null);
+        nodeRenderer.setSelectedNode(null);
+      }
       if (!hoveredNodeId) {
         applyFocusEdges(null);
       }
       if (onBackgroundClick) onBackgroundClick();
+    };
+    interactionManager.onEdgeClick = (edge) => {
+      if (onEdgeClick) {
+        onEdgeClick(edge as unknown as NeuronEdge);
+      }
     };
   }, [
     interactionManager,
@@ -997,9 +1106,11 @@ export function NeuronWeb({
     onNodeClick,
     onNodeDoubleClick,
     onNodeFocused,
+    onEdgeClick,
     onBackgroundClick,
     applyFocusEdges,
     selectionRipple,
+    selectionControlled,
   ]);
 
   useEffect(() => {

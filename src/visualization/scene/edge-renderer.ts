@@ -123,6 +123,10 @@ export class EdgeRenderer {
     this.focusEdges = new Set(edgeIds ?? []);
   }
 
+  getEdgeObjects(): THREE.Object3D[] {
+    return Array.from(this.edgeStates.values()).map((state) => state.line);
+  }
+
   update(_: number, elapsed: number): void {
     const hasFocus = this.focusEdges.size > 0;
     this.edgeStates.forEach((state, id) => {

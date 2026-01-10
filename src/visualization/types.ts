@@ -193,6 +193,12 @@ export interface NeuronWebProps {
   onEdgeClick?: (edge: NeuronEdge) => void;
   onBackgroundClick?: () => void;
   onCameraChange?: (position: [number, number, number]) => void;
+  /** When set, plays a story beat by id using the built-in study path player. */
+  activeStoryBeatId?: string | null;
+  /** Optional override for story beat step duration (ms). */
+  storyBeatStepDurationMs?: number;
+  /** Called when a story beat playback completes. */
+  onStoryBeatComplete?: (beat: NeuronStoryBeat) => void;
   studyPathRequest?: StudyPathRequest | null;
   onStudyPathComplete?: () => void;
   layout?: NeuronLayoutOptions;
