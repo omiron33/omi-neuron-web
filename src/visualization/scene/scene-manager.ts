@@ -14,6 +14,8 @@ export interface SceneConfig {
   cameraTarget: [number, number, number];
   minZoom: number;
   maxZoom: number;
+  autoRotateEnabled?: boolean;
+  autoRotateSpeed?: number;
   enableStarfield: boolean;
   starfieldCount: number;
   starfieldColor: string;
@@ -108,6 +110,12 @@ export class SceneManager {
     this.controls.target.set(...cameraTarget);
     this.controls.minDistance = this.config.minZoom;
     this.controls.maxDistance = this.config.maxZoom;
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08;
+    this.controls.autoRotate = Boolean(this.config.autoRotateEnabled);
+    if (this.config.autoRotateSpeed !== undefined) {
+      this.controls.autoRotateSpeed = this.config.autoRotateSpeed;
+    }
     this.controls.update();
 
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.config.pixelRatioCap));

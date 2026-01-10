@@ -26,6 +26,8 @@ export const DEFAULT_THEME: NeuronWebTheme = {
     ambientMotionAmplitude: 0.25,
     edgeFlowEnabled: true,
     edgeFlowSpeed: 1.2,
+    autoRotateEnabled: false,
+    autoRotateSpeed: 0.25,
     postprocessingEnabled: true,
     bloomEnabled: false,
     bloomStrength: 0.6,

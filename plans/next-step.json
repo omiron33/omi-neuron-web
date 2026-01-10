@@ -1,6 +1,7 @@
 {
-  "planFile" : "plans\/master-plan-planner.md",
-  "taskIndex" : 4,
-  "taskText" : "🟥 **Phase 4B: Visualization Polish** — Cinematic motion, hover cards, density controls (`plans\/phase-4-visualization-polish-plan.md`)",
-  "updatedBy" : "omi-md-viewer"
+  "planFile" : "plans\/phase-4c-visualization-rendering-animation-plan.md",
+  "taskIndex" : 0,
+  "taskText" : "🟥 Phase 4C (Discovery): Audit current rendering/animation capabilities and identify the highest-impact gaps (node styles, edge styles, transition quality, configurability).",
+  "updatedBy" : "codex",
+  "updatedAt" : "2026-01-10T16:19:55Z"
 }

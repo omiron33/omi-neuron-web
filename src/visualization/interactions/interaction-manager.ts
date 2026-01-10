@@ -63,6 +63,15 @@ export class InteractionManager {
         this.config.enableDoubleClick &&
         now - this.lastClickTime < this.config.doubleClickDelay &&
         this.lastClickId === node.id;
+      if (
+        !this.config.enableDoubleClick &&
+        now - this.lastClickTime < this.config.doubleClickDelay &&
+        this.lastClickId === node.id
+      ) {
+        this.lastClickTime = now;
+        this.lastClickId = node.id;
+        return;
+      }
       this.lastClickTime = now;
       this.lastClickId = node.id;
       if (isDouble) {

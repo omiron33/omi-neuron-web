@@ -11,6 +11,7 @@ export interface NodeRenderConfig {
   glowIntensity: number;
   labelDistance: number;
   maxVisibleLabels: number;
+  labelVisibility?: 'auto' | 'interaction' | 'none';
   labelOffset?: [number, number, number];
   labelFontFamily: string;
   labelFontSize: number;
@@ -59,8 +60,15 @@ export class NodeRenderer {
 
   renderNodes(nodes: NeuronVisualNode[]): void {
     this.clear();
-    const shouldRenderLabels = this.config.maxVisibleLabels > 0 && this.config.labelDistance > 0;
+    const seen = new Set<string>();
+    const labelVisibility = this.config.labelVisibility ?? 'auto';
+    const shouldRenderLabels =
+      labelVisibility !== 'none' &&
+      (labelVisibility === 'interaction' ||
+        (this.config.maxVisibleLabels > 0 && this.config.labelDistance > 0));
     nodes.forEach((node) => {
+      if (seen.has(node.id)) return;
+      seen.add(node.id);
       const color = new THREE.Color(
         this.config.domainColors[node.domain] ?? this.config.defaultColor
       );
@@ -127,18 +135,14 @@ export class NodeRenderer {
   removeNode(nodeId: string): void {
     const state = this.nodeStates.get(nodeId);
     if (!state) return;
-    if (state.label) {
-      this.scene.remove(state.label);
-    }
+    this.removeLabel(state.label);
     this.group.remove(state.sprite);
     this.nodeStates.delete(nodeId);
   }
 
   clear(): void {
     this.nodeStates.forEach((state) => {
-      if (state.label) {
-        this.scene.remove(state.label);
-      }
+      this.removeLabel(state.label);
     });
     this.group.clear();
     this.nodeStates.clear();
@@ -174,6 +178,19 @@ export class NodeRenderer {
   }
 
   updateLabelVisibility(camera: THREE.PerspectiveCamera): void {
+    const labelVisibility = this.config.labelVisibility ?? 'auto';
+    if (labelVisibility === 'none') {
+      this.nodeStates.forEach((state) => {
+        if (state.label) state.label.visible = false;
+      });
+      return;
+    }
+    if (labelVisibility === 'interaction') {
+      this.nodeStates.forEach((state) => {
+        if (state.label) state.label.visible = state.hovered || state.selected;
+      });
+      return;
+    }
     if (this.config.maxVisibleLabels <= 0 || this.config.labelDistance <= 0) {
       this.nodeStates.forEach((state) => {
         if (state.label) state.label.visible = false;
@@ -266,6 +283,17 @@ export class NodeRenderer {
         badgeRow.appendChild(makeBadge(formatted, 'muted'));
       }
     }
+
+    const tagList = Array.isArray(node.metadata?.tags)
+      ? (node.metadata?.tags as string[])
+      : Array.isArray(node.metadata?.keywords)
+        ? (node.metadata?.keywords as string[])
+        : [];
+    tagList.slice(0, 2).forEach((tag) => {
+      if (typeof tag === 'string' && tag.trim()) {
+        badgeRow.appendChild(makeBadge(tag.trim(), 'muted'));
+      }
+    });
 
     if (badgeRow.childElementCount > 0) {
       wrapper.appendChild(badgeRow);
@@ -416,6 +444,12 @@ export class NodeRenderer {
     this.scene.remove(this.group);
     this.glowTexture?.dispose();
     this.glowTexture = null;
+  }
+
+  private removeLabel(label: CSS2DObject | null): void {
+    if (!label) return;
+    label.removeFromParent();
+    label.element?.remove();
   }
 
   private createGlowTexture(): THREE.Texture | null {

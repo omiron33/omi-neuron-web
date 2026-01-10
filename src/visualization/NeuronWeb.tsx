@@ -74,7 +74,7 @@ export function NeuronWeb({
   const pathEdgeIdsRef = useRef<string[]>([]);
   const focusEdgesRef = useRef<string[] | null>(null);
   const hoverCardHideTimeout = useRef<number | null>(null);
-  const hoverCardPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const hoverCardPositionRef = useRef<{ x: number; y: number } | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const activeStoryBeatRef = useRef<NeuronStoryBeat | null>(null);
 
@@ -182,6 +182,7 @@ export function NeuronWeb({
       focusExpansion: density?.focusExpansion ?? base.focusExpansion,
       labelMaxCount: density?.labelMaxCount,
       labelDistance: density?.labelDistance,
+      labelVisibility: density?.labelVisibility ?? 'auto',
     };
   }, [density, resolvedPerformanceMode]);
 
@@ -192,6 +193,8 @@ export function NeuronWeb({
     cameraTarget: [0, 0, 0],
     minZoom: 4,
     maxZoom: 42,
+    autoRotateEnabled: resolvedTheme.effects.autoRotateEnabled,
+    autoRotateSpeed: resolvedTheme.effects.autoRotateSpeed,
     enableStarfield: resolvedTheme.effects.starfieldEnabled,
     starfieldCount:
       resolvedPerformanceMode === 'normal'
@@ -241,6 +244,7 @@ export function NeuronWeb({
       glowIntensity: resolvedTheme.effects.glowEnabled ? resolvedTheme.effects.glowIntensity : 0,
       labelDistance,
       maxVisibleLabels: labelMax,
+      labelVisibility: resolvedDensity.labelVisibility,
       labelOffset: [0, 0.65, 0],
       labelFontFamily: resolvedTheme.typography.labelFontFamily,
       labelFontSize: resolvedTheme.typography.labelFontSize,
@@ -280,16 +284,18 @@ export function NeuronWeb({
     });
   }, [sceneManager, resolvedTheme, resolvedPerformanceMode, resolvedDensity, prefersReducedMotion]);
 
+  const doubleClickEnabled = false;
+
   const interactionManager = useMemo(() => {
     if (!sceneManager) return null;
     return new InteractionManager(sceneManager.scene, sceneManager.camera, sceneManager.renderer, {
       enableHover: true,
       enableClick: true,
-      enableDoubleClick: true,
+      enableDoubleClick: doubleClickEnabled,
       hoverDelay: Math.max(40, resolvedTheme.animation.hoverCardFadeDuration * 0.6),
       doubleClickDelay: 280,
     });
-  }, [sceneManager, resolvedTheme.animation.hoverCardFadeDuration]);
+  }, [sceneManager, resolvedTheme.animation.hoverCardFadeDuration, doubleClickEnabled]);
 
   const animationController = useMemo(() => {
     if (!sceneManager) return null;
@@ -532,7 +538,7 @@ export function NeuronWeb({
   ]);
 
   useEffect(() => {
-    hoverCardPositionRef.current = { x: 0, y: 0 };
+    hoverCardPositionRef.current = null;
   }, [hoverCardNodeId]);
 
   const hoverCardTags = useMemo(() => {
@@ -881,9 +887,9 @@ export function NeuronWeb({
           const maxY = Math.max(8, rect.height - cardHeight - 8);
           const x = Math.min(Math.max(rawX, 8), maxX);
           const y = Math.min(Math.max(rawY, 8), maxY);
-          const prev = hoverCardPositionRef.current;
-          const nextX = prev.x + (x - prev.x) * 0.2;
-          const nextY = prev.y + (y - prev.y) * 0.2;
+          // Snap hover card to node position to avoid slide-in motion.
+          const nextX = x;
+          const nextY = y;
           hoverCardPositionRef.current = { x: nextX, y: nextY };
           const slide = hoverCardActive ? 0 : hoverCardSlideDistance;
           hoverCardRef.current.style.transform = `translate(${nextX}px, ${nextY}px) translateY(${slide}px)`;
@@ -1066,17 +1072,21 @@ export function NeuronWeb({
         onNodeClick(node as unknown as NeuronNode);
       }
     };
-    interactionManager.onNodeDoubleClick = (node) => {
-      const nodePosition = nodeRenderer.getNodePosition(node.id);
-      if (nodePosition) {
-        focusOnNodePosition(nodePosition, () => {
-          if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
-        });
-      }
-      if (onNodeDoubleClick) {
-        onNodeDoubleClick(node as unknown as NeuronNode);
-      }
-    };
+    if (doubleClickEnabled) {
+      interactionManager.onNodeDoubleClick = (node) => {
+        const nodePosition = nodeRenderer.getNodePosition(node.id);
+        if (nodePosition) {
+          focusOnNodePosition(nodePosition, () => {
+            if (onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
+          });
+        }
+        if (onNodeDoubleClick) {
+          onNodeDoubleClick(node as unknown as NeuronNode);
+        }
+      };
+    } else {
+      interactionManager.onNodeDoubleClick = () => {};
+    }
     interactionManager.onBackgroundClick = () => {
       if (!selectionControlled) {
         setSelectedNodeId(null);
@@ -1111,6 +1121,7 @@ export function NeuronWeb({
     applyFocusEdges,
     selectionRipple,
     selectionControlled,
+    doubleClickEnabled,
   ]);
 
   useEffect(() => {

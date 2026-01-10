@@ -60,6 +60,8 @@ export interface NeuronWebTheme {
     ambientMotionAmplitude: number;
     edgeFlowEnabled: boolean;
     edgeFlowSpeed: number;
+    autoRotateEnabled: boolean;
+    autoRotateSpeed: number;
     postprocessingEnabled: boolean;
     bloomEnabled: boolean;
     bloomStrength: number;
@@ -123,6 +125,7 @@ export interface DensityOptions {
   focusExpansion?: number;
   labelMaxCount?: number;
   labelDistance?: number;
+  labelVisibility?: 'auto' | 'interaction' | 'none';
 }
 
 export interface HoverCardOptions {

@@ -21,6 +21,8 @@ export function useSceneManager(
   }, [
     containerRef,
     config.backgroundColor,
+    config.autoRotateEnabled,
+    config.autoRotateSpeed,
     config.enableStarfield,
     config.starfieldCount,
     config.postprocessingEnabled,
