@@ -70,9 +70,9 @@ Proposed Explorer slots (minimal, optional):
 ## Execution Phases
 
 ### Phase 1 – Discovery 🟥
-- [ ] Define the minimal “explorer UX” feature set that most consumers rebuild today and document the target API surface.
-- [ ] Benchmark current visualization performance across graph sizes and identify the top bottlenecks (labels, edges, interactions, layout).
-- [ ] Review Phase 4B outputs and determine what remains missing for “app-ready” usage (filters/search/panels/density presets).
+- [x] Define the minimal “explorer UX” feature set that most consumers rebuild today and document the target API surface.
+- [x] Benchmark current visualization performance across graph sizes and identify the top bottlenecks (labels, edges, interactions, layout).
+- [x] Review Phase 4B outputs and determine what remains missing for “app-ready” usage (filters/search/panels/density presets).
 
 ### Phase 2 – Design/Architecture 🟥
 Design artifacts to produce in this phase (recommended):
@@ -80,34 +80,34 @@ Design artifacts to produce in this phase (recommended):
 - `docs/phase-7f/scalability-benchmarks.md` (baseline metrics, bottlenecks, targets)
 - `docs/phase-7f/declutter-rules.md` (LOD, thresholds, fade rules)
 
-- [ ] Design an optional explorer wrapper:
+- [x] Design an optional explorer wrapper:
   - proposed component(s) (e.g., `NeuronWebExplorer`)
   - slot-based rendering for UI panels
   - minimal styling defaults
-- [ ] Design scalability knobs and defaults:
+- [x] Design scalability knobs and defaults:
   - label LOD rules
   - edge thresholds and fades
   - density presets and how they interact with layout
-- [ ] Design integration patterns with hooks:
+- [x] Design integration patterns with hooks:
   - how explorer uses `useNeuronGraph`, `useNeuronSearch`, `useNeuronNodes`
   - how filters map to API params
-- [ ] Design story tooling improvements:
+- [x] Design story tooling improvements:
   - story beat utilities
   - study path composition helpers
 
 ### Phase 3 – Implementation 🟥
-- [ ] Implement optional explorer wrapper component(s) that compose `NeuronWeb` and expose slots for UI extensions.
-- [ ] Implement label LOD improvements and ensure density options remain predictable at high node counts.
-- [ ] Implement edge declutter options (threshold/fade, and optional bundling strategy if feasible without heavy deps).
-- [ ] Add performance-mode presets for common node count ranges (normal/degraded/fallback) with clear behavior.
-- [ ] Add story tooling helpers (utility functions and/or hook helpers) for building curated tours.
-- [ ] Update docs and add demos illustrating explorer usage and scalability behaviors.
+- [x] Implement optional explorer wrapper component(s) that compose `NeuronWeb` and expose slots for UI extensions.
+- [x] Implement label LOD improvements and ensure density options remain predictable at high node counts.
+- [x] Implement edge declutter options (threshold/fade, and optional bundling strategy if feasible without heavy deps).
+- [x] Add performance-mode presets for common node count ranges (normal/degraded/fallback) with clear behavior.
+- [x] Add story tooling helpers (utility functions and/or hook helpers) for building curated tours.
+- [x] Update docs and add demos illustrating explorer usage and scalability behaviors.
 
 ### Phase 4 – Validation 🟥
-- [ ] Add visual demos for explorer UX flows (search, filter, selection) and validate accessibility.
-- [ ] Validate performance improvements against baseline budgets (documented in Phase 4B).
-- [ ] Add tests for deterministic behaviors (filtering, LOD rule selection, density mapping).
-- [ ] Validate that `NeuronWeb` remains usable standalone and explorer layer is fully optional.
+- [x] Add visual demos for explorer UX flows (search, filter, selection) and validate accessibility.
+- [x] Validate performance improvements against baseline budgets (documented in Phase 4B).
+- [x] Add tests for deterministic behaviors (filtering, LOD rule selection, density mapping).
+- [x] Validate that `NeuronWeb` remains usable standalone and explorer layer is fully optional.
 
 ## Risks & Mitigations
 - UI toolkit becomes too opinionated → Keep UI minimal, slot-based, and optional; document “headless” usage first.

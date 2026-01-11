@@ -8,6 +8,7 @@ import type { NeuronEdge, NeuronEdgeCreate, NeuronEdgeUpdate, NeuronVisualEdge }
 import type { NeuronCluster, NeuronVisualCluster } from './cluster';
 import type { AnalysisRun, AnalysisRequest, AnalysisResponse } from './analysis';
 import type { NeuronSettings, NeuronSettingsUpdate } from './settings';
+import type { SuggestedEdge, SuggestedEdgeStatus } from './suggested-edge';
 
 // ============================================================================
 // Pagination
@@ -193,10 +194,59 @@ export { AnalysisRequest, AnalysisResponse };
 
 export interface GetAnalysisJobResponse {
   job: AnalysisRun;
+  progress?: import('./analysis').AnalysisProgressSnapshot | null;
 }
 
 export interface CancelAnalysisResponse {
   cancelled: boolean;
+}
+
+// ============================================================================
+// Suggestions (Governance) API (Phase 7E)
+// ============================================================================
+
+export interface ListSuggestionsParams extends PaginationParams {
+  status?: SuggestedEdgeStatus;
+  relationshipType?: string;
+  minConfidence?: number;
+}
+
+export interface ListSuggestionsResponse {
+  suggestions: SuggestedEdge[];
+  pagination: PaginationMeta;
+}
+
+export interface ApproveSuggestionResponse {
+  approved: boolean;
+  edgeId: string | null;
+}
+
+export interface BulkApproveSuggestionsRequest {
+  ids: string[];
+}
+
+export interface BulkApproveSuggestionsResponse {
+  approvedIds: string[];
+  edgeIds: string[];
+  notFoundIds: string[];
+}
+
+export interface RejectSuggestionRequest {
+  reason?: string;
+}
+
+export interface RejectSuggestionResponse {
+  rejected: boolean;
+}
+
+export interface BulkRejectSuggestionsRequest {
+  ids: string[];
+  reason?: string;
+}
+
+export interface BulkRejectSuggestionsResponse {
+  rejectedIds: string[];
+  notFoundIds: string[];
 }
 
 // ============================================================================

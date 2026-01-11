@@ -2,6 +2,8 @@ export * from './useNeuronContext';
 export * from './useNeuronGraph';
 export * from './useNeuronNodes';
 export * from './useNeuronAnalysis';
+export * from './useNeuronJobStream';
+export * from './useNeuronSuggestions';
 export * from './useNeuronSettings';
 export * from './useNeuronSearch';
 export * from './useNeuronEvents';

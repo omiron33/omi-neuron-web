@@ -1,10 +1,11 @@
 import type { NeuronConfig, NeuronServerConfig, NeuronSettings } from '../core/types/settings';
 import { DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from '../core/types/settings';
+import { VERSION } from '../version';
 
 const buildDefaultNeuronConfig = (overrides?: Partial<NeuronSettings>): NeuronConfig => ({
   instance: {
     name: overrides?.instance?.name ?? 'default',
-    version: overrides?.instance?.version ?? '0.1.1',
+    version: overrides?.instance?.version ?? VERSION,
     repoName: overrides?.instance?.repoName ?? 'omi-neuron-web',
   },
   visualization: { ...DEFAULT_VISUALIZATION_SETTINGS, ...(overrides?.visualization ?? {}) },

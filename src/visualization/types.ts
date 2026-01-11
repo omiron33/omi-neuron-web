@@ -370,3 +370,59 @@ export interface NeuronWebProps {
   density?: DensityOptions;
   ariaLabel?: string;
 }
+
+export interface NeuronWebExplorerFilters {
+  domains?: string[];
+  nodeTypes?: string[];
+  relationshipTypes?: string[];
+  minEdgeStrength?: number;
+}
+
+export type NeuronWebExplorerResolvedFilters = {
+  domains: string[];
+  nodeTypes: string[];
+  relationshipTypes: string[];
+  minEdgeStrength?: number;
+};
+
+export interface NeuronWebExplorerProps {
+  /** Optional: provide graph data directly (controlled/headless mode). */
+  graphData?: NeuronWebProps['graphData'];
+
+  /** Optional: initial filter state (uncontrolled mode). */
+  initialFilters?: NeuronWebExplorerFilters;
+
+  /** Optional: controlled filter state. */
+  filters?: NeuronWebExplorerFilters;
+  onFiltersChange?: (next: NeuronWebExplorerFilters) => void;
+
+  /** Selection wiring */
+  selectedNodeId?: string | null;
+  onSelectedNodeIdChange?: (id: string | null) => void;
+
+  /** Forwarded to NeuronWeb (graphData is always provided by the explorer). */
+  neuronWebProps?: Omit<Partial<NeuronWebProps>, 'graphData'>;
+
+  /** Layout/styling hooks */
+  className?: string;
+  style?: React.CSSProperties;
+
+  /** Slot-based UI customization */
+  renderToolbar?: (ctx: {
+    query: string;
+    setQuery: (q: string) => void;
+    filters: NeuronWebExplorerResolvedFilters;
+    setFilters: (f: NeuronWebExplorerFilters) => void;
+    isSearching: boolean;
+    selectedNodeId: string | null;
+    setSelectedNodeId: (id: string | null) => void;
+    selectedNode: NeuronVisualNode | null;
+    focusNodeSlug: string | null;
+    setFocusNodeSlug: (slug: string | null) => void;
+  }) => React.ReactNode;
+
+  renderLegend?: (ctx: { filters: NeuronWebExplorerResolvedFilters }) => React.ReactNode;
+  renderSelectionPanel?: (ctx: { selectedNode: NeuronVisualNode | null }) => React.ReactNode;
+  renderEmptyState?: () => React.ReactNode;
+  renderLoadingState?: () => React.ReactNode;
+}

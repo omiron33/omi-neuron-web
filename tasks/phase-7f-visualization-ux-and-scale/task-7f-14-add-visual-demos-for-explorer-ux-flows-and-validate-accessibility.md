@@ -1,6 +1,6 @@
 ---
 title: Add visual demos for explorer UX flows (search, filter, selection) and validate accessibility.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Explorer UX demo added in `examples/basic-usage/app/explorer/page.tsx` covering:
+  - search (label/slug substring)
+  - domain filter + relationship type filter
+  - selection panel
+- Basic accessibility notes: inputs/selects have `aria-label` and checkboxes are wrapped with visible labels.

@@ -23,8 +23,17 @@ import type {
   ListEdgesResponse,
   ListNodesParams,
   ListNodesResponse,
+  ListSuggestionsParams,
+  ListSuggestionsResponse,
   SemanticSearchRequest,
   SemanticSearchResponse,
+  ApproveSuggestionResponse,
+  BulkApproveSuggestionsRequest,
+  BulkApproveSuggestionsResponse,
+  RejectSuggestionRequest,
+  RejectSuggestionResponse,
+  BulkRejectSuggestionsRequest,
+  BulkRejectSuggestionsResponse,
   UpdateEdgeRequest,
   UpdateNodeRequest,
   UpdateSettingsRequest,
@@ -116,6 +125,25 @@ export class NeuronApiClient {
     getStatus: (jobId: string) => this.request<GetAnalysisJobResponse>(`/analyze/${jobId}`),
     cancel: (jobId: string) =>
       this.request<CancelAnalysisResponse>(`/analyze/${jobId}/cancel`, { method: 'POST' }),
+  };
+
+  suggestions = {
+    list: (params?: ListSuggestionsParams) =>
+      this.request<ListSuggestionsResponse>(`/suggestions?${new URLSearchParams(params as Record<string, string>)}`),
+    approve: (id: string) =>
+      this.request<ApproveSuggestionResponse>(`/suggestions/${id}/approve`, { method: 'POST' }),
+    bulkApprove: (data: BulkApproveSuggestionsRequest) =>
+      this.request<BulkApproveSuggestionsResponse>('/suggestions/approve', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    reject: (id: string, data: RejectSuggestionRequest = {}) =>
+      this.request<RejectSuggestionResponse>(`/suggestions/${id}/reject`, { method: 'POST', body: JSON.stringify(data) }),
+    bulkReject: (data: BulkRejectSuggestionsRequest) =>
+      this.request<BulkRejectSuggestionsResponse>('/suggestions/reject', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   };
 
   settings = {

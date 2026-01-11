@@ -85,7 +85,7 @@ describe('AnalysisPipeline composition', () => {
         options?.onProgress?.({ processed: 2, total: 2, currentItem: 'n2' });
         return { inferred: [{ fromNodeId: 'n1', toNodeId: 'n2' }], errors: [] };
       }),
-      createEdgesFromInferences: vi.fn(async () => []),
+      persistInferences: vi.fn(async () => ({ suggestionsUpserted: 0, suggestionsApproved: 0, edgesEnsured: 0 })),
     } as any;
 
     const pipeline = new AnalysisPipeline(db as any, embeddings, clustering, relationships, new EventBus());
@@ -103,7 +103,7 @@ describe('AnalysisPipeline composition', () => {
     const clustering = { clusterNodes: vi.fn(async () => ({ clusters: [], unassigned: [] })) } as any;
     const relationships = {
       inferForNodesWithProgress: vi.fn(async () => ({ inferred: [], errors: [] })),
-      createEdgesFromInferences: vi.fn(async () => []),
+      persistInferences: vi.fn(async () => ({ suggestionsUpserted: 0, suggestionsApproved: 0, edgesEnsured: 0 })),
     } as any;
 
     const pipeline = new AnalysisPipeline(db as any, embeddings, clustering, relationships, new EventBus());
@@ -118,7 +118,7 @@ describe('AnalysisPipeline composition', () => {
     const db = createMockDb();
     const embeddings = { embedNodesWithProgress: vi.fn(async () => ({ results: [], errors: [] })) } as any;
     const clustering = { clusterNodes: vi.fn() } as any;
-    const relationships = { inferForNodesWithProgress: vi.fn(), createEdgesFromInferences: vi.fn() } as any;
+    const relationships = { inferForNodesWithProgress: vi.fn(), persistInferences: vi.fn() } as any;
 
     const pipeline = new AnalysisPipeline(db as any, embeddings, clustering, relationships, new EventBus());
     await pipeline.runEmbeddings({ skipEmbeddings: true });

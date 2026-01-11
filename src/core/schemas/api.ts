@@ -27,6 +27,24 @@ export const listEdgesParamsSchema = paginationSchema.extend({
   minConfidence: z.coerce.number().min(0).max(1).optional(),
 });
 
+export const listSuggestionsParamsSchema = paginationSchema.extend({
+  status: z.enum(['pending', 'approved', 'rejected']).optional(),
+  relationshipType: z.string().optional(),
+  minConfidence: z.coerce.number().min(0).max(1).optional(),
+});
+
+export const suggestionIdsSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1),
+});
+
+export const suggestionRejectSchema = z.object({
+  reason: z.string().min(1).optional(),
+});
+
+export const bulkSuggestionRejectSchema = suggestionIdsSchema.extend({
+  reason: z.string().min(1).optional(),
+});
+
 export const getGraphParamsSchema = z.object({
   nodeTypes: z.union([z.string(), z.array(z.string())]).optional(),
   domains: z.union([z.string(), z.array(z.string())]).optional(),
@@ -72,6 +90,7 @@ export const findSimilarRequestSchema = z.object({
 export type PaginationInput = z.infer<typeof paginationSchema>;
 export type ListNodesParamsInput = z.infer<typeof listNodesParamsSchema>;
 export type ListEdgesParamsInput = z.infer<typeof listEdgesParamsSchema>;
+export type ListSuggestionsParamsInput = z.infer<typeof listSuggestionsParamsSchema>;
 export type GetGraphParamsInput = z.infer<typeof getGraphParamsSchema>;
 export type ExpandGraphRequestInput = z.infer<typeof expandGraphRequestSchema>;
 export type FindPathRequestInput = z.infer<typeof findPathRequestSchema>;

@@ -4,6 +4,7 @@ export * from './edge-repository';
 export * from './cluster-repository';
 export * from './settings-repository';
 export * from './analysis-run-repository';
+export * from './suggested-edge-repository';
 export * from './source-repository';
 export * from './source-item-repository';
 export * from './source-item-node-repository';

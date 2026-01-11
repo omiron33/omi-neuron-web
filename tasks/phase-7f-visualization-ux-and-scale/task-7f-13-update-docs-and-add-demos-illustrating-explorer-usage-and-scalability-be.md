@@ -1,6 +1,6 @@
 ---
 title: Update docs and add demos illustrating explorer usage and scalability behaviors.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,6 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added consumer-facing explorer documentation: `docs/visualization/explorer.md`.
+- Added a controlled-mode explorer demo: `examples/basic-usage/app/explorer/page.tsx` (filters + selection panel + density/perf toggles).
+- Updated `README.md` visualization section to reference explorer + demo.

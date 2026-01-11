@@ -1,6 +1,6 @@
 ---
 title: Validate end-to-end flow: infer suggestions → approve → edges appear in graph queries.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,12 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added end-to-end governance validation covering the manual approval workflow:
+  - `tests/integration/governance-end-to-end.test.ts`:
+    - uses `RelationshipEngine.persistInferences(..., { governanceEnabled: true, autoApproveEnabled: false })` to create a pending suggestion
+    - approves suggestion via `POST /api/neuron/suggestions/:id/approve`
+    - verifies `GET /api/neuron/edges` returns the created `ai_inferred` edge
+- Validation run on 2026-01-11:
+  - `pnpm typecheck` ✅
+  - `pnpm lint` ✅ (warnings only; unchanged)
+  - `pnpm test` ✅

@@ -1,6 +1,6 @@
 ---
 title: Update relationship inference flow to write suggestions and optionally auto-approve based on config thresholds.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,17 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Updated relationship inference persistence to support governance + auto-approval:
+  - Default relationship step now calls `RelationshipEngine.persistInferences(...)` instead of directly inserting edges.
+  - When `analysis.relationshipGovernanceEnabled` is enabled and `suggested_edges` exists, inference upserts `suggested_edges` rows (without overwriting terminal statuses).
+  - When `analysis.relationshipAutoApproveEnabled` is enabled and confidence ≥ `analysis.relationshipAutoApproveMinConfidence`, inference ensures an edge exists and marks the suggestion approved.
+  - If `suggested_edges` is missing (migrations not applied), inference falls back to edge-only writes.
+- Added new analysis settings fields (Phase 7E) to control the above behavior:
+  - `analysis.relationshipGovernanceEnabled`
+  - `analysis.relationshipAutoApproveEnabled`
+  - `analysis.relationshipAutoApproveMinConfidence`
+- Added unit tests covering governance persistence + fallback behavior (`tests/core/relationship-engine-governance.test.ts`).
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅
+  - `pnpm typecheck` ✅
+  - `pnpm lint` ✅ (warnings only: existing CLI console usage)

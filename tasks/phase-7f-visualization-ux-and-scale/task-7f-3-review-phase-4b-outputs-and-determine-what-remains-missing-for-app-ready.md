@@ -1,6 +1,6 @@
 ---
 title: Review Phase 4B outputs and determine what remains missing for “app-ready” usage (filters/search/panels/density presets).
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -40,3 +40,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Documented Phase 4B/4C baseline vs “app-ready” gaps (filters/search/panels/presets):
+  - `docs/phase-7f/app-ready-gap-analysis.md`

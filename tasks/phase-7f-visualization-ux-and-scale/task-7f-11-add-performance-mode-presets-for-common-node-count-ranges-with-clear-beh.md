@@ -1,6 +1,6 @@
 ---
 title: Add performance-mode presets for common node count ranges (normal/degraded/fallback) with clear behavior.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Centralized auto performance-mode selection into `src/visualization/performance/auto-performance-mode.ts` (`getAutoPerformanceMode`), matching existing defaults:
+  - `normalMaxNodes`: 180
+  - `degradedMaxNodes`: 360
+- Updated `src/visualization/NeuronWeb.tsx` to use the helper for `performanceMode="auto"`.
+- Exported helper + types from `src/visualization/index.ts` for consumer reuse/testing.

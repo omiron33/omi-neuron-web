@@ -1,6 +1,6 @@
 ---
 title: Define the minimal “explorer UX” feature set that most consumers rebuild today and document the target API surface.
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -40,3 +40,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added a discovery draft capturing the minimal “explorer UX” scope and target API surface:
+  - `docs/phase-7f/explorer-api.md`

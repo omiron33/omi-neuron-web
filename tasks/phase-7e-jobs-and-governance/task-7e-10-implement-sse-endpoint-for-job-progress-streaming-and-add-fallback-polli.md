@@ -1,6 +1,6 @@
 ---
 title: Implement SSE endpoint(s) for job progress streaming and add fallback polling endpoints if needed.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,12 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented job progress streaming + improved polling responses:
+  - `GET /api/neuron/analyze/:jobId/stream` streams `analysis.job.*` events as SSE.
+  - `POST /api/neuron/analyze` now starts jobs asynchronously (returns immediately with `jobId` + `running` status).
+  - `GET /api/neuron/analyze/:jobId` returns `{ job, progress }` where `progress` is the persisted `progress_snapshot`.
+- Added a shared per-scope pipeline registry and shared DB pool for analyze routes to support long-lived jobs and streaming.
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅
+  - `pnpm typecheck` ✅
+  - `pnpm lint` ✅ (warnings only: existing CLI console usage)

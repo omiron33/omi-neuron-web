@@ -1,6 +1,6 @@
 ---
 title: Design integration patterns with hooks:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Documented recommended integration patterns for a future `NeuronWebExplorer`:
+  - `docs/phase-7f/explorer-integration-patterns.md`

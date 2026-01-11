@@ -1,6 +1,6 @@
 ---
 title: Add docs and examples showing:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,11 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Documented Phase 7E usage patterns and provided concrete examples:
+  - Updated `docs/phase-7e/react-hooks.md` with real hook signatures and TSX snippets for:
+    - `useNeuronJobStream` streaming (SSE) with polling fallback
+    - `useNeuronSuggestions` list + approve/reject workflow
+  - Key public touchpoints covered:
+    - React: `NeuronWebProvider`, `useNeuronAnalysis`, `useNeuronJobStream`, `useNeuronSuggestions`
+    - API: `/api/neuron/analyze/:jobId/stream`, `/api/neuron/analyze/:jobId`, `/api/neuron/suggestions/*`
+    - Scope: `x-neuron-scope` for fetch clients and `?scope=` for `EventSource` clients

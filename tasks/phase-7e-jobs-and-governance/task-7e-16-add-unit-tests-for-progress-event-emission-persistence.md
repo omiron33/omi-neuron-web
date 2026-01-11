@@ -1,6 +1,6 @@
 ---
 title: Add unit tests for progress event emission + persistence.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,10 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added unit coverage for the analysis job UX contract:
+  - `tests/core/analysis-pipeline-progress.test.ts` verifies:
+    - `analysis.job.started/progress/completed` events are emitted via `EventBus`
+    - progress snapshots are persisted to `analysis_runs.progress_snapshot` via `UPDATE ... progress_snapshot`
+    - mid-run progress snapshots include expected stage/progress fields
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅

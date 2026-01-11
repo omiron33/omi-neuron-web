@@ -67,6 +67,9 @@ export const analysisSettingsSchema = z.object({
   relationshipInferenceModel: z.string().min(1),
   relationshipMinConfidence: z.number().min(0).max(1),
   relationshipMaxPerNode: z.number().int().min(1),
+  relationshipGovernanceEnabled: z.boolean().optional().default(true),
+  relationshipAutoApproveEnabled: z.boolean().optional().default(true),
+  relationshipAutoApproveMinConfidence: z.number().min(0).max(1).optional().default(0.7),
   openaiRateLimit: z.number().int().min(1),
   maxConcurrentAnalysis: z.number().int().min(1),
 });

@@ -105,20 +105,20 @@ Design artifacts to produce in this phase (recommended):
 
 ### Phase 3 – Implementation 🟥
 - [x] Extend analysis pipeline to emit structured progress events and persist progress snapshots to DB for polling.
-- [ ] Implement SSE endpoint(s) for job progress streaming and add fallback polling endpoints if needed.
-- [ ] Add migrations for suggested edges and implement repositories for suggestions.
-- [ ] Update relationship inference flow to write suggestions and optionally auto-approve based on config thresholds.
-- [ ] Add API routes for suggestions CRUD (list/approve/reject/bulk) and update API client accordingly.
-- [ ] Add React hooks for job streaming and suggestions governance.
-- [ ] Add docs and examples showing:
+- [x] Implement SSE endpoint(s) for job progress streaming and add fallback polling endpoints if needed.
+- [x] Add migrations for suggested edges and implement repositories for suggestions.
+- [x] Update relationship inference flow to write suggestions and optionally auto-approve based on config thresholds.
+- [x] Add API routes for suggestions CRUD (list/approve/reject/bulk) and update API client accordingly.
+- [x] Add React hooks for job streaming and suggestions governance.
+- [x] Add docs and examples showing:
   - streaming vs polling
   - approval workflow patterns
 
 ### Phase 4 – Validation 🟥
-- [ ] Add unit tests for progress event emission + persistence.
-- [ ] Add integration tests for SSE endpoint (basic connect/receive/close) and fallback polling behavior.
-- [ ] Add tests for suggestion state transitions and authorization/scope enforcement hooks.
-- [ ] Validate end-to-end flow: infer suggestions → approve → edges appear in graph queries.
+- [x] Add unit tests for progress event emission + persistence.
+- [x] Add integration tests for SSE endpoint (basic connect/receive/close) and fallback polling behavior.
+- [x] Add tests for suggestion state transitions and authorization/scope enforcement hooks.
+- [x] Validate end-to-end flow: infer suggestions → approve → edges appear in graph queries.
 
 ## Risks & Mitigations
 - SSE reliability across platforms → Keep polling as first-class; SSE optional enhancement.

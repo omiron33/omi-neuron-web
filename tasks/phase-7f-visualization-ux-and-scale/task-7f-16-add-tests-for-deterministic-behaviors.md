@@ -1,6 +1,6 @@
 ---
 title: Add tests for deterministic behaviors (filtering, LOD rule selection, density mapping).
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,7 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Extracted deterministic helpers to support unit testing:
+  - `src/visualization/explorer/explorer-filters.ts` (induced-subgraph filtering)
+  - `src/visualization/density/resolve-density.ts` (density + label policy mapping)
+- Added tests in `tests/visualization/deterministic-behaviors.test.ts`.

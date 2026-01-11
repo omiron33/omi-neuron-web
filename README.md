@@ -19,7 +19,7 @@ The published package exposes these entry points (see `package.json` exports):
 
 - `@omiron33/omi-neuron-web` (root) - types, schemas, analysis, storage, config helpers, visualization component, React hooks/provider.
 - `@omiron33/omi-neuron-web/api` - API route factory, repositories, query builder, middleware, API types.
-- `@omiron33/omi-neuron-web/visualization` - NeuronWeb component, theme, layout utilities, scene manager.
+- `@omiron33/omi-neuron-web/visualization` - NeuronWeb renderer, NeuronWebExplorer wrapper, theme/layout utilities, performance + story helpers.
 - `@omiron33/omi-neuron-web/migration` - migration list and runner.
 - `@omiron33/omi-neuron-web/cli` - CLI entry (also exposed via the `omi-neuron` binary).
 
@@ -36,21 +36,41 @@ The published package exposes these entry points (see `package.json` exports):
 - `src/cli/*` - CLI commands and templates.
 - `docs/*` - Additional docs (older, not as exhaustive as this README).
 
+## Agent workflow (plan-driven repo)
+
+This repo is designed for plan-driven execution (see `AGENTS.md` for the full rules). Quick workflow:
+
+1) Read `plans/next-step.json` to find the current task.
+2) Read the corresponding task file under `tasks/` and follow its `depends_on` constraints.
+3) Implement the requirements and deliverables exactly (avoid scope creep).
+4) Validate before marking complete:
+   - `pnpm typecheck`
+   - `pnpm lint`
+   - `pnpm test`
+   - `pnpm build`
+5) Update task frontmatter (`status: completed`) and advance `plans/next-step.json`.
+
 ## Root exports (from `src/index.ts`)
 
 ```ts
-// Types and schemas
+// Core types + schemas
 export * from './core/types';
 export * from './core/schemas';
 export * from './core/events';
 
-// Analysis engines
+// Analysis engines + pipeline composition
 export { DataProcessor } from './core/analysis/data-processor';
 export { EmbeddingsService } from './core/analysis/embeddings-service';
 export { ClusteringEngine } from './core/analysis/clustering-engine';
 export { RelationshipEngine } from './core/analysis/relationship-engine';
 export { ScoringEngine } from './core/analysis/scoring-engine';
 export { AnalysisPipeline } from './core/analysis/pipeline';
+export * from './core/analysis/steps';
+
+// Extensibility + local-first stores + ingestion
+export * from './core/providers';
+export * from './core/store';
+export * from './core/ingestion';
 
 // Storage helpers
 export * from './storage';
@@ -59,18 +79,32 @@ export * from './storage';
 export * from './config';
 
 // Visualization
-export { NeuronWeb } from './visualization';
-export type { NeuronWebProps, NeuronWebTheme, NeuronLayoutOptions, NeuronLayoutMode } from './visualization';
+export { NeuronWeb, NeuronWebExplorer } from './visualization';
+export type {
+  NeuronWebProps,
+  NeuronWebExplorerProps,
+  NeuronWebExplorerFilters,
+  NeuronWebExplorerResolvedFilters,
+  NeuronWebTheme,
+  NeuronLayoutOptions,
+  NeuronLayoutMode,
+  DensityOptions,
+  DensityMode,
+  ClickCardOptions,
+  ClickZoomOptions,
+  CardsMode,
+} from './visualization';
 
 // React integration
 export * from './react/hooks';
 export { NeuronWebProvider } from './react/NeuronWebProvider';
 
 // Version constant
-export const VERSION = '0.1.1';
+export { VERSION } from './version';
 ```
 
-Note: `VERSION` is not currently auto-synced to `package.json`. Update it when releasing.
+`VERSION` is defined in `src/version.ts` and is kept in sync with `package.json` on tag-based releases
+(see `.github/workflows/publish-on-tag.yml`).
 
 ## Configuration: NeuronConfig and NeuronSettings
 
@@ -193,12 +227,12 @@ export const DEFAULT_ANALYSIS_SETTINGS = {
 The CLI (`omi-neuron init`) writes a full config file. A complete config looks like:
 
 ```ts
-import { defineNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from '@omiron33/omi-neuron-web';
+import { defineNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS, VERSION } from '@omiron33/omi-neuron-web';
 
 export default defineNeuronConfig({
   instance: {
     name: 'my-instance',
-    version: '0.1.1',
+    version: VERSION,
     repoName: 'my-repo',
   },
   visualization: DEFAULT_VISUALIZATION_SETTINGS,
@@ -539,6 +573,7 @@ Returns:
   edges: createEdgesRoutes(config),
   graph: createGraphRoutes(config),
   analyze: createAnalyzeRoutes(config),
+  suggestions: createSuggestionsRoutes(config),
   settings: createSettingsRoutes(config),
   search: createSearchRoutes(config),
   health: createHealthRoutes(config),
@@ -573,8 +608,17 @@ Analyze:
 
 - `POST /analyze` -> runs analysis pipeline (embeddings, clustering, relationships, or full).
 - `GET /analyze/:jobId` -> fetch job status.
+- `GET /analyze/:jobId/stream` -> SSE stream of job progress events (Phase 7E).
 - `POST /analyze/:jobId/cancel` -> cancel job.
 - `GET /analyze/history` -> list recent jobs.
+
+Suggestions (Phase 7E):
+
+- `GET /suggestions` -> list suggested edges (review queue).
+- `POST /suggestions/:id/approve` -> approve a suggestion and create an edge.
+- `POST /suggestions/approve` -> bulk approve by ids.
+- `POST /suggestions/:id/reject` -> reject a suggestion.
+- `POST /suggestions/reject` -> bulk reject by ids.
 
 Settings:
 
@@ -648,8 +692,10 @@ Notes:
 - `useNeuronGraph({ domains?, nodeTypes?, minEdgeStrength?, autoRefresh?, refreshInterval? })` -> fetch and explore graph.
 - `useNeuronNodes({ initialFilters?, pageSize? })` -> CRUD nodes and pagination.
 - `useNeuronAnalysis()` -> start/cancel/check analysis jobs.
+- `useNeuronJobStream({ jobId, transport?, pollIntervalMs?, scope? })` -> stream analysis progress (SSE with polling fallback).
 - `useNeuronSettings()` -> update or reset settings.
 - `useNeuronSearch()` -> semantic search and find similar nodes.
+- `useNeuronSuggestions({ status?, relationshipType?, minConfidence?, page?, limit? })` -> list/approve/reject suggested edges.
 - `useNeuronEvents()` -> subscribe/emit events.
 
 Also available:
@@ -658,6 +704,20 @@ Also available:
 - `useAnalysisEvents(handlers)`
 
 ## Visualization (NeuronWeb)
+
+### Optional explorer wrapper (Phase 7F)
+
+If you want a minimal “app-ready” wrapper around the headless renderer, use `NeuronWebExplorer`:
+- controlled mode: pass `graphData` directly
+- hook-driven mode: omit `graphData` (requires `NeuronWebProvider`)
+- slot-based UI: `renderToolbar`, `renderLegend`, `renderSelectionPanel`
+
+Docs and demo:
+- `docs/visualization/explorer.md`
+- `docs/visualization/story-tooling.md`
+- `docs/visualization/performance-budgets.md`
+- `docs/visualization/density-strategy.md`
+- `examples/basic-usage/app/explorer/page.tsx`
 
 ### Component props (full list)
 
@@ -689,7 +749,7 @@ export interface NeuronWebProps {
   onCameraChange?: (position: [number, number, number]) => void;
   activeStoryBeatId?: string | null;
   storyBeatStepDurationMs?: number;
-  onStoryBeatComplete?: () => void;
+  onStoryBeatComplete?: (beat: NeuronStoryBeat) => void;
   studyPathRequest?: StudyPathRequest | null;
   onStudyPathComplete?: () => void;
   layout?: NeuronLayoutOptions;
@@ -1050,7 +1110,7 @@ Commands:
 
 - Several `NeuronWebProps` are defined but not yet used internally (see list above).
 - `VisualizationSettings` vs `NeuronWebTheme`: the component uses theme overrides, not settings. If you want settings to drive visuals, wire them in `NeuronWeb`.
-- `VERSION` constant is not auto-updated.
+- `VERSION` is updated on tag-based releases (see below). In non-release branches, treat it as informational.
 
 ## Build and test
 
@@ -1068,7 +1128,7 @@ This repo publishes on **tag push**. The tag version is authoritative and must b
 
 Workflow:
 - Create and push `vX.Y.Z` (same major/minor as `package.json`, patch +1).
-- GitHub Actions updates `package.json` + `src/index.ts`, commits to `main`, builds, and publishes.
+- GitHub Actions updates `package.json` + `src/version.ts`, commits to `main`, builds, and publishes.
 
 Helper skill (repo-local):
 

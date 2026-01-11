@@ -14,13 +14,14 @@ import {
   resolveNeuronConfig,
   DEFAULT_ANALYSIS_SETTINGS,
   DEFAULT_VISUALIZATION_SETTINGS,
+  VERSION,
 } from '@omiron33/omi-neuron-web';
 
 export const neuronServerConfig = defineNeuronServerConfig({
   settings: {
     instance: {
       name: 'My Graph',
-      version: '0.1.1',
+      version: VERSION,
       repoName: 'my-graph',
     },
     visualization: DEFAULT_VISUALIZATION_SETTINGS,

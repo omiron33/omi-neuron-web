@@ -39,10 +39,19 @@ export type {
   ClusteringConfig,
 } from './cluster';
 
+// Governance / suggested edges (Phase 7E)
+export type {
+  SuggestedEdgeStatus,
+  SuggestedEdge,
+  SuggestedEdgeCreate,
+  SuggestedEdgeListParams,
+} from './suggested-edge';
+
 // Analysis types
 export type {
   AnalysisRunType,
   AnalysisJobStatus,
+  AnalysisProgressSnapshot,
   AnalysisRun,
   AnalysisRequest,
   AnalysisResponse,

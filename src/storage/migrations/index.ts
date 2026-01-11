@@ -6,6 +6,7 @@ import { migration004 } from './004_analysis_runs';
 import { migration005 } from './005_provenance';
 import { migration006 } from './006_scope';
 import { migration007 } from './007_analysis_runs_progress';
+import { migration008 } from './008_suggested_edges';
 
 export const migrations: Migration[] = [
   migration001,
@@ -15,6 +16,7 @@ export const migrations: Migration[] = [
   migration005,
   migration006,
   migration007,
+  migration008,
 ];
 
 export * from './runner';
@@ -25,3 +27,4 @@ export * from './004_analysis_runs';
 export * from './005_provenance';
 export * from './006_scope';
 export * from './007_analysis_runs_progress';
+export * from './008_suggested_edges';

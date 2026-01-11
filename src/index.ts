@@ -21,9 +21,12 @@ export * from './storage';
 export * from './config';
 
 // Visualization
-export { NeuronWeb } from './visualization';
+export { NeuronWeb, NeuronWebExplorer } from './visualization';
 export type {
   NeuronWebProps,
+  NeuronWebExplorerProps,
+  NeuronWebExplorerFilters,
+  NeuronWebExplorerResolvedFilters,
   NeuronWebTheme,
   NeuronLayoutOptions,
   NeuronLayoutMode,
@@ -41,4 +44,4 @@ export * from './react/hooks';
 export { NeuronWebProvider } from './react/NeuronWebProvider';
 
 // Version
-export const VERSION = '0.2.19';
+export { VERSION } from './version';

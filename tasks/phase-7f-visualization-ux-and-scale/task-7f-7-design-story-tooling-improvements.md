@@ -1,6 +1,6 @@
 ---
 title: Design story tooling improvements:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Proposed a minimal set of story tooling utilities (validation + study path composition helpers):
+  - `docs/phase-7f/story-tooling.md`

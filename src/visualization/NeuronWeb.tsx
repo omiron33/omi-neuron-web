@@ -6,6 +6,8 @@ import type { AnimationProfile, NeuronStoryBeat, NeuronWebProps, StudyPathStep }
 import type { NeuronEdge, NeuronNode } from '../core/types';
 import { DEFAULT_THEME } from './constants';
 import { useSceneManager } from './hooks/useSceneManager';
+import { resolveDensityOptions } from './density/resolve-density';
+import { getAutoPerformanceMode } from './performance/auto-performance-mode';
 import { NodeRenderer } from './scene/node-renderer';
 import { EdgeRenderer } from './scene/edge-renderer';
 import { applyFuzzyLayout } from './layouts/fuzzy-layout';
@@ -145,49 +147,23 @@ export function NeuronWeb({
 
   const resolvedPerformanceMode = useMemo(() => {
     if (performanceMode && performanceMode !== 'auto') return performanceMode;
-    const count = workingGraph.nodes.length;
-
-    const normalMaxRaw = rendering?.performance?.normalMaxNodes;
-    const degradedMaxRaw = rendering?.performance?.degradedMaxNodes;
-    let normalMax = typeof normalMaxRaw === 'number' && Number.isFinite(normalMaxRaw) ? normalMaxRaw : 180;
-    let degradedMax =
-      typeof degradedMaxRaw === 'number' && Number.isFinite(degradedMaxRaw) ? degradedMaxRaw : 360;
-    normalMax = Math.max(1, Math.floor(normalMax));
-    degradedMax = Math.max(normalMax + 1, Math.floor(degradedMax));
-
-    const pixelRatio =
-      typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-    const effectiveCount = count * Math.sqrt(pixelRatio);
-
-    if (effectiveCount > degradedMax) return 'fallback';
-    if (effectiveCount > normalMax) return 'degraded';
-    return 'normal';
-  }, [performanceMode, workingGraph.nodes.length, rendering?.performance?.normalMaxNodes, rendering?.performance?.degradedMaxNodes]);
+    const pixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    return getAutoPerformanceMode({
+      nodeCount: workingGraph.nodes.length,
+      pixelRatio,
+      pixelRatioCap: 2,
+      normalMaxNodes: rendering?.performance?.normalMaxNodes,
+      degradedMaxNodes: rendering?.performance?.degradedMaxNodes,
+    });
+  }, [
+    performanceMode,
+    workingGraph.nodes.length,
+    rendering?.performance?.normalMaxNodes,
+    rendering?.performance?.degradedMaxNodes,
+  ]);
 
   const resolvedDensity = useMemo(() => {
-    const presets = {
-      relaxed: { spread: 1.2, edgeFade: 0.2, focusExpansion: 0.18, minEdgeStrength: 0 },
-      balanced: { spread: 1.0, edgeFade: 0.35, focusExpansion: 0.12, minEdgeStrength: 0.05 },
-      compact: { spread: 0.9, edgeFade: 0.5, focusExpansion: 0.08, minEdgeStrength: 0.15 },
-    };
-    const defaultMode =
-      density?.mode ??
-      (resolvedPerformanceMode === 'normal'
-        ? 'balanced'
-        : resolvedPerformanceMode === 'degraded'
-          ? 'compact'
-          : 'compact');
-    const base = presets[defaultMode];
-    return {
-      mode: defaultMode,
-      spread: density?.spread ?? base.spread,
-      edgeFade: density?.edgeFade ?? base.edgeFade,
-      minEdgeStrength: density?.minEdgeStrength ?? base.minEdgeStrength,
-      focusExpansion: density?.focusExpansion ?? base.focusExpansion,
-      labelMaxCount: density?.labelMaxCount,
-      labelDistance: density?.labelDistance,
-      labelVisibility: density?.labelVisibility ?? 'auto',
-    };
+    return resolveDensityOptions(density, resolvedPerformanceMode);
   }, [density, resolvedPerformanceMode]);
 
   const resolvedAnimationProfile = useMemo<AnimationProfile>(() => {
@@ -385,7 +361,11 @@ export function NeuronWeb({
     let labelDistance = resolvedDensity.labelDistance ?? defaultLabelDistance;
     let labelMax = resolvedDensity.labelMaxCount ?? defaultLabelMax;
     let labelVisibility = resolvedDensity.labelVisibility;
-    let labelTierRules = rendering?.labels?.tiers;
+    const defaultTierRules =
+      resolvedPerformanceMode === 'normal'
+        ? ({ primary: 'always', insight: 'always', secondary: 'auto', tertiary: 'auto' } as const)
+        : undefined;
+    let labelTierRules = rendering?.labels?.tiers ?? defaultTierRules;
     let labelTransitionsEnabled = false;
     let labelTransitionDurationMs = 0;
 
@@ -399,7 +379,9 @@ export function NeuronWeb({
       if (typeof rendering.labels.maxCount === 'number') {
         labelMax = rendering.labels.maxCount;
       }
-      labelTierRules = rendering.labels.tiers;
+      if (rendering.labels.tiers) {
+        labelTierRules = rendering.labels.tiers;
+      }
       labelTransitionsEnabled = Boolean(rendering.labels.transitions?.enabled);
       labelTransitionDurationMs = Math.max(0, rendering.labels.transitions?.durationMs ?? 160);
 

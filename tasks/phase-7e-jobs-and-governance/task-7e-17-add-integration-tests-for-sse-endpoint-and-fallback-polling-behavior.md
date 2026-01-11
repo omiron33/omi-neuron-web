@@ -1,6 +1,6 @@
 ---
 title: Add integration tests for SSE endpoint (basic connect/receive/close) and fallback polling behavior.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,10 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added integration coverage for the Phase 7E job UX transport contract:
+  - `tests/integration/analyze-sse.test.ts`:
+    - validates SSE stream framing (`text/event-stream`), initial snapshot, progress events, and terminal close behavior
+    - validates polling fallback shape via `GET /api/neuron/analyze/:jobId` returning `{ job, progress }`
+  - Test harness note: Vitest runs in `jsdom` for this repo; the test mocks OpenAI providers to avoid `dangerouslyAllowBrowser` runtime errors.
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅

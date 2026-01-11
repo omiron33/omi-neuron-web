@@ -1,6 +1,6 @@
 ---
 title: Add story tooling helpers (utility functions and/or hook helpers) for building curated tours.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,7 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented headless story utilities in `src/visualization/story/index.ts`:
+  - `validateStoryBeat`, `normalizeStoryBeat`, `createStoryBeat`
+  - `createStudyPathFromNodeIds`, `createStudyPathFromBeat`
+- Exported from `src/visualization/index.ts` and added tests in `tests/visualization/story-tooling.test.ts`.

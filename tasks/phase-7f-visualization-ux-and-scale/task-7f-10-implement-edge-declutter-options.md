@@ -1,6 +1,6 @@
 ---
 title: Implement edge declutter options (threshold/fade, and optional bundling strategy if feasible without heavy deps).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Edge declutter is implemented via existing density knobs:
+  - `density.minEdgeStrength` (threshold) → `EdgeRenderer` minStrength
+  - `density.edgeFade` (non-focus fade) → `EdgeRenderer` focusFadeOpacity
+- Clamped `density.edgeFade` and `density.minEdgeStrength` into `[0..1]` in `src/visualization/NeuronWeb.tsx` for more predictable behavior.
+- Edge bundling remains out-of-scope for v1; no heavy deps added.

@@ -1,6 +1,6 @@
 ---
 title: Add React hooks for job streaming and suggestions governance.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,16 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented Phase 7E React hooks:
+  - `useNeuronJobStream` (`src/react/hooks/useNeuronJobStream.ts`): subscribes to `analysis.job.*` via SSE with polling fallback.
+    - Supports `transport: 'auto' | 'sse' | 'poll'`, `pollIntervalMs`, and `reconnect/stop` helpers.
+    - Emits job events into the provider `EventBus` (`analysis.job.*`) for optional event-driven UI.
+  - `useNeuronSuggestions` (`src/react/hooks/useNeuronSuggestions.ts`): list + approve/reject helpers for governance workflows.
+    - Uses `api.suggestions.*` client methods and emits `edges.suggestion.approved/rejected` events.
+  - Updated hook exports (`src/react/hooks/index.ts`).
+- Improved SSE scope support:
+  - `createAnalyzeRoutes` and `createSuggestionsRoutes` now default to resolving `scope` from `?scope=` when headers are unavailable (e.g. browser `EventSource`).
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅
+  - `pnpm typecheck` ✅
+  - `pnpm lint` ✅ (warnings only: existing CLI console usage)

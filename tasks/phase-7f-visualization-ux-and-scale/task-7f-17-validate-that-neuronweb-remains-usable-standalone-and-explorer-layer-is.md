@@ -1,6 +1,6 @@
 ---
 title: Validate that `NeuronWeb` remains usable standalone and explorer layer is fully optional.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- `NeuronWeb` remains usable standalone (existing smoke test `tests/visualization/neuron-web.test.tsx` still passes).
+- `NeuronWebExplorer` is optional and supports a controlled mode via `graphData` without requiring provider/hooks.

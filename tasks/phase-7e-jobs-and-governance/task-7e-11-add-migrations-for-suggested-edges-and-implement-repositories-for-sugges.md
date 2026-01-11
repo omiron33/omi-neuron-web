@@ -1,6 +1,6 @@
 ---
 title: Add migrations for suggested edges and implement repositories for suggestions.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,12 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented suggested-edge persistence + repository surface:
+  - Added `suggested_edges` migration (`src/storage/migrations/008_suggested_edges.ts`) aligned with the Phase 7E schema doc.
+  - Added core types for suggestions (`src/core/types/suggested-edge.ts`) and exported from `src/core/types/index.ts`.
+  - Added `SuggestedEdgeRepository` (`src/api/repositories/suggested-edge-repository.ts`) with scope-aware `list`, `upsertSuggestion`, and status transitions (`markApproved`/`markRejected`).
+  - Added repository unit tests (`tests/api/suggested-edge-repository.test.ts`) covering row mapping + scoping behavior.
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅
+  - `pnpm typecheck` ✅
+  - `pnpm lint` ✅ (warnings only: existing CLI console usage)

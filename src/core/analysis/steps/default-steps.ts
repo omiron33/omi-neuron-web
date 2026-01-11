@@ -95,7 +95,7 @@ export const createDefaultAnalysisSteps = (): AnalysisStep[] => [
           });
         },
       });
-      await context.relationships.createEdgesFromInferences(inferred, true);
+      await context.relationships.persistInferences(inferred, { analysisRunId: job.id });
       await context.updateJobResults(job.id, {
         relationshipsInferred: inferred.length,
         errors,

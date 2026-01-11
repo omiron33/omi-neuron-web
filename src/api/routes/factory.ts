@@ -9,6 +9,7 @@ import { createAnalyzeRoutes } from './analyze';
 import { createSettingsRoutes } from './settings';
 import { createSearchRoutes } from './search';
 import { createHealthRoutes } from './health';
+import { createSuggestionsRoutes } from './suggestions';
 import type { RequestContextOptions } from '../middleware/request-context';
 import type { AuthGuardOptions } from '../middleware/auth';
 import type { BodySizeLimitOptions } from '../middleware/body-size-limit';
@@ -40,6 +41,7 @@ export function createNeuronRoutes(
     edges: createEdgesRoutes(config, store, options?.requestContext, options?.auth, security),
     graph: createGraphRoutes(config, store, options?.requestContext, options?.auth, security),
     analyze: createAnalyzeRoutes(config, store, options?.requestContext, options?.auth, security),
+    suggestions: createSuggestionsRoutes(config, store, options?.requestContext, options?.auth, security),
     settings: createSettingsRoutes(config, store, options?.requestContext, options?.auth, security),
     search: createSearchRoutes(config, store, {
       embeddingProvider: options?.embeddingProvider,

@@ -13,6 +13,21 @@ export interface InferenceConfig {
   includeExisting: boolean;
   batchSize: number;
   rateLimit: number;
+  /**
+   * Phase 7E: When enabled, persist inferred relationships into `suggested_edges` for governance.
+   * If the table does not exist (migrations not applied), the engine will fall back to edge-only writes.
+   */
+  governanceEnabled?: boolean;
+  /**
+   * Phase 7E: Automatically approve suggestions into real edges when confidence is high enough.
+   * Defaults to `true` for backwards compatibility.
+   */
+  autoApproveEnabled?: boolean;
+  /**
+   * Phase 7E: Confidence threshold (0–1) for auto-approving a suggestion into an edge.
+   * Defaults to `minConfidence` when omitted.
+   */
+  autoApproveMinConfidence?: number;
 }
 
 export interface InferredRelationship {
@@ -51,6 +66,7 @@ Respond in JSON:
 export class RelationshipEngine {
   private provider: LLMProvider;
   private scope: string;
+  private suggestedEdgesAvailable: boolean | null = null;
 
   constructor(
     private db: Database,
@@ -182,6 +198,114 @@ export class RelationshipEngine {
     return created;
   }
 
+  async persistInferences(
+    inferences: InferredRelationship[],
+    options?: { analysisRunId?: string; reviewedBy?: string; reviewReason?: string }
+  ): Promise<{
+    suggestionsUpserted: number;
+    suggestionsApproved: number;
+    edgesEnsured: number;
+  }> {
+    const governanceEnabled = this.config.governanceEnabled ?? false;
+    const autoApproveEnabled = this.config.autoApproveEnabled ?? true;
+    const autoApproveMinConfidence = this.config.autoApproveMinConfidence ?? this.config.minConfidence;
+
+    let suggestionsUpserted = 0;
+    let suggestionsApproved = 0;
+    let edgesEnsured = 0;
+
+    const canUseSuggestedEdges = governanceEnabled ? await this.hasSuggestedEdgesTable() : false;
+
+    for (const inference of inferences) {
+      let suggestionTouched = false;
+
+      if (canUseSuggestedEdges) {
+        const row = await this.db.queryOne<{ id: string }>(
+          `INSERT INTO suggested_edges (
+             scope,
+             from_node_id,
+             to_node_id,
+             relationship_type,
+             confidence,
+             strength,
+             reasoning,
+             evidence,
+             status,
+             source_model,
+             analysis_run_id,
+             updated_at
+           )
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'pending',$9,$10,NOW())
+           ON CONFLICT (scope, from_node_id, to_node_id, relationship_type) DO UPDATE SET
+             confidence = EXCLUDED.confidence,
+             strength = EXCLUDED.strength,
+             reasoning = EXCLUDED.reasoning,
+             evidence = EXCLUDED.evidence,
+             source_model = EXCLUDED.source_model,
+             analysis_run_id = EXCLUDED.analysis_run_id,
+             updated_at = NOW()
+           WHERE suggested_edges.status = 'pending'
+           RETURNING id`,
+          [
+            this.scope,
+            inference.fromNodeId,
+            inference.toNodeId,
+            inference.relationshipType,
+            inference.confidence,
+            inference.confidence,
+            inference.reasoning ?? null,
+            JSON.stringify(inference.evidence ?? []),
+            this.config.model,
+            options?.analysisRunId ?? null,
+          ]
+        );
+
+        if (row?.id) {
+          suggestionTouched = true;
+          suggestionsUpserted += 1;
+        }
+      }
+
+      if (!autoApproveEnabled || inference.confidence < autoApproveMinConfidence) {
+        continue;
+      }
+
+      const edgeId = await this.ensureEdgeId(inference);
+      if (edgeId) {
+        edgesEnsured += 1;
+      }
+
+      if (canUseSuggestedEdges && suggestionTouched) {
+        const updated = await this.db.queryOne<{ id: string }>(
+          `UPDATE suggested_edges
+           SET status = 'approved',
+               reviewed_by = COALESCE(reviewed_by, $5),
+               reviewed_at = COALESCE(reviewed_at, NOW()),
+               review_reason = COALESCE(review_reason, $6),
+               approved_edge_id = COALESCE(approved_edge_id, $7),
+               updated_at = NOW()
+           WHERE scope = $1 AND from_node_id = $2 AND to_node_id = $3 AND relationship_type = $4
+             AND status != 'rejected'
+           RETURNING id`,
+          [
+            this.scope,
+            inference.fromNodeId,
+            inference.toNodeId,
+            inference.relationshipType,
+            options?.reviewedBy ?? 'system:auto',
+            options?.reviewReason ?? 'auto-approved',
+            edgeId,
+          ]
+        );
+        if (updated?.id) {
+          suggestionsApproved += 1;
+        }
+      }
+    }
+
+    return { suggestionsUpserted, suggestionsApproved, edgesEnsured };
+  }
+
   private async inferPair(
     fromNodeId: string,
     toNodeId: string
@@ -237,5 +361,46 @@ export class RelationshipEngine {
   private async applyRateLimit(): Promise<void> {
     const delayMs = Math.ceil(60_000 / this.config.rateLimit);
     await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  private async hasSuggestedEdgesTable(): Promise<boolean> {
+    if (this.suggestedEdgesAvailable !== null) {
+      return this.suggestedEdgesAvailable;
+    }
+
+    try {
+      this.suggestedEdgesAvailable = await this.db.tableExists('suggested_edges');
+    } catch {
+      this.suggestedEdgesAvailable = false;
+    }
+
+    return this.suggestedEdgesAvailable;
+  }
+
+  private async ensureEdgeId(inference: InferredRelationship): Promise<string | null> {
+    const row = await this.db.queryOne<{ id: string }>(
+      `WITH inserted AS (
+         INSERT INTO edges (scope, from_node_id, to_node_id, relationship_type, strength, confidence, evidence, source, source_model)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'ai_inferred', $8)
+         ON CONFLICT (scope, from_node_id, to_node_id, relationship_type) DO NOTHING
+         RETURNING id
+       )
+       SELECT id FROM inserted
+       UNION ALL
+       SELECT id FROM edges WHERE scope = $1 AND from_node_id = $2 AND to_node_id = $3 AND relationship_type = $4
+       LIMIT 1`,
+      [
+        this.scope,
+        inference.fromNodeId,
+        inference.toNodeId,
+        inference.relationshipType,
+        inference.confidence,
+        inference.confidence,
+        JSON.stringify(inference.evidence ?? []),
+        this.config.model,
+      ]
+    );
+
+    return row?.id ?? null;
   }
 }

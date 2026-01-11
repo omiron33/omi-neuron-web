@@ -48,8 +48,8 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 - [x] ✅ **Phase 7B: Storage Backends + Local-First DX** — In-memory + file-backed backends for low-ops onboarding (`plans/phase-7b-storage-backends-plan.md`)
 - [x] ✅ **Phase 7C: Connectors + Ingestion Recipes** — Markdown/GitHub/RSS/Notion ingestion + provenance (`plans/phase-7c-connectors-and-ingestion-plan.md`)
 - [x] ✅ **Phase 7D: Production Hardening** — Auth hooks, multi-tenancy scoping, security, observability (`plans/phase-7d-production-hardening-plan.md`)
-- [ ] 🟥 **Phase 7E: Jobs + Governance** — Streaming progress, suggested-edge approvals workflow (`plans/phase-7e-jobs-and-governance-plan.md`)
-- [ ] 🟥 **Phase 7F: Visualization UX + Scale** — Optional explorer UX + performance/scalability knobs (`plans/phase-7f-visualization-ux-and-scale-plan.md`)
+- [x] ✅ **Phase 7E: Jobs + Governance** — Streaming progress, suggested-edge approvals workflow (`plans/phase-7e-jobs-and-governance-plan.md`)
+- [x] ✅ **Phase 7F: Visualization UX + Scale** — Optional explorer UX + performance/scalability knobs (`plans/phase-7f-visualization-ux-and-scale-plan.md`)
 
 ---
 
@@ -99,11 +99,13 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 ### ✅ Phase 7D - Production Hardening
 - `plans/phase-7d-production-hardening-plan.md` — Scope/multi-tenancy, auth hooks, security middleware, observability
 
-### 🟥 Phase 7E - Jobs + Governance
+### ✅ Phase 7E - Jobs + Governance
 - `plans/phase-7e-jobs-and-governance-plan.md` — Progress streaming (SSE), suggested edges queue + approvals
 
-### 🟥 Phase 7F - Visualization UX + Scale
+### ✅ Phase 7F - Visualization UX + Scale
 - `plans/phase-7f-visualization-ux-and-scale-plan.md` — Explorer UX toolkit, scalability and performance presets
+
+✅ Completed (Phase 4 validation checklist satisfied; explorer wrapper + helpers shipped).
 
 ### ✅ Phase 5 - React Integration
 - `plans/phase-5-integration-plan.md` — Provider, hooks, Next.js wrapper, examples

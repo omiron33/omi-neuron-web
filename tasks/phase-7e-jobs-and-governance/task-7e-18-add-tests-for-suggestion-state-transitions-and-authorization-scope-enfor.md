@@ -1,6 +1,6 @@
 ---
 title: Add tests for suggestion state transitions and authorization/scope enforcement hooks.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,14 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added API-level tests for governance state transitions + auth guard ordering:
+  - `tests/api/suggestions-routes.test.ts`:
+    - single approve: creates (or reuses) `ai_inferred` edge and is idempotent
+    - single reject: records reason and is idempotent
+    - bulk approve: scope-aware, returns `notFoundIds`, preserves already-approved suggestions
+    - bulk reject: scope-aware, returns `notFoundIds`, does not overwrite already-rejected reasons
+    - auth guard: denies before hitting storage (no DB calls on forbidden scope)
+- Validation run on 2026-01-11:
+  - `pnpm typecheck` ✅
+  - `pnpm lint` ✅ (warnings only; unchanged)
+  - `pnpm test` ✅

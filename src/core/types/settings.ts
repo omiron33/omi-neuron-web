@@ -167,6 +167,14 @@ export interface AnalysisSettings {
   /** Maximum relationships per node */
   relationshipMaxPerNode: number;
 
+  // Relationship governance (Phase 7E)
+  /** Persist inferred relationships into `suggested_edges` for review/approval workflows. */
+  relationshipGovernanceEnabled: boolean;
+  /** Automatically approve suggestions into real edges when confidence is high enough. */
+  relationshipAutoApproveEnabled: boolean;
+  /** Confidence threshold (0–1) for auto-approving suggestions into edges. */
+  relationshipAutoApproveMinConfidence: number;
+
   // Rate limiting
   /** OpenAI requests per minute */
   openaiRateLimit: number;
@@ -379,6 +387,9 @@ export const DEFAULT_ANALYSIS_SETTINGS: AnalysisSettings = {
   relationshipInferenceModel: 'gpt-4o-mini',
   relationshipMinConfidence: 0.7,
   relationshipMaxPerNode: 10,
+  relationshipGovernanceEnabled: true,
+  relationshipAutoApproveEnabled: true,
+  relationshipAutoApproveMinConfidence: 0.7,
   openaiRateLimit: 60,
   maxConcurrentAnalysis: 5,
 };

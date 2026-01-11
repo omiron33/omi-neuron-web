@@ -19,7 +19,7 @@
 
 | Feature | normal | degraded | fallback |
 | --- | --- | --- | --- |
-| Labels | On (distance + max count) | Off by default | Off |
+| Labels | On (distance + max count) | Interaction-only by default | Off |
 | Hover cards | On | On | Off |
 | Click card | On | On | Off |
 | Click zoom | On | On | On (shorter duration) |
@@ -65,6 +65,27 @@ If `rendering.performance.normalMaxNodes` / `rendering.performance.degradedMaxNo
 Note (high-DPI devices):
 - Auto gating uses a small device pixel ratio factor so large canvases on high-DPI screens degrade earlier.
   Current behavior treats the “effective node count” as `nodeCount * sqrt(devicePixelRatio)` with `devicePixelRatio` capped at 2.
+  The auto selection logic is also exported as `getAutoPerformanceMode` from `@omiron33/omi-neuron-web/visualization`.
+
+### Using `getAutoPerformanceMode` (consumer helper)
+
+If you want to mirror `NeuronWeb`’s auto-selection logic outside the component (e.g. to pre-pick UI defaults), use:
+
+```ts
+import { getAutoPerformanceMode } from '@omiron33/omi-neuron-web/visualization';
+
+const mode = getAutoPerformanceMode({
+  nodeCount: nodes.length,
+  pixelRatio: typeof window !== 'undefined' ? window.devicePixelRatio : 1,
+  pixelRatioCap: 2,
+  normalMaxNodes: 180,
+  degradedMaxNodes: 360,
+});
+```
+
+Notes:
+- `normalMaxNodes` / `degradedMaxNodes` are optional (defaults: `180` and `360`).
+- `pixelRatio` is optional; when omitted it defaults to `1`.
 
 ### Override semantics (important)
 
@@ -81,7 +102,7 @@ Note (high-DPI devices):
 1. **Auto mode** selects `normal`, `degraded`, or `fallback` based on node count.
 2. **Manual `performanceMode`** overrides all auto gating.
 3. **Reduced motion** (prefers-reduced-motion) disables ambient motion, edge flow, and any camera tween longer than 400ms.
-4. **Labels** render only in `normal` mode; if enabled, cap counts and distance thresholds to avoid overdraw.
+4. **Labels** render in `normal` by default (distance + max count). `degraded` defaults to interaction-only; `fallback` defaults to none.
 5. **Hover + click cards** disable in fallback to prevent layout thrash and keep pointer latency low.
 6. **Postprocessing** is opt-in for `normal` and always disabled in `degraded` and `fallback`.
 7. **Starfield density** scales with mode (normal > degraded > fallback).

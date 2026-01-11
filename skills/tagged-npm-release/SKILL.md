@@ -7,7 +7,7 @@ description: Tag-based npm release automation for omi-neuron-web. Use when asked
 
 ## Overview
 
-Create a patch tag (`vX.Y.Z`) that triggers the GitHub Actions publish workflow. Tags are the release version source of truth. The workflow updates `package.json` + `src/index.ts`, commits back to `main`, builds, and publishes to npm.
+Create a patch tag (`vX.Y.Z`) that triggers the GitHub Actions publish workflow. Tags are the release version source of truth. The workflow updates `package.json` + `src/version.ts`, commits back to `main`, builds, and publishes to npm.
 
 ## Quick Start
 

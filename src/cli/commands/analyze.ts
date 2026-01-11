@@ -49,6 +49,9 @@ async function buildPipeline(): Promise<AnalysisPipeline> {
     includeExisting: false,
     batchSize: 10,
     rateLimit: 30,
+    governanceEnabled: true,
+    autoApproveEnabled: true,
+    autoApproveMinConfidence: 0.7,
   }, new OpenAILLMProvider({ apiKey: process.env.OPENAI_API_KEY ?? '' }));
 
   return new AnalysisPipeline(db, embeddings, clustering, relationships, events);

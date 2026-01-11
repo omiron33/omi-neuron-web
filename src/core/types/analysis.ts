@@ -20,6 +20,25 @@ export type AnalysisRunType =
 export type AnalysisJobStatus = 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 /**
+ * Persisted job progress snapshot (Phase 7E).
+ * This is designed to be safe for polling responses and SSE payloads.
+ */
+export interface AnalysisProgressSnapshot {
+  jobId: string;
+  scope: string;
+  runType: AnalysisRunType;
+  stage: 'embeddings' | 'clustering' | 'relationships' | 'complete';
+  /** Stage progress (0–100). */
+  progress: number;
+  /** Overall progress across all stages (0–100). */
+  overallProgress: number;
+  currentItem: string;
+  itemsProcessed: number;
+  totalItems: number;
+  estimatedTimeRemaining?: number;
+}
+
+/**
  * Analysis run record - tracks analysis jobs
  */
 export interface AnalysisRun {
@@ -177,5 +196,4 @@ export interface AnalysisPipelineConfig {
   openaiRateLimit: number;
   maxConcurrentAnalysis: number;
 }
-
 

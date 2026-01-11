@@ -113,3 +113,15 @@ All endpoints should use:
 If multi-tenant is enabled and clients are untrusted:
 - validate `context.scope` in `auth.authorize` before allowing list/approve/reject.
 
+## Auto-approve configuration (server-side)
+Relationship inference can be configured to either:
+- write only suggestions (pending) for human review, or
+- auto-approve high-confidence suggestions into real edges.
+
+Current settings (Phase 7E):
+- `analysis.relationshipGovernanceEnabled` (default: `true`) — when enabled, inference persists to `suggested_edges`.
+- `analysis.relationshipAutoApproveEnabled` (default: `true`) — when enabled, eligible suggestions are auto-approved.
+- `analysis.relationshipAutoApproveMinConfidence` (default: `0.7`) — minimum confidence required for auto-approval.
+
+Notes:
+- If `suggested_edges` does not exist (migrations not applied), inference falls back to edge-only writes.

@@ -11,6 +11,7 @@ export { EdgeRepository } from './repositories/edge-repository';
 export { ClusterRepository } from './repositories/cluster-repository';
 export { SettingsRepository } from './repositories/settings-repository';
 export { AnalysisRunRepository } from './repositories/analysis-run-repository';
+export { SuggestedEdgeRepository } from './repositories/suggested-edge-repository';
 export { SourceRepository } from './repositories/source-repository';
 export { SourceItemRepository } from './repositories/source-item-repository';
 export { SourceItemNodeRepository } from './repositories/source-item-node-repository';

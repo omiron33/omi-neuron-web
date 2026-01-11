@@ -4,13 +4,13 @@ import { Command } from 'commander';
 import { logger } from '../utils/logger';
 import { writeTemplateFile } from '../utils/templates';
 
-const SERVER_CONFIG_TEMPLATE = `import { defineNeuronServerConfig, resolveNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from '@omiron33/omi-neuron-web';
+const SERVER_CONFIG_TEMPLATE = `import { defineNeuronServerConfig, resolveNeuronConfig, DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS, VERSION } from '@omiron33/omi-neuron-web';
 
 export const neuronServerConfig = defineNeuronServerConfig({
   settings: {
     instance: {
       name: '{{INSTANCE_NAME}}',
-      version: '0.1.1',
+      version: VERSION,
       repoName: '{{REPO_NAME}}',
     },
     visualization: DEFAULT_VISUALIZATION_SETTINGS,

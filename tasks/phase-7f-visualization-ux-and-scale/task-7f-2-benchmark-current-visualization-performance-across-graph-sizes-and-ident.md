@@ -1,6 +1,6 @@
 ---
 title: Benchmark current visualization performance across graph sizes and identify the top bottlenecks (labels, edges, interactions, layout).
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -40,3 +40,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added a benchmark plan + bottleneck analysis based on the current render loop and renderer architecture:
+  - `docs/phase-7f/scalability-benchmarks.md`

@@ -7,6 +7,7 @@ import { DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from '../co
 import { EventBus } from '../core/events/event-bus';
 import { NeuronApiClient } from './api-client';
 import { NeuronContext, type ErrorContext } from './context';
+import { VERSION } from '../version';
 
 export interface NeuronWebProviderProps {
   children: React.ReactNode;
@@ -32,7 +33,7 @@ export interface NeuronWebProviderProps {
 const buildDefaultConfig = (overrides?: Partial<NeuronSettings>): NeuronConfig => ({
   instance: {
     name: 'default',
-    version: '0.1.1',
+    version: VERSION,
     repoName: 'omi-neuron-web',
   },
   visualization: { ...DEFAULT_VISUALIZATION_SETTINGS, ...(overrides?.visualization ?? {}) },

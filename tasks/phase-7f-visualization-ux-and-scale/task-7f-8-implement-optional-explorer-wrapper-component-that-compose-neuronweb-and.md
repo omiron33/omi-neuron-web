@@ -1,6 +1,6 @@
 ---
 title: Implement optional explorer wrapper component(s) that compose `NeuronWeb` and expose slots for UI extensions.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,6 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented `src/visualization/explorer/NeuronWebExplorer.tsx` supporting controlled + hook-driven modes.
+- Added public exports and types via `src/visualization/index.ts`, `src/visualization/types.ts`, and `src/index.ts`.
+- Added smoke test `tests/visualization/neuron-web-explorer.test.tsx`.

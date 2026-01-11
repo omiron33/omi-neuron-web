@@ -1,6 +1,6 @@
 ---
 title: Validate performance improvements against baseline budgets (documented in Phase 4B).
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Updated `docs/visualization/performance-budgets.md` to reflect Phase 7F defaults (degraded label visibility is interaction-only by default) and to reference the exported `getAutoPerformanceMode` helper.
+- Full browser profiling (FPS / long tasks) remains a manual validation step; use `docs/phase-7f/scalability-benchmarks.md` as the benchmark procedure.
