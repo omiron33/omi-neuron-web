@@ -1,6 +1,6 @@
 ---
 title: Define a rendering options contract (types + defaults) and decide whether it lives in `theme`, a new prop, or both.
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

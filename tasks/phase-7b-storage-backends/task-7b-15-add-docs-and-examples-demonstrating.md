@@ -1,6 +1,6 @@
 ---
 title: Add docs and examples demonstrating:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,6 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added local-first quickstart doc (`docs/local-first.md`) and updated configuration docs (`docs/configuration.md`).
+- Updated `README.md` to document `storage` config and new `omi-neuron init` flags.
+- Added a minimal example config in `examples/local-first/`.

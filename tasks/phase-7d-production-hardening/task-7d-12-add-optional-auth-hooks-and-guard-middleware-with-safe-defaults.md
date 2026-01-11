@@ -1,6 +1,6 @@
 ---
 title: Add optional auth hooks and guard middleware with safe defaults (no-op when not configured).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,15 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added a portable auth guard middleware (safe default: no-op) in `src/api/middleware/auth.ts`:
+  - `withAuthGuard(handler, { authorize? })`
+  - `authorize(request, context)` supports boolean or structured deny responses
+  - returns consistent JSON error shape and includes `requestId` on denials
+- Integrated auth hook points into route creation:
+  - `createNeuronRoutes(config, { auth?, requestContext? })` now accepts a shared `auth` option (optional)
+  - Route handlers wrap contextual handlers with `withAuthGuard(...)` before `withRequestContext(...)`
+- Added response request-correlation propagation: `withRequestContext` now echoes `x-request-id` on responses.
+- Tests added:
+  - `tests/api/auth-guard.test.ts`
+- Docs updated:
+  - `README.md` now documents `auth` option and `withAuthGuard`.

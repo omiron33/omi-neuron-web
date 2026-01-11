@@ -1,5 +1,7 @@
 import type { Database } from '../../storage/database';
 import type { NeuronNode, NeuronNodeCreate, NeuronNodeUpdate } from '../../core/types/node';
+import type { GraphStoreContext } from '../../core/store/graph-store';
+import { resolveScope } from '../../core/store/graph-store';
 import type { QueryOptions } from './base';
 import { BaseRepository } from './base';
 
@@ -35,47 +37,54 @@ export class NodeRepository extends BaseRepository<NeuronNode, NeuronNodeCreate,
     super(db, 'nodes');
   }
 
-  override async findById(id: string): Promise<NeuronNode | null> {
-    const row = await this.db.queryOne<Record<string, unknown>>('SELECT * FROM nodes WHERE id = $1', [id]);
+  override async findById(id: string, context?: GraphStoreContext): Promise<NeuronNode | null> {
+    const scope = resolveScope(context);
+    const row = await this.db.queryOne<Record<string, unknown>>('SELECT * FROM nodes WHERE id = $1 AND scope = $2', [id, scope]);
     return row ? mapNodeRow(row) : null;
   }
 
-  override async findAll(options?: QueryOptions): Promise<NeuronNode[]> {
-    const rows = await super.findAll(options);
+  override async findAll(options?: QueryOptions, context?: GraphStoreContext): Promise<NeuronNode[]> {
+    const rows = await super.findAll(options, context);
     return (rows as unknown as Record<string, unknown>[]).map(mapNodeRow);
   }
 
-  async findBySlug(slug: string): Promise<NeuronNode | null> {
-    const row = await this.db.queryOne<Record<string, unknown>>('SELECT * FROM nodes WHERE slug = $1', [slug]);
+  async findBySlug(slug: string, context?: GraphStoreContext): Promise<NeuronNode | null> {
+    const scope = resolveScope(context);
+    const row = await this.db.queryOne<Record<string, unknown>>('SELECT * FROM nodes WHERE slug = $1 AND scope = $2', [slug, scope]);
     return row ? mapNodeRow(row) : null;
   }
 
-  async findByDomain(domain: string): Promise<NeuronNode[]> {
-    const rows = await this.db.query<Record<string, unknown>>('SELECT * FROM nodes WHERE domain = $1', [domain]);
+  async findByDomain(domain: string, context?: GraphStoreContext): Promise<NeuronNode[]> {
+    const scope = resolveScope(context);
+    const rows = await this.db.query<Record<string, unknown>>('SELECT * FROM nodes WHERE domain = $1 AND scope = $2', [domain, scope]);
     return rows.map(mapNodeRow);
   }
 
-  async findByCluster(clusterId: string): Promise<NeuronNode[]> {
-    const rows = await this.db.query<Record<string, unknown>>('SELECT * FROM nodes WHERE cluster_id = $1', [clusterId]);
+  async findByCluster(clusterId: string, context?: GraphStoreContext): Promise<NeuronNode[]> {
+    const scope = resolveScope(context);
+    const rows = await this.db.query<Record<string, unknown>>('SELECT * FROM nodes WHERE cluster_id = $1 AND scope = $2', [clusterId, scope]);
     return rows.map(mapNodeRow);
   }
 
-  async search(query: string): Promise<NeuronNode[]> {
+  async search(query: string, context?: GraphStoreContext): Promise<NeuronNode[]> {
+    const scope = resolveScope(context);
     const rows = await this.db.query<Record<string, unknown>>(
-      `SELECT * FROM nodes WHERE label ILIKE $1 OR summary ILIKE $1 OR content ILIKE $1`,
-      [`%${query}%`]
+      `SELECT * FROM nodes WHERE scope = $2 AND (label ILIKE $1 OR summary ILIKE $1 OR content ILIKE $1)`,
+      [`%${query}%`, scope]
     );
     return rows.map(mapNodeRow);
   }
 
-  async batchCreate(nodes: NeuronNodeCreate[]): Promise<NeuronNode[]> {
+  async batchCreate(nodes: NeuronNodeCreate[], context?: GraphStoreContext): Promise<NeuronNode[]> {
+    const scope = resolveScope(context);
     const created: NeuronNode[] = [];
     for (const node of nodes) {
       const row = await this.db.queryOne<Record<string, unknown>>(
-        `INSERT INTO nodes (slug, label, node_type, domain, summary, description, content, metadata, tier)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO nodes (scope, slug, label, node_type, domain, summary, description, content, metadata, tier)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING *`,
         [
+          scope,
           node.slug,
           node.label,
           node.nodeType ?? 'concept',
@@ -92,20 +101,21 @@ export class NodeRepository extends BaseRepository<NeuronNode, NeuronNodeCreate,
     return created;
   }
 
-  async updateConnectionCounts(nodeId: string): Promise<void> {
+  async updateConnectionCounts(nodeId: string, context?: GraphStoreContext): Promise<void> {
+    const scope = resolveScope(context);
     const inbound = await this.db.queryOne<{ count: string }>(
-      'SELECT COUNT(*)::int as count FROM edges WHERE to_node_id = $1',
-      [nodeId]
+      'SELECT COUNT(*)::int as count FROM edges WHERE to_node_id = $1 AND scope = $2',
+      [nodeId, scope]
     );
     const outbound = await this.db.queryOne<{ count: string }>(
-      'SELECT COUNT(*)::int as count FROM edges WHERE from_node_id = $1',
-      [nodeId]
+      'SELECT COUNT(*)::int as count FROM edges WHERE from_node_id = $1 AND scope = $2',
+      [nodeId, scope]
     );
     const inboundCount = Number(inbound?.count ?? 0);
     const outboundCount = Number(outbound?.count ?? 0);
     await this.db.execute(
-      'UPDATE nodes SET inbound_count = $1, outbound_count = $2, connection_count = $3 WHERE id = $4',
-      [inboundCount, outboundCount, inboundCount + outboundCount, nodeId]
+      'UPDATE nodes SET inbound_count = $1, outbound_count = $2, connection_count = $3 WHERE id = $4 AND scope = $5',
+      [inboundCount, outboundCount, inboundCount + outboundCount, nodeId, scope]
     );
   }
 }

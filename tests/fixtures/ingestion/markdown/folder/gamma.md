@@ -1,0 +1,4 @@
+# Gamma Note
+
+No links.
+

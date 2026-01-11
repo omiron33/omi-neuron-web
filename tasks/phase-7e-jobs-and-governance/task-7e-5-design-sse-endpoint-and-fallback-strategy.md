@@ -1,6 +1,6 @@
 ---
 title: Design SSE endpoint(s) and fallback strategy:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,9 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Defined an SSE v1 contract and fallback polling strategy in `docs/phase-7e/sse-contract.md`.
+- Key decisions:
+  - SSE route: `GET /api/neuron/analyze/:jobId/stream`
+  - Always send an initial progress snapshot on connect; reconnection strategy is “snapshot on reconnect” (no replay required for v1).
+  - Heartbeat via comment `: ping` to keep proxies from timing out idle streams.
+  - Close stream once the job reaches a terminal state.

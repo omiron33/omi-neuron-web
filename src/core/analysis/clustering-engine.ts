@@ -3,6 +3,8 @@ import type { Database } from '../../storage/database';
 import type { ClusterMembership } from '../types/cluster';
 import type { NeuronNode } from '../types/node';
 import type { EmbeddingsService } from './embeddings-service';
+import type { GraphStoreContext } from '../store/graph-store';
+import { resolveScope } from '../store/graph-store';
 
 export interface ClusteringConfig {
   algorithm: 'kmeans' | 'dbscan' | 'hierarchical';
@@ -47,7 +49,11 @@ const averageVector = (vectors: number[][]): number[] => {
 };
 
 export class ClusteringEngine {
-  constructor(private db: Database, private embeddings: EmbeddingsService) {}
+  private scope: string;
+
+  constructor(private db: Database, private embeddings: EmbeddingsService, context?: GraphStoreContext) {
+    this.scope = resolveScope(context);
+  }
 
   async clusterNodes(config: ClusteringConfig): Promise<{ clusters: ClusteringResult[]; unassigned: string[] }> {
     const nodes = await this.fetchNodesWithEmbeddings();
@@ -75,8 +81,8 @@ export class ClusteringEngine {
 
   async assignToCluster(nodeId: string): Promise<ClusterMembership | null> {
     const node = await this.db.queryOne<{ id: string; embedding: number[] | null }>(
-      'SELECT id, embedding FROM nodes WHERE id = $1',
-      [nodeId]
+      'SELECT id, embedding FROM nodes WHERE id = $1 AND scope = $2',
+      [nodeId, this.scope]
     );
     if (!node?.embedding) return null;
 
@@ -84,13 +90,14 @@ export class ClusteringEngine {
     if (!best) return null;
 
     await this.db.execute(
-      'INSERT INTO cluster_memberships (node_id, cluster_id, similarity_score, is_primary) VALUES ($1, $2, $3, true) ON CONFLICT (node_id, cluster_id) DO UPDATE SET similarity_score = $3, is_primary = true',
-      [nodeId, best.clusterId, best.similarity]
+      'INSERT INTO cluster_memberships (scope, node_id, cluster_id, similarity_score, is_primary) VALUES ($1, $2, $3, $4, true) ON CONFLICT (node_id, cluster_id) DO UPDATE SET similarity_score = $4, is_primary = true',
+      [this.scope, nodeId, best.clusterId, best.similarity]
     );
-    await this.db.execute('UPDATE nodes SET cluster_id = $1, cluster_similarity = $2 WHERE id = $3', [
+    await this.db.execute('UPDATE nodes SET cluster_id = $1, cluster_similarity = $2 WHERE id = $3 AND scope = $4', [
       best.clusterId,
       best.similarity,
       nodeId,
+      this.scope,
     ]);
 
     return {
@@ -104,7 +111,8 @@ export class ClusteringEngine {
 
   async findBestCluster(embedding: number[]): Promise<{ clusterId: string; similarity: number } | null> {
     const clusters = await this.db.query<{ id: string; centroid: number[] | null }>(
-      'SELECT id, centroid FROM clusters WHERE centroid IS NOT NULL'
+      'SELECT id, centroid FROM clusters WHERE centroid IS NOT NULL AND scope = $1',
+      [this.scope]
     );
     let best: { clusterId: string; similarity: number } | null = null;
     clusters.forEach((cluster) => {
@@ -119,20 +127,21 @@ export class ClusteringEngine {
 
   async recomputeCentroid(clusterId: string): Promise<void> {
     const rows = await this.db.query<{ embedding: number[] | null }>(
-      'SELECT n.embedding FROM nodes n JOIN cluster_memberships cm ON n.id = cm.node_id WHERE cm.cluster_id = $1',
-      [clusterId]
+      'SELECT n.embedding FROM nodes n JOIN cluster_memberships cm ON n.id = cm.node_id WHERE cm.cluster_id = $1 AND cm.scope = $2 AND n.scope = $2',
+      [clusterId, this.scope]
     );
     const vectors = rows.map((row) => row.embedding).filter(Boolean) as number[][];
     if (vectors.length === 0) return;
     const centroid = averageVector(vectors);
-    await this.db.execute('UPDATE clusters SET centroid = $1, last_recomputed_at = NOW() WHERE id = $2', [
+    await this.db.execute('UPDATE clusters SET centroid = $1, last_recomputed_at = NOW() WHERE id = $2 AND scope = $3', [
       centroid,
       clusterId,
+      this.scope,
     ]);
   }
 
   async recomputeAllCentroids(): Promise<void> {
-    const clusters = await this.db.query<{ id: string }>('SELECT id FROM clusters');
+    const clusters = await this.db.query<{ id: string }>('SELECT id FROM clusters WHERE scope = $1', [this.scope]);
     for (const cluster of clusters) {
       await this.recomputeCentroid(cluster.id);
     }
@@ -140,16 +149,16 @@ export class ClusteringEngine {
 
   async generateClusterLabel(clusterId: string): Promise<string> {
     const rows = await this.db.query<{ label: string }>(
-      'SELECT n.label FROM nodes n JOIN cluster_memberships cm ON n.id = cm.node_id WHERE cm.cluster_id = $1 LIMIT 5',
-      [clusterId]
+      'SELECT n.label FROM nodes n JOIN cluster_memberships cm ON n.id = cm.node_id WHERE cm.cluster_id = $1 AND cm.scope = $2 AND n.scope = $2 LIMIT 5',
+      [clusterId, this.scope]
     );
     const label = rows.map((row) => row.label).join(', ');
-    await this.db.execute('UPDATE clusters SET label = $1 WHERE id = $2', [label, clusterId]);
+    await this.db.execute('UPDATE clusters SET label = $1 WHERE id = $2 AND scope = $3', [label, clusterId, this.scope]);
     return label;
   }
 
   async generateAllLabels(): Promise<void> {
-    const clusters = await this.db.query<{ id: string }>('SELECT id FROM clusters');
+    const clusters = await this.db.query<{ id: string }>('SELECT id FROM clusters WHERE scope = $1', [this.scope]);
     for (const cluster of clusters) {
       await this.generateClusterLabel(cluster.id);
     }
@@ -166,7 +175,8 @@ export class ClusteringEngine {
 
   private async fetchNodesWithEmbeddings(): Promise<Array<NeuronNode & { embedding: number[] }>> {
     const nodes = await this.db.query<NeuronNode & { embedding: number[] }>(
-      'SELECT * FROM nodes WHERE embedding IS NOT NULL'
+      'SELECT * FROM nodes WHERE embedding IS NOT NULL AND scope = $1',
+      [this.scope]
     );
     return nodes as Array<NeuronNode & { embedding: number[] }>;
   }
@@ -283,15 +293,17 @@ export class ClusteringEngine {
   }
 
   private async persistClusters(clusters: ClusteringResult[]): Promise<void> {
+    const scope = this.scope;
     await this.db.transaction(async (client) => {
-      await client.query('DELETE FROM cluster_memberships');
-      await client.query('DELETE FROM clusters');
+      await client.query('DELETE FROM cluster_memberships WHERE scope = $1', [scope]);
+      await client.query('DELETE FROM clusters WHERE scope = $1', [scope]);
 
       for (const cluster of clusters) {
         await client.query(
-          'INSERT INTO clusters (id, label, centroid, member_count, avg_similarity, cohesion, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())',
+          'INSERT INTO clusters (id, scope, label, centroid, member_count, avg_similarity, cohesion, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())',
           [
             cluster.clusterId,
+            scope,
             cluster.label,
             cluster.centroid,
             cluster.nodeIds.length,
@@ -302,13 +314,14 @@ export class ClusteringEngine {
 
         for (const nodeId of cluster.nodeIds) {
           await client.query(
-            'INSERT INTO cluster_memberships (node_id, cluster_id, similarity_score, is_primary) VALUES ($1, $2, $3, true)',
-            [nodeId, cluster.clusterId, cluster.avgSimilarity]
+            'INSERT INTO cluster_memberships (scope, node_id, cluster_id, similarity_score, is_primary) VALUES ($1, $2, $3, $4, true)',
+            [scope, nodeId, cluster.clusterId, cluster.avgSimilarity]
           );
-          await client.query('UPDATE nodes SET cluster_id = $1, cluster_similarity = $2 WHERE id = $3', [
+          await client.query('UPDATE nodes SET cluster_id = $1, cluster_similarity = $2 WHERE id = $3 AND scope = $4', [
             cluster.clusterId,
             cluster.avgSimilarity,
             nodeId,
+            scope,
           ]);
         }
       }

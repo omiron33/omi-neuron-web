@@ -221,6 +221,16 @@ export interface DatabaseSettings {
 }
 
 /**
+ * Storage backend selection (Phase 7B).
+ * Defaults to Postgres when omitted for backwards compatibility.
+ */
+export interface StorageSettings {
+  mode: 'postgres' | 'memory' | 'file';
+  filePath?: string;
+  persistIntervalMs?: number;
+}
+
+/**
  * API settings
  */
 export interface ApiSettings {
@@ -276,10 +286,40 @@ export interface NeuronConfig extends NeuronSettings {
   };
   /** Database configuration */
   database: DatabaseSettings;
+  /** Storage backend selection (optional, defaults to Postgres) */
+  storage?: StorageSettings;
   /** API configuration */
   api: ApiSettings;
   /** Logging configuration */
   logging: LoggingSettings;
+}
+
+/**
+ * Layered configuration: server-only secrets and wiring.
+ * This is an additive type to help consumers avoid putting secrets in client bundles.
+ */
+export interface NeuronServerConfig {
+  /** Optional settings overrides (merged on top of defaults) */
+  settings?: Partial<NeuronSettings>;
+  /** OpenAI configuration (server-only) */
+  openai: NeuronConfig['openai'];
+  /** Database configuration (server-only) */
+  database: DatabaseSettings;
+  /** Storage backend selection (optional, defaults to Postgres) */
+  storage?: StorageSettings;
+  /** API configuration */
+  api?: Partial<ApiSettings>;
+  /** Logging configuration */
+  logging?: Partial<LoggingSettings>;
+}
+
+/**
+ * Layered configuration: client-safe settings.
+ * Should never include secrets.
+ */
+export interface NeuronClientConfig {
+  api: Pick<ApiSettings, 'basePath'>;
+  settings?: Partial<NeuronSettings>;
 }
 
 /**
@@ -342,5 +382,3 @@ export const DEFAULT_ANALYSIS_SETTINGS: AnalysisSettings = {
   openaiRateLimit: 60,
   maxConcurrentAnalysis: 5,
 };
-
-

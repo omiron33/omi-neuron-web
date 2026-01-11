@@ -1,6 +1,6 @@
 ---
 title: Add integration tests for pipeline composition (step ordering, cancellation, progress events, provider injection).
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,4 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added pipeline composition integration coverage in `tests/integration/pipeline-composition.test.ts`.

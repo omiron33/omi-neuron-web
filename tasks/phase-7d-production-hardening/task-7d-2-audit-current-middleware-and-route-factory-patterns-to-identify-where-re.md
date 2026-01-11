@@ -1,6 +1,6 @@
 ---
 title: Audit current middleware and route factory patterns to identify where request context can be introduced cleanly.
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -39,3 +39,7 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Current API routes are Fetch-native handlers (`src/api/routes/*`) with no shared request context object.
+- Route composition exists in `src/api/middleware/*` but is not applied by default; `createNeuronRoutes` currently returns raw handlers.
+- Production hardening will introduce a request-context wrapper applied at route-factory boundaries (so consumer integration stays `handler(request)`).
+- Design doc: `docs/phase-7d/request-context.md`.

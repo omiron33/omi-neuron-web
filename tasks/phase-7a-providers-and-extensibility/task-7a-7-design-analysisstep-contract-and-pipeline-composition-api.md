@@ -1,6 +1,6 @@
 ---
 title: Design `AnalysisStep` contract and pipeline composition API (step ordering, dependencies, progress callbacks, cancellation).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,4 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Design artifact: `docs/phase-7a/pipeline-steps-contract.md`

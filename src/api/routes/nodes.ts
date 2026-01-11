@@ -1,21 +1,34 @@
 import { listNodesParamsSchema } from '../../core/schemas/api';
 import { nodeBatchCreateSchema, nodeUpdateSchema } from '../../core/schemas/node';
 import type { NeuronConfig } from '../../core/types/settings';
-import { createDatabase } from '../../storage/factory';
-import { NodeRepository } from '../repositories/node-repository';
+import type { GraphStore } from '../../core/store/graph-store';
+import { createGraphStore } from '../../storage/factory';
+import { toGraphStoreContext, withRequestContext, type ContextualRouteHandler, type RequestContextOptions } from '../middleware/request-context';
+import { withAuthGuard, type AuthGuardOptions } from '../middleware/auth';
+import { withBodySizeLimit, type BodySizeLimitOptions } from '../middleware/body-size-limit';
+import { withRateLimit, type RateLimitOptions } from '../middleware/rate-limit';
 
-export const createNodesRoutes = (config: NeuronConfig) => {
-  const db = createDatabase(config);
-  const repo = new NodeRepository(db);
+type RouteSecurityOptions = { bodySizeLimit?: BodySizeLimitOptions; rateLimit?: RateLimitOptions };
+
+export const createNodesRoutes = (
+  config: NeuronConfig,
+  injectedStore?: GraphStore,
+  requestContextOptions?: RequestContextOptions,
+  authOptions?: AuthGuardOptions,
+  security?: RouteSecurityOptions
+) => {
+  const store = injectedStore ?? createGraphStore(config);
+  const wrap = (handler: ContextualRouteHandler) =>
+    withBodySizeLimit(withRateLimit(withAuthGuard(handler, authOptions), security?.rateLimit), security?.bodySizeLimit);
 
   return {
-    async GET(request: Request) {
+    GET: withRequestContext(wrap(async (request, context) => {
       const url = new URL(request.url);
       const params = listNodesParamsSchema.parse(Object.fromEntries(url.searchParams));
-      const nodes = await repo.findAll({
-        where: {},
+      const nodes = await store.listNodes({
         limit: params.limit,
         offset: params.page ? (params.page - 1) * (params.limit ?? 50) : undefined,
+        context: toGraphStoreContext(context),
       });
       return Response.json({
         nodes,
@@ -32,28 +45,28 @@ export const createNodesRoutes = (config: NeuronConfig) => {
           filters: params,
         },
       });
-    },
-    async POST(request: Request) {
+    }), requestContextOptions),
+    POST: withRequestContext(wrap(async (request, context) => {
       const body = await request.json();
       const input = nodeBatchCreateSchema.parse(body);
-      const created = await repo.batchCreate(input.nodes);
+      const created = await store.createNodes(input.nodes, toGraphStoreContext(context));
       return Response.json({ created, skipped: [], analysisJobId: null }, { status: 201 });
-    },
-    async PATCH(request: Request) {
+    }), requestContextOptions),
+    PATCH: withRequestContext(wrap(async (request, context) => {
       const url = new URL(request.url);
       const id = url.pathname.split('/').pop();
       if (!id) return new Response('Missing id', { status: 400 });
       const body = await request.json();
       const input = nodeUpdateSchema.parse(body);
-      const updated = await repo.update(id, input);
+      const updated = await store.updateNode(id, input, toGraphStoreContext(context));
       return Response.json(updated);
-    },
-    async DELETE(request: Request) {
+    }), requestContextOptions),
+    DELETE: withRequestContext(wrap(async (request, context) => {
       const url = new URL(request.url);
       const id = url.pathname.split('/').pop();
       if (!id) return new Response('Missing id', { status: 400 });
-      const deleted = await repo.delete(id);
-      return Response.json({ deleted, edgesRemoved: 0 });
-    },
+      const result = await store.deleteNode(id, toGraphStoreContext(context));
+      return Response.json(result);
+    }), requestContextOptions),
   };
 };

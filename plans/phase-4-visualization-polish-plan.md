@@ -42,30 +42,30 @@
 
 ## Execution Phases
 
-### Phase 1 – Discovery 🟥
-- [ ] Audit current NeuronWeb visual baseline for density, motion, readability, and interaction affordances.
-- [ ] Define visual targets and performance budgets for normal/degraded/fallback modes.
-- [ ] Draft interaction/animation storyboard covering idle, hover, click, focus, and filter transitions.
-- [ ] Define hover card data contract (fields, truncation rules, slots, and fallback content).
+### Phase 1 – Discovery ✅
+- [x] Audit current NeuronWeb visual baseline for density, motion, readability, and interaction affordances.
+- [x] Define visual targets and performance budgets for normal/degraded/fallback modes.
+- [x] Draft interaction/animation storyboard covering idle, hover, click, focus, and filter transitions.
+- [x] Define hover card data contract (fields, truncation rules, slots, and fallback content).
 
-### Phase 2 – Design/Architecture 🟥
-- [ ] Extend visualization config/theme schema for animation, density, and effects options.
-- [ ] Design hover card system (anchoring, offset, pointer safety, z-order, and event flow).
-- [ ] Design de-densification strategy (spacing, focus expansion, edge fading, cluster halos) and APIs.
-- [ ] Plan postprocessing/effects pipeline (bloom/vignette/grade) with gating and fallback behavior.
+### Phase 2 – Design/Architecture ✅
+- [x] Extend visualization config/theme schema for animation, density, and effects options.
+- [x] Design hover card system (anchoring, offset, pointer safety, z-order, and event flow).
+- [x] Design de-densification strategy (spacing, focus expansion, edge fading, cluster halos) and APIs.
+- [x] Plan postprocessing/effects pipeline (bloom/vignette/grade) with gating and fallback behavior.
 
-### Phase 3 – Implementation 🟥
-- [ ] Implement ambient node motion, pulsing, and edge-flow animations with performance gates.
-- [ ] Implement hover card component with smooth enter/exit and pointer tracking.
-- [ ] Implement click/focus animation sequence (camera tween, ripple, edge emphasis, detail panel sync).
-- [ ] Implement density controls and layout spacing/focus expansion in layout utilities.
-- [ ] Implement postprocessing and background polish per theme (stars, gradients, subtle fog).
+### Phase 3 – Implementation ✅
+- [x] Implement ambient node motion, pulsing, and edge-flow animations with performance gates.
+- [x] Implement hover card component with smooth enter/exit and pointer tracking.
+- [x] Implement click/focus animation sequence (camera tween, ripple, edge emphasis, detail panel sync).
+- [x] Implement density controls and layout spacing/focus expansion in layout utilities.
+- [x] Implement postprocessing and background polish per theme (stars, gradients, subtle fog).
 
-### Phase 4 – Validation 🟥
-- [ ] Add visual regression/demo scenes for new effects and interactions.
-- [ ] Benchmark performance across node counts and tune gating thresholds.
-- [ ] Validate accessibility: keyboard focus, contrast, and reduced-motion support.
-- [ ] Update documentation and examples with new props and visuals.
+### Phase 4 – Validation ✅
+- [x] Add visual regression/demo scenes for new effects and interactions.
+- [x] Benchmark performance across node counts and tune gating thresholds.
+- [x] Validate accessibility: keyboard focus, contrast, and reduced-motion support.
+- [x] Update documentation and examples with new props and visuals.
 
 ## Risks & Mitigations
 - Performance regressions from effects → Gate by mode, allow per-feature disable, default conservative.

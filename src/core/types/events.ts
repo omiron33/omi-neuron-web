@@ -30,6 +30,12 @@ export type NeuronEventType =
   | 'analysis:completed'
   | 'analysis:failed'
   | 'analysis:cancelled'
+  // Analysis job streaming events (Phase 7E)
+  | 'analysis.job.started'
+  | 'analysis.job.progress'
+  | 'analysis.job.completed'
+  | 'analysis.job.failed'
+  | 'analysis.job.canceled'
 
   // Clustering events
   | 'cluster:created'
@@ -39,6 +45,11 @@ export type NeuronEventType =
   // Relationship inference events
   | 'relationship:inferred'
   | 'relationship:rejected'
+
+  // Governance (suggested edges) events (Phase 7E)
+  | 'edges.suggestion.created'
+  | 'edges.suggestion.approved'
+  | 'edges.suggestion.rejected'
 
   // Visualization events
   | 'viz:node_focused'
@@ -137,6 +148,41 @@ export interface AnalysisFailedEventPayload {
 export interface AnalysisCancelledEventPayload {
   jobId: string;
   reason: string;
+}
+
+// Analysis job streaming payloads (Phase 7E)
+export interface AnalysisJobStartedEventPayload {
+  jobId: string;
+  runType?: AnalysisRun['runType'];
+  scope?: string;
+}
+
+export interface AnalysisJobProgressEventPayload {
+  jobId: string;
+  scope?: string;
+  stage: string;
+  progress: number;
+  overallProgress?: number;
+  currentItem: string;
+  itemsProcessed: number;
+  totalItems: number;
+  estimatedTimeRemaining?: number;
+}
+
+export interface AnalysisJobCompletedEventPayload {
+  jobId: string;
+  scope?: string;
+}
+
+export interface AnalysisJobFailedEventPayload {
+  jobId: string;
+  scope?: string;
+  error: string;
+}
+
+export interface AnalysisJobCanceledEventPayload {
+  jobId: string;
+  scope?: string;
 }
 
 // Cluster event payloads
@@ -246,5 +292,4 @@ export interface NeuronEventEmitter {
   subscribeAll(handler: EventHandler<unknown>): EventSubscription;
   unsubscribeAll(): void;
 }
-
 

@@ -1,6 +1,6 @@
 ---
 title: Design hook APIs for React (stream subscription and suggestions management) and how they integrate with the existing `EventBus`.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Defined v1 React hook contracts and EventBus integration patterns in `docs/phase-7e/react-hooks.md`.
+- Key decisions:
+  - `useNeuronJobStream` prefers SSE with polling fallback.
+  - `useNeuronSuggestions` wraps list/approve/reject actions and emits governance events into the client `EventBus`.
+  - SSE scope support should use query params (`?scope=`) + `requestContext.resolveScope` (since browser `EventSource` cannot send custom headers).

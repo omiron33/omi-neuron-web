@@ -1,6 +1,6 @@
 ---
 title: Validate default behavior remains unchanged for single-tenant installs.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -42,3 +42,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added integration coverage for the no-scope-header path via `tests/integration/api-default-scope.test.ts`.
+- Confirmed missing `x-neuron-scope` behaves equivalently to `x-neuron-scope: default` while remaining isolated from non-default scopes.
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅
+  - `pnpm typecheck` ✅

@@ -1,6 +1,6 @@
 ---
 title: Design a `RequestContext` type and how it flows through routes → repositories → store:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Defined a minimal `RequestContext` contract (request id + scope + optional user/claims) and propagation rules.
+- Design doc: `docs/phase-7d/request-context.md`.

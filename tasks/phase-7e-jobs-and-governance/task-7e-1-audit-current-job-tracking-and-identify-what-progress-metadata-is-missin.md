@@ -1,6 +1,6 @@
 ---
 title: Audit current job tracking (`analysis_runs`) and identify what progress metadata is missing for a high-quality UX.
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -40,3 +40,19 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Current job tracking is persisted only to `analysis_runs` with:
+  - `status` (`queued|running|completed|failed|cancelled`)
+  - `progress` (integer, mostly unused mid-run)
+  - `input_params` / `results` JSONB
+  - timestamps and error fields
+- Missing for a high-quality progress UX:
+  - Progress snapshots persisted during execution (currently only `0 → 100` updates are written; no intermediate progress writes).
+  - A structured “stage/step/message” model (DB has no stage/step; `PipelineProgress` exists but is only callback-based and not persisted).
+  - A “last updated” marker for polling clients and SSE heartbeat semantics.
+  - Reliable cancellation semantics (current `cancelJob` sets DB status then aborts, but the running pipeline can still mark the job as failed).
+  - A consistent API contract for “start job → get progress/history” (`GET /analyze/history` exists but has no client method; `useNeuronAnalysis` casts `AnalysisResponse` into `AnalysisRun`).
+- Touchpoints / public surfaces impacted by Phase 7E:
+  - `src/core/analysis/pipeline.ts` and `src/core/analysis/steps/*` (emit/persist progress, cancellation semantics)
+  - `src/core/types/events.ts` + `src/core/events/event-bus.ts` (job + governance event taxonomy)
+  - `src/api/routes/analyze.ts` (SSE + polling endpoints; history list; cancel semantics)
+  - `src/react/api-client.ts` + `src/react/hooks/useNeuronAnalysis.ts` (job history/progress consumption and streaming hooks)

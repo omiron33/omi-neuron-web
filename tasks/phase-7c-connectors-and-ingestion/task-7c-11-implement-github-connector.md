@@ -1,6 +1,6 @@
 ---
 title: Implement GitHub connector (issues/PRs as nodes; cross-references and mentions as edges).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -41,3 +41,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented `GitHubConnector` with REST API listing + best-effort reference extraction for issues/PRs:
+  - `src/core/ingestion/connectors/github-connector.ts`

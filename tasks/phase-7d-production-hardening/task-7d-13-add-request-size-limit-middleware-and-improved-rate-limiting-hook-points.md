@@ -1,6 +1,6 @@
 ---
 title: Add request size limit middleware and improved rate limiting hook points.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,18 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added request body guard middleware:
+  - `src/api/middleware/body-size-limit.ts` exports `withBodySizeLimit(handler, { maxBytes?, contentLengthHeader? })`
+  - portable implementation using `Content-Length` when present; defaults to 1MB when enabled
+- Added hook-based rate limiting middleware:
+  - `src/api/middleware/rate-limit.ts` exports `withRateLimit(handler, { windowMs, max, keyFn?, limiter? })`
+  - no built-in store; consumers provide `limiter` (Redis/KV/in-memory) to enforce
+  - returns consistent 429 JSON error shape with optional rate limit headers
+- Integrated both into `createNeuronRoutes` via optional `bodySizeLimit` + `rateLimit` options:
+  - `src/api/routes/factory.ts` resolves `windowMs/max` from `options.rateLimit` or `config.api.rateLimit` (fallback 60s/60)
+  - route handlers wrap contextual handlers with body size + rate limit wrappers (before auth and before parsing JSON)
+- Added tests:
+  - `tests/api/body-size-limit.test.ts`
+  - `tests/api/rate-limit.test.ts`
+- Docs updated:
+  - `README.md` now documents `bodySizeLimit` and `rateLimit` options and middleware exports.

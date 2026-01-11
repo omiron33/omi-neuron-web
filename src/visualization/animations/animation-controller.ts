@@ -34,10 +34,19 @@ export class AnimationController {
   }
 
   focusOnPosition(position: THREE.Vector3, target: THREE.Vector3, callback?: () => void): void {
+    const duration = Math.max(0, this.config.focusDuration);
+    if (duration <= 0) {
+      this.focusTween = null;
+      this.camera.position.copy(position);
+      this.controls.target.copy(target);
+      this.controls.update();
+      if (callback) callback();
+      return;
+    }
     const now = performance.now();
     this.focusTween = {
       startTime: now,
-      duration: this.config.focusDuration,
+      duration,
       startPosition: this.camera.position.clone(),
       startTarget: this.controls.target.clone(),
       endPosition: position.clone(),
@@ -48,6 +57,10 @@ export class AnimationController {
 
   resetCamera(): void {
     this.controls.reset();
+  }
+
+  cancelFocus(): void {
+    this.focusTween = null;
   }
 
   animateNodeAppear(): void {}
@@ -67,6 +80,12 @@ export class AnimationController {
   update(): void {
     if (!this.focusTween) return;
     const now = performance.now();
+    if (this.focusTween.duration <= 0) {
+      const completion = this.focusTween.onComplete;
+      this.focusTween = null;
+      if (completion) completion();
+      return;
+    }
     const elapsed = Math.min(1, (now - this.focusTween.startTime) / this.focusTween.duration);
     const eased = this.applyEasing(elapsed);
     this.camera.position.lerpVectors(

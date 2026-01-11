@@ -1,6 +1,6 @@
 'use client';
 
-import { NeuronWeb } from '@omiron33/omi-neuron-web/visualization';
+import { NeuronWeb, type RenderingOptions, type RenderingPreset } from '@omiron33/omi-neuron-web/visualization';
 
 type GraphNodeTier = 'primary' | 'secondary' | 'tertiary' | 'insight';
 
@@ -121,6 +121,13 @@ function parseBool(value: string | undefined, fallback: boolean): boolean {
   return fallback;
 }
 
+function parseOptionalBool(value: string | undefined): boolean | undefined {
+  if (value === undefined) return undefined;
+  if (value === '1' || value === 'true' || value === 'yes') return true;
+  if (value === '0' || value === 'false' || value === 'no') return false;
+  return undefined;
+}
+
 export default function Page({
   searchParams,
 }: {
@@ -130,6 +137,12 @@ export default function Page({
     density?: string;
     cards?: string;
     effects?: string;
+    preset?: string;
+    resolver?: string;
+    beat?: string;
+    edges?: string;
+    arrows?: string;
+    flow?: string;
   };
 }) {
   const count = parseCount(searchParams?.count);
@@ -142,31 +155,175 @@ export default function Page({
   const densityMode = parseEnum(searchParams?.density, ['relaxed', 'balanced', 'compact']);
   const cardsMode = parseEnum(searchParams?.cards, ['hover', 'click', 'both', 'none']);
   const effectsEnabled = parseBool(searchParams?.effects, true);
+  const preset = (parseEnum(searchParams?.preset, ['minimal', 'subtle', 'cinematic']) ?? 'subtle') as RenderingPreset;
+  const resolverEnabled = parseBool(searchParams?.resolver, false);
+  const edgeMode = parseEnum(searchParams?.edges, ['straight', 'curved']);
+  const arrowsEnabled = parseOptionalBool(searchParams?.arrows);
+  const flowMode = parseEnum(searchParams?.flow, ['pulse', 'dash', 'off']);
   const { nodes, edges } = buildGraph(count);
 
+  const storyBeats = (() => {
+    const intro = ['node-1', 'node-5', 'node-9', 'node-12'].filter((id) =>
+      nodes.some((node) => node.id === id)
+    );
+    const insightIds = nodes
+      .filter((node) => node.tier === 'insight' || node.domain === 'insight')
+      .slice(0, 4)
+      .map((node) => node.id);
+
+    const beats = [
+      { id: 'beat-1', label: 'Intro sweep', nodeIds: intro.length ? intro : nodes.slice(0, 4).map((n) => n.id) },
+    ];
+    if (insightIds.length) {
+      beats.push({ id: 'beat-insights', label: 'Insight sweep', nodeIds: insightIds });
+    }
+    return beats;
+  })();
+
+  const activeStoryBeatId =
+    searchParams?.beat && searchParams.beat !== 'off' ? searchParams.beat : null;
+
+  const presetDefaults: Record<RenderingPreset, RenderingOptions> = {
+    minimal: {
+      preset: 'minimal',
+      nodes: { mode: 'sprite' },
+      edges: {
+        mode: 'straight',
+        arrows: { enabled: false },
+        flow: { enabled: false },
+      },
+      labels: { transitions: { enabled: false } },
+    },
+    subtle: {
+      preset: 'subtle',
+      nodes: { mode: 'sprite' },
+      edges: {
+        mode: 'straight',
+        arrows: { enabled: false },
+        flow: { enabled: true, mode: 'pulse', speed: 1.1 },
+      },
+      labels: {
+        tiers: { insight: 'always', primary: 'always' },
+        transitions: { enabled: true, durationMs: 160 },
+      },
+    },
+    cinematic: {
+      preset: 'cinematic',
+      nodes: { mode: 'mesh' },
+      edges: {
+        mode: 'curved',
+        arrows: { enabled: true, scale: 0.85 },
+        flow: { enabled: true, mode: 'dash', speed: 1.4, dashSize: 0.7, gapSize: 0.45 },
+        curve: { tension: 0.18, segments: 18 },
+      },
+      labels: {
+        tiers: { insight: 'always', primary: 'always' },
+        transitions: { enabled: true, durationMs: 200 },
+      },
+    },
+  };
+
+  const baseRendering = presetDefaults[preset];
+  const resolvedEdgeMode = edgeMode ?? baseRendering.edges?.mode ?? 'straight';
+  const resolvedArrowsEnabled = arrowsEnabled ?? Boolean(baseRendering.edges?.arrows?.enabled);
+
+  const resolvedFlow = (() => {
+    if (flowMode === 'off') return { enabled: false as const };
+    if (flowMode === 'pulse' || flowMode === 'dash') {
+      return { enabled: true as const, mode: flowMode, speed: 1.4, dashSize: 0.7, gapSize: 0.45 };
+    }
+    return baseRendering.edges?.flow;
+  })();
+
+  const rendering: RenderingOptions = {
+    preset,
+    nodes: baseRendering.nodes ?? { mode: 'sprite' },
+    labels: baseRendering.labels,
+    edges: {
+      ...(baseRendering.edges ?? {}),
+      mode: resolvedEdgeMode,
+      arrows: resolvedArrowsEnabled ? { enabled: true, scale: 0.85 } : { enabled: false },
+      flow: resolvedFlow,
+      curve: resolvedEdgeMode === 'curved' ? { tension: 0.18, segments: 18 } : undefined,
+    },
+    resolvers: resolverEnabled
+      ? {
+          getNodeStyle: (node) =>
+            node.tier === 'insight'
+              ? { scale: 1.25, opacity: 1, color: '#b08cff' }
+              : node.connectionCount > 10
+                ? { scale: 1.1, opacity: 0.95 }
+                : {},
+          getEdgeStyle: (edge) =>
+            edge.strength > 0.8 ? { opacity: 0.9, width: 1.4 } : edge.strength < 0.25 ? { opacity: 0.15 } : {},
+        }
+      : undefined,
+  };
+
   return (
-    <NeuronWeb
-      graphData={{ nodes, edges }}
-      layout={{ mode: 'fuzzy', seed: 'baseline' }}
-      density={{ mode: densityMode }}
-      cardsMode={cardsMode}
-      performanceMode={performanceMode}
-      hoverCard={{ showTags: true, showMetrics: true, maxSummaryLength: 120 }}
-      theme={
-        effectsEnabled
-          ? undefined
-          : {
-              effects: {
-                postprocessingEnabled: false,
-                bloomEnabled: false,
-                vignetteEnabled: false,
-                colorGradeEnabled: false,
-                ambientMotionEnabled: false,
-                edgeFlowEnabled: false,
-              },
-            }
-      }
-      fullHeight
-    />
+    <div style={{ position: 'relative', height: '100vh' }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 14,
+          left: 14,
+          zIndex: 10,
+          pointerEvents: 'none',
+          padding: '10px 12px',
+          borderRadius: 12,
+          border: '1px solid rgba(255, 255, 255, 0.14)',
+          background: 'rgba(6, 7, 28, 0.72)',
+          color: '#ffffff',
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: 12,
+          maxWidth: 320,
+          boxShadow: '0 16px 38px rgba(0,0,0,0.45)',
+        }}
+      >
+        <div style={{ fontWeight: 600, marginBottom: 6 }}>omi-neuron-web rendering demos</div>
+        <div>preset: {preset}</div>
+        <div>performanceMode: {performanceMode ?? 'auto'}</div>
+        <div>resolver demo: {resolverEnabled ? 'on' : 'off'}</div>
+        <div>story beat: {activeStoryBeatId ?? 'off'}</div>
+        <div style={{ opacity: 0.8, marginTop: 8, lineHeight: 1.4 }}>
+          Tip: curved edges, arrows, edge flow, mesh nodes, and graph transitions are gated to
+          <span style={{ fontWeight: 600 }}> normal</span> mode.
+          Try: <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+            ?preset=cinematic&amp;perf=normal
+          </span>
+        </div>
+        <div style={{ opacity: 0.8, marginTop: 6, lineHeight: 1.4 }}>
+          Story playback: <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+            ?beat=beat-1
+          </span>
+        </div>
+      </div>
+
+      <NeuronWeb
+        graphData={{ nodes, edges, storyBeats }}
+        layout={{ mode: 'fuzzy', seed: 'baseline' }}
+        density={{ mode: densityMode }}
+        cardsMode={cardsMode}
+        performanceMode={performanceMode}
+        activeStoryBeatId={activeStoryBeatId}
+        hoverCard={{ showTags: true, showMetrics: true, maxSummaryLength: 120 }}
+        theme={
+          effectsEnabled
+            ? undefined
+            : {
+                effects: {
+                  postprocessingEnabled: false,
+                  bloomEnabled: false,
+                  vignetteEnabled: false,
+                  colorGradeEnabled: false,
+                  ambientMotionEnabled: false,
+                  edgeFlowEnabled: false,
+                },
+              }
+        }
+        rendering={rendering}
+        fullHeight
+      />
+    </div>
   );
 }

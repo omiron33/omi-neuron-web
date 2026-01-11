@@ -77,9 +77,9 @@ Proposed minimal fields (finalized in Phase 2 design):
 ## Execution Phases
 
 ### Phase 1 – Discovery 🟥
-- [ ] Audit current job tracking (`analysis_runs`) and identify what progress metadata is missing for a high-quality UX.
-- [ ] Define event taxonomy for jobs and governance (event names, payload shapes, error semantics).
-- [ ] Define governance requirements (statuses, reviewer identity shape, bulk actions, retention) and document defaults.
+- [x] Audit current job tracking (`analysis_runs`) and identify what progress metadata is missing for a high-quality UX.
+- [x] Define event taxonomy for jobs and governance (event names, payload shapes, error semantics).
+- [x] Define governance requirements (statuses, reviewer identity shape, bulk actions, retention) and document defaults.
 
 ### Phase 2 – Design/Architecture 🟥
 Design artifacts to produce in this phase (recommended):
@@ -88,23 +88,23 @@ Design artifacts to produce in this phase (recommended):
 - `docs/phase-7e/suggested-edges-schema.md` (tables, status transitions, indexes)
 - `docs/phase-7e/governance-api.md` (endpoints, request/response shapes)
 
-- [ ] Design job progress reporting contract:
+- [x] Design job progress reporting contract:
   - progress units (percent/phase/step)
   - partial results (optional)
   - cancellation semantics
-- [ ] Design SSE endpoint(s) and fallback strategy:
+- [x] Design SSE endpoint(s) and fallback strategy:
   - route path(s)
   - reconnection behavior
   - heartbeat and timeout behavior
-- [ ] Design suggested-edge schema:
+- [x] Design suggested-edge schema:
   - `suggested_edges` table fields
   - relation to nodes/analysis runs
   - indexes + status transitions
-- [ ] Design API routes and client methods for suggestion listing + approval actions.
-- [ ] Design hook APIs for React (stream subscription and suggestions management) and how they integrate with the existing `EventBus`.
+- [x] Design API routes and client methods for suggestion listing + approval actions.
+- [x] Design hook APIs for React (stream subscription and suggestions management) and how they integrate with the existing `EventBus`.
 
 ### Phase 3 – Implementation 🟥
-- [ ] Extend analysis pipeline to emit structured progress events and persist progress snapshots to DB for polling.
+- [x] Extend analysis pipeline to emit structured progress events and persist progress snapshots to DB for polling.
 - [ ] Implement SSE endpoint(s) for job progress streaming and add fallback polling endpoints if needed.
 - [ ] Add migrations for suggested edges and implement repositories for suggestions.
 - [ ] Update relationship inference flow to write suggestions and optionally auto-approve based on config thresholds.

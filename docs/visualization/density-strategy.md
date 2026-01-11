@@ -20,6 +20,10 @@
 - **Labels:**
   - Render only in normal mode or when explicitly enabled.
   - Cap visible labels based on distance and max count.
+  - Prefer `rendering.labels` for precise control:
+    - `labels.visibility: 'interaction'` for degraded mode
+    - `labels.tiers` to prioritize primary/insight labels without adding collision systems
+    - `labels.transitions` (normal-mode only) for smoother LOD
 
 ## Proposed API Additions
 
@@ -52,3 +56,9 @@ export interface NeuronWebProps {
 - Map `density.spread` to layout `spread` when `layout.spread` is not set.
 - Apply `edgeFade` when a node is hovered/selected.
 - Use `labelMaxCount` and `labelDistance` to tune label density per mode.
+
+### Precedence (labels)
+When `rendering.labels` is provided, it is treated as the explicit label policy:
+1) `rendering.labels.*` overrides `density.label*` values
+2) `density.label*` overrides performance-mode defaults
+3) performance mode still gates heavy label features (transitions/large caps), especially in `fallback`

@@ -1,11 +1,12 @@
 import type { NeuronConfig } from '../../core/types/settings';
-import { createDatabase } from '../../storage/factory';
+import type { GraphStore } from '../../core/store/graph-store';
+import { createDatabase, createGraphStore } from '../../storage/factory';
 
-export const createHealthRoutes = (config: NeuronConfig) => {
-  const db = createDatabase(config);
+export const createHealthRoutes = (config: NeuronConfig, injectedStore?: GraphStore) => {
+  const store = injectedStore ?? createGraphStore(config);
   return {
     async GET() {
-      const ok = await db.isConnected();
+      const ok = store.kind === 'postgres' ? await createDatabase(config).isConnected() : true;
       return Response.json({ status: ok ? 'ok' : 'degraded', time: new Date().toISOString() });
     },
   };

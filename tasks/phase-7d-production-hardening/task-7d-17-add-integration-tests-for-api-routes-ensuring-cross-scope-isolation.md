@@ -1,6 +1,6 @@
 ---
 title: Add integration tests for API routes ensuring cross-scope isolation.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -42,3 +42,9 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented cross-scope isolation coverage via `tests/integration/api-scope-isolation.test.ts`.
+- Validated isolation for nodes, edges, and settings; confirmed cross-scope update attempts return `null`.
+- Validation run on 2026-01-11:
+  - `pnpm test` ✅
+  - `pnpm typecheck` ✅
+  - `pnpm lint` ✅ (warnings only: CLI console usage)

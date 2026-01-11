@@ -1,6 +1,6 @@
 ---
 title: Add unit tests for provider adapters and contract conformance (mock provider, error mapping, retries).
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,4 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added provider contract tests in `tests/core/providers.test.ts` (mock providers + OpenAI error mapping).

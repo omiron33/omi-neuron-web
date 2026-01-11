@@ -1,6 +1,6 @@
 ---
 title: Plan API docs and examples structure (what to document where, and the canonical usage snippet).
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

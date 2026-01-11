@@ -1,4 +1,4 @@
-import type { NeuronWebTheme } from './types';
+import type { NeuronWebTheme, RenderingOptions } from './types';
 
 export const DEFAULT_THEME: NeuronWebTheme = {
   colors: {
@@ -58,5 +58,29 @@ export const DEFAULT_THEME: NeuronWebTheme = {
     enableHoverScale: true,
     enableSelectionPulse: true,
     enableSelectionRipple: true,
+  },
+};
+
+export const DEFAULT_RENDERING_OPTIONS: RenderingOptions = {
+  preset: 'subtle',
+  nodes: {
+    mode: 'sprite',
+  },
+  edges: {
+    mode: 'straight',
+  },
+  labels: {
+    visibility: 'auto',
+    transitions: {
+      enabled: false,
+      durationMs: 0,
+    },
+  },
+  animations: {
+    profile: 'subtle',
+  },
+  performance: {
+    normalMaxNodes: 180,
+    degradedMaxNodes: 360,
   },
 };

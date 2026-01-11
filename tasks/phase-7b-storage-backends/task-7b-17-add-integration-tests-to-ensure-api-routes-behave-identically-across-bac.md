@@ -1,6 +1,6 @@
 ---
 title: Add integration tests to ensure API routes behave identically across backends for core operations.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -42,3 +42,9 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented integration parity coverage across `storage.mode: "memory" | "file"`:
+  - `tests/integration/api-backend-parity.test.ts` exercises core CRUD + graph + settings + search behavior through the HTTP router layer for both backends.
+  - `tests/integration/routes-store-injection.test.ts` asserts that `createNeuronRoutes` uses a single shared store instance across all route modules when a store is injected (critical for non-Postgres backends).
+- Key touchpoints:
+  - Store selection / wiring: `src/storage/factory.ts`, `src/api/routes/factory.ts`
+  - Route implementations updated to depend on `GraphStore` instead of SQL-only repositories: `src/api/routes/*`

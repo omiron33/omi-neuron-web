@@ -1,6 +1,6 @@
 ---
 title: Refactor `EmbeddingsService` to depend on `EmbeddingProvider` (and optional token/cost helpers), preserving existing behavior and batching/rate-limits.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,4 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- `EmbeddingsService` now uses an injected `EmbeddingProvider` (defaults to OpenAI adapter) while preserving existing public methods and caching behavior.

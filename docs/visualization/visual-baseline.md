@@ -1,10 +1,25 @@
 # NeuronWeb Visual Baseline Audit
 
 ## Test Setup
-- Scenario source: `examples/basic-usage` with synthetic graph data (seeded, fuzzy layout).
-- Viewport: 1440 × 900 (Playwright headless Chromium).
+- Scenario source: `examples/basic-usage` with synthetic graph data (deterministic by `count`) and seeded layout.
+- Viewport: 1440 × 900 (recommended for repeatable screenshots).
+- Snapshot capture: manual (v1) using a local browser; record the URL and save the image under `docs/visualization/assets/`.
 - Performance sampling: 2s `requestAnimationFrame` sample; memory from `performance.memory` (JS heap only; excludes GPU).
 - Performance mode thresholds: normal ≤ 180 nodes, degraded 181–360 nodes, fallback > 360 nodes.
+
+### How to capture baseline screenshots (manual procedure)
+
+1) Start the demo app:
+
+```bash
+cd examples/basic-usage
+pnpm install
+pnpm dev -- -H 127.0.0.1 -p 3100
+```
+
+2) Open the scenario URL (examples below) and set the viewport to 1440 × 900.
+3) Wait ~2 seconds for the scene to settle (first render, labels, postprocessing).
+4) Capture a screenshot and save it to `docs/visualization/assets/` using the filename in the table.
 
 ## Snapshots
 
@@ -13,6 +28,35 @@
 | 50 nodes | normal | `docs/visualization/assets/baseline-50.png` |
 | 200 nodes | degraded | `docs/visualization/assets/baseline-200.png` |
 | 500 nodes | fallback | `docs/visualization/assets/baseline-500.png` |
+
+## Phase 4C Preset Baselines (Rendering + Animation Depth)
+
+Phase 4C adds `rendering.preset` (`minimal`/`subtle`/`cinematic`) plus deeper edge/label/animation options.
+These baseline targets ensure changes remain visually stable and gating works as intended.
+
+At minimum, capture **one normal-mode baseline per preset**:
+
+| Preset | URL | Screenshot target |
+| --- | --- | --- |
+| minimal | `/?count=120&perf=normal&preset=minimal` | `docs/visualization/assets/rendering-minimal-normal.png` |
+| subtle | `/?count=120&perf=normal&preset=subtle` | `docs/visualization/assets/rendering-subtle-normal.png` |
+| cinematic | `/?count=120&perf=normal&preset=cinematic` | `docs/visualization/assets/rendering-cinematic-normal.png` |
+
+Optional (recommended) gating baselines:
+
+| Preset | Perf | URL | Screenshot target |
+| --- | --- | --- | --- |
+| cinematic | degraded | `/?count=240&perf=degraded&preset=cinematic` | `docs/visualization/assets/rendering-cinematic-degraded.png` |
+| cinematic | fallback | `/?count=500&perf=fallback&preset=cinematic&effects=0` | `docs/visualization/assets/rendering-cinematic-fallback.png` |
+
+Optional interaction baselines (manual checks; screenshots are secondary to behavior):
+
+| Interaction | URL | Expected behavior |
+| --- | --- | --- |
+| Hover label LOD + card | `/?count=120&perf=normal&preset=subtle&cards=hover` | Hover highlights node + label; card fades in; edges emphasize |
+| Click focus | `/?count=120&perf=normal&preset=subtle&cards=click` | Click selects, ripples, focuses camera (normal mode) |
+| Story playback | `/?count=120&perf=normal&preset=subtle&beat=beat-1` | Auto-advances focus across nodes; edges highlight between steps |
+| Resolver demo | `/?count=120&perf=normal&preset=subtle&resolver=1` | Insight nodes styled distinctly; strong/weak edges differ |
 
 ## Visual Baseline Findings
 
@@ -34,4 +78,7 @@
 
 ## Recording Note
 
-Short recordings were not captured in the headless environment. For motion references, record 10–15s clips locally while running `pnpm exec next dev -H 127.0.0.1 -p 3100` and visiting `/?count=50`, `/?count=200`, and `/?count=500`.
+Short recordings were not captured in CI for v1. For motion references, record 10–15s clips locally while running the demo app and visiting:
+- `/?count=120&perf=normal&preset=subtle`
+- `/?count=120&perf=normal&preset=cinematic`
+- `/?count=120&perf=normal&preset=subtle&beat=beat-1`

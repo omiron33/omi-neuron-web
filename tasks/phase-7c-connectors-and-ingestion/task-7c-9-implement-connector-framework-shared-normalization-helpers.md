@@ -1,6 +1,6 @@
 ---
 title: Implement connector framework + shared normalization helpers (slugging, metadata mapping, content extraction).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -41,3 +41,9 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added ingestion framework + shared helpers:
+  - Connector + record types: `src/core/ingestion/types.ts`
+  - Deterministic slugging + hashing: `src/core/ingestion/utils/slug.ts`, `src/core/ingestion/utils/hash.ts`
+  - Markdown link extraction helper: `src/core/ingestion/utils/markdown-links.ts`
+  - Ingestion engine (GraphStore-backed) with dry-run support: `src/core/ingestion/ingestion-engine.ts`
+  - Provenance abstraction + implementations: `src/core/ingestion/provenance/*`

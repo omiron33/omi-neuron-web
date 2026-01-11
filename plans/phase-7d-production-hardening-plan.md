@@ -67,9 +67,9 @@ Proposed scope sources (exact precedence finalized in Phase 2 design):
 ## Execution Phases
 
 ### Phase 1 – Discovery 🟥
-- [ ] Define the scoping model (“scope” vs “workspaceId”) and enumerate which entities must be scoped (nodes, edges, clusters, analysis runs, settings, provenance tables).
-- [ ] Audit current middleware and route factory patterns to identify where request context can be introduced cleanly.
-- [ ] Define security baseline requirements (CORS, payload sizes, rate limits, key handling) and document recommended defaults.
+- [x] Define the scoping model (“scope” vs “workspaceId”) and enumerate which entities must be scoped (nodes, edges, clusters, analysis runs, settings, provenance tables).
+- [x] Audit current middleware and route factory patterns to identify where request context can be introduced cleanly.
+- [x] Define security baseline requirements (CORS, payload sizes, rate limits, key handling) and document recommended defaults.
 
 ### Phase 2 – Design/Architecture 🟥
 Design artifacts to produce in this phase (recommended):
@@ -78,37 +78,37 @@ Design artifacts to produce in this phase (recommended):
 - `docs/phase-7d/security-hardening.md` (CORS, size limits, rate limits, secrets guidance)
 - `docs/phase-7d/observability.md` (request IDs, logging conventions, error metadata)
 
-- [ ] Design a `RequestContext` type and how it flows through routes → repositories → store:
+- [x] Design a `RequestContext` type and how it flows through routes → repositories → store:
   - scope identifier
   - optional user identity
   - optional permissions claims
-- [ ] Design DB schema changes for scoping:
+- [x] Design DB schema changes for scoping:
   - new `scope` columns with defaults
   - indexes to keep scoped queries fast
   - migration strategy for existing data
-- [ ] Design middleware APIs:
+- [x] Design middleware APIs:
   - `withRequestContext(handler, options)`
   - `withAuthGuard(handler, options)`
   - `withScopeGuard(handler, options)`
-- [ ] Design client behavior:
+- [x] Design client behavior:
   - how scope is passed (header/query param)
   - how React hooks expose scope configuration
-- [ ] Design observability and logging conventions (request id propagation, structured logs, error metadata).
+- [x] Design observability and logging conventions (request id propagation, structured logs, error metadata).
 
 ### Phase 3 – Implementation 🟥
-- [ ] Add migrations to introduce `scope` columns + indexes for all relevant tables.
-- [ ] Extend repositories and query builder methods to accept `context` and enforce scope filters consistently.
-- [ ] Implement request context middleware and update route factory to support context-aware handlers.
-- [ ] Add optional auth hooks and guard middleware with safe defaults (no-op when not configured).
-- [ ] Add request size limit middleware and improved rate limiting hook points.
-- [ ] Update React API client to optionally send scope headers and expose this via provider config.
-- [ ] Update docs and CLI scaffolding to include production-safe patterns.
+- [x] Add migrations to introduce `scope` columns + indexes for all relevant tables.
+- [x] Extend repositories and query builder methods to accept `context` and enforce scope filters consistently.
+- [x] Implement request context middleware and update route factory to support context-aware handlers.
+- [x] Add optional auth hooks and guard middleware with safe defaults (no-op when not configured).
+- [x] Add request size limit middleware and improved rate limiting hook points.
+- [x] Update React API client to optionally send scope headers and expose this via provider config.
+- [x] Update docs and CLI scaffolding to include production-safe patterns.
 
 ### Phase 4 – Validation 🟥
-- [ ] Add unit tests for scope enforcement in repositories/query builder.
-- [ ] Add integration tests for API routes ensuring cross-scope isolation.
-- [ ] Validate default behavior remains unchanged for single-tenant installs.
-- [ ] Add docs validation: security checklist, deployment notes, recommended configuration snippets.
+- [x] Add unit tests for scope enforcement in repositories/query builder.
+- [x] Add integration tests for API routes ensuring cross-scope isolation.
+- [x] Validate default behavior remains unchanged for single-tenant installs.
+- [x] Add docs validation: security checklist, deployment notes, recommended configuration snippets.
 
 ## Risks & Mitigations
 - Scope logic inconsistently applied → Centralize scope enforcement in repository base class; add conformance tests.

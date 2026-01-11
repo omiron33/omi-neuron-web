@@ -1,6 +1,6 @@
 ---
 title: Implement request context middleware and update route factory to support context-aware handlers.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,22 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented `RequestContext` + context derivation wrapper in `src/api/middleware/request-context.ts`:
+  - header-first scope resolution via `x-neuron-scope`
+  - request correlation via `x-request-id` (generated when missing)
+  - adapter `toGraphStoreContext()` for storage calls
+- Updated API route factory and handlers to accept optional `RequestContextOptions` and pass scoped context into `GraphStore` methods:
+  - `src/api/routes/factory.ts`
+  - `src/api/routes/nodes.ts`
+  - `src/api/routes/edges.ts`
+  - `src/api/routes/graph.ts`
+  - `src/api/routes/analyze.ts`
+  - `src/api/routes/settings.ts`
+  - `src/api/routes/search.ts`
+- Ensured scope is propagated through analysis pipeline execution paths so multi-tenant API requests remain isolated:
+  - `src/core/analysis/pipeline.ts`
+  - `src/core/analysis/embeddings-service.ts`
+  - `src/core/analysis/clustering-engine.ts`
+  - `src/core/analysis/relationship-engine.ts`
+- Added a unit test covering header precedence and wrapper behavior: `tests/api/request-context.test.ts`.
+- Updated README API/middleware docs to include `requestContext` options and request-context exports.

@@ -1,6 +1,6 @@
 ---
 title: Design middleware APIs:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,7 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Middleware API surface defined (request context extraction, auth/scope guard hooks, payload limit, rate limit hook points).
+- Design docs:
+  - `docs/phase-7d/request-context.md`
+  - `docs/phase-7d/security-hardening.md`

@@ -1,6 +1,6 @@
 ---
 title: Add unit tests for scope enforcement in repositories/query builder.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -42,3 +42,6 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added unit coverage for scope injection:
+  - `tests/api/graph.test.ts` now asserts GraphQueryBuilder injects `scope = $1` and defaults to `"default"` when context is omitted.
+  - `tests/api/repository-scope.test.ts` validates BaseRepository stamps and filters by `scope` for `findById`, `findAll`, and `create`.

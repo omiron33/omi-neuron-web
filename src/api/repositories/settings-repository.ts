@@ -1,6 +1,8 @@
 import type { Database } from '../../storage/database';
 import type { NeuronSettings, NeuronSettingsUpdate } from '../../core/types/settings';
 import { DEFAULT_ANALYSIS_SETTINGS, DEFAULT_VISUALIZATION_SETTINGS } from '../../core/types/settings';
+import type { GraphStoreContext } from '../../core/store/graph-store';
+import { resolveScope } from '../../core/store/graph-store';
 
 const deepMerge = (target: Record<string, unknown>, source: Record<string, unknown>) => {
   const output = { ...target };
@@ -30,7 +32,8 @@ const defaultSettings = (): NeuronSettings => ({
 export class SettingsRepository {
   constructor(private db: Database) {}
 
-  async get(): Promise<NeuronSettings> {
+  async get(context?: GraphStoreContext): Promise<NeuronSettings> {
+    const scope = resolveScope(context);
     const row = await this.db.queryOne<{
       visualization: Record<string, unknown> | null;
       analysis: Record<string, unknown> | null;
@@ -38,7 +41,7 @@ export class SettingsRepository {
       domains: NeuronSettings['domains'] | null;
       relationship_types: NeuronSettings['relationshipTypes'] | null;
     }>('SELECT visualization, analysis, node_types, domains, relationship_types FROM settings WHERE id = $1', [
-      'default',
+      scope,
     ]);
 
     if (!row) {
@@ -55,12 +58,13 @@ export class SettingsRepository {
     };
   }
 
-  async update(settings: NeuronSettingsUpdate): Promise<NeuronSettings> {
-    const current = await this.get();
+  async update(settings: NeuronSettingsUpdate, context?: GraphStoreContext): Promise<NeuronSettings> {
+    const scope = resolveScope(context);
+    const current = await this.get(context);
     const merged = deepMerge(current as unknown as Record<string, unknown>, settings as Record<string, unknown>);
     await this.db.execute(
       `INSERT INTO settings (id, visualization, analysis, node_types, domains, relationship_types)
-       VALUES ('default', $1, $2, $3, $4, $5)
+       VALUES ($6, $1, $2, $3, $4, $5)
        ON CONFLICT (id) DO UPDATE SET visualization = $1, analysis = $2, node_types = $3, domains = $4, relationship_types = $5, updated_at = NOW()`,
       [
         merged.visualization,
@@ -68,25 +72,27 @@ export class SettingsRepository {
         merged.nodeTypes,
         merged.domains,
         merged.relationshipTypes,
+        scope,
       ]
     );
     return merged as unknown as NeuronSettings;
   }
 
-  async reset(sections?: string[]): Promise<NeuronSettings> {
+  async reset(sections?: string[], context?: GraphStoreContext): Promise<NeuronSettings> {
+    const scope = resolveScope(context);
     const defaults = defaultSettings() as unknown as Record<string, unknown>;
     if (sections?.length) {
-      const current = await this.get();
+      const current = await this.get(context);
       const updated = { ...(current as unknown as Record<string, unknown>) };
       sections.forEach((section) => {
         updated[section] = defaults[section];
       });
-      return this.update(updated as NeuronSettingsUpdate);
+      return this.update(updated as NeuronSettingsUpdate, context);
     }
 
     await this.db.execute(
       `INSERT INTO settings (id, visualization, analysis, node_types, domains, relationship_types)
-       VALUES ('default', $1, $2, $3, $4, $5)
+       VALUES ($6, $1, $2, $3, $4, $5)
        ON CONFLICT (id) DO UPDATE SET visualization = $1, analysis = $2, node_types = $3, domains = $4, relationship_types = $5, updated_at = NOW()`,
       [
         defaults.visualization,
@@ -94,6 +100,7 @@ export class SettingsRepository {
         defaults.nodeTypes,
         defaults.domains,
         defaults.relationshipTypes,
+        scope,
       ]
     );
 

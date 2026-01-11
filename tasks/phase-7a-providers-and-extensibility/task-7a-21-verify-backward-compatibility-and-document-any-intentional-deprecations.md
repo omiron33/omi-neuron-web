@@ -1,6 +1,6 @@
 ---
 title: Verify backward compatibility (typecheck + example builds) and document any intentional deprecations.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -43,3 +43,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Verified `pnpm typecheck`, `pnpm test`, and `pnpm build` after provider/store/pipeline refactors.
+- Documented deprecated client-side secret props in `docs/phase-7a/migration-plan.md`.

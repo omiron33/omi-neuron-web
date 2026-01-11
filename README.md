@@ -232,6 +232,9 @@ export default defineNeuronConfig({
       cpuLimit: undefined,
     },
   },
+  storage: {
+    mode: 'postgres', // or 'memory' | 'file' for local-first prototyping
+  },
   api: {
     basePath: '/api/neuron',
     enableCors: false,
@@ -249,6 +252,7 @@ export default defineNeuronConfig({
 - `OPENAI_API_KEY` - required for embeddings and relationship inference.
 - `DATABASE_URL` - optional; if set, the Database factory uses it.
 - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` - optional per `createDatabaseFromEnv()`.
+  - Local-first `storage.mode = 'memory' | 'file'` does not require a database connection for core CRUD + graph fetch.
 
 ## Core data model (Types)
 
@@ -517,7 +521,15 @@ Methods:
 
 ### createNeuronRoutes
 
-Entry point: `createNeuronRoutes(config)` from `@omiron33/omi-neuron-web/api`.
+Entry point: `createNeuronRoutes(config, options?)` from `@omiron33/omi-neuron-web/api`.
+
+Optional `options`:
+- `store?: GraphStore` (inject a custom store / backend)
+- `embeddingProvider?: EmbeddingProvider` (override search embeddings provider)
+- `requestContext?: RequestContextOptions` (scope + auth context extraction)
+- `auth?: AuthGuardOptions` (optional `authorize(request, context)` hook)
+- `bodySizeLimit?: BodySizeLimitOptions` (optional request payload guard)
+- `rateLimit?: { limiter, keyFn?, windowMs?, max? }` (hook-based rate limiting; requires a consumer-provided limiter)
 
 Returns:
 
@@ -587,12 +599,16 @@ Health:
 
 From `src/api/middleware/*` (exported in `@omiron33/omi-neuron-web/api`):
 
-- `withNeuronMiddleware(handler, { cors? })`
+- `withNeuronMiddleware(handler, { cors?, logging? })`
 - `withErrorHandler(handler)` and `handleError(error)`
-- `withLogging(handler)`
+- `withLogging(handler, { enabled?, logger? })`
 - `withTiming(handler)`
 - `withCors({ origins? })`
 - `withValidation(schema, source)`
+- `withRequestContext(handler, options?)` and `buildRequestContext(request, options?)`
+- `withAuthGuard(handler, { authorize? })`
+- `withBodySizeLimit(handler, { maxBytes? })`
+- `withRateLimit(handler, { windowMs, max, keyFn?, limiter? })`
 
 ## React integration
 
@@ -607,8 +623,10 @@ export default function RootLayout({ children }) {
   return (
     <NeuronWebProvider
       config={{
-        openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-        databaseUrl: process.env.NEXT_PUBLIC_DATABASE_URL,
+        // Client-safe: the base path for your server routes.
+        apiBasePath: '/api/neuron',
+        // Optional tenant scope. When set, the API client sends `x-neuron-scope`.
+        scope: 'default',
         settings: {},
         onEvent: (event) => {},
         onError: (error) => {},
@@ -619,6 +637,10 @@ export default function RootLayout({ children }) {
   );
 }
 ```
+
+Notes:
+- Keep secrets server-side. Do not pass `OPENAI_API_KEY` (or database URLs) into client components.
+- Configure OpenAI + database access in your Next.js route handlers (see `docs/secure-nextjs-setup.md`).
 
 ### Hooks
 
@@ -683,6 +705,8 @@ export interface NeuronWebProps {
   renderEmptyState?: () => React.ReactNode;
   renderLoadingState?: () => React.ReactNode;
   performanceMode?: 'auto' | 'normal' | 'degraded' | 'fallback';
+  rendering?: RenderingOptions;
+  density?: DensityOptions;
   ariaLabel?: string;
 }
 ```
@@ -702,6 +726,27 @@ Props currently used inside `NeuronWeb`:
 - Story beats: provide `graphData.storyBeats` and set `activeStoryBeatId` to play; `storyBeatStepDurationMs` overrides per-step duration; `onStoryBeatComplete` fires when playback ends. If `studyPathRequest` is set, it takes precedence.
 - Domain colors: `domainColors` merges into the theme's `colors.domainColors` (overrides defaults per domain key).
 - Visibility filtering: `visibleNodeSlugs = null` shows all nodes; `[]` hides all nodes; explicit slugs filter the view.
+
+### Rendering presets (Phase 4C)
+
+Use `rendering.preset` for a presets-first way to opt into richer visuals/animation (with automatic gating in
+`degraded` and `fallback` modes):
+
+```tsx
+import { NeuronWeb, DEFAULT_RENDERING_OPTIONS } from '@omiron33/omi-neuron-web/visualization';
+
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  rendering={{
+    ...DEFAULT_RENDERING_OPTIONS,
+    preset: 'subtle', // or 'minimal' | 'cinematic'
+  }}
+/>
+```
+
+More detail:
+- `docs/component-props.md` (consumer-facing prop guide)
+- `docs/visualization/rendering-options-v1.md` and `docs/visualization/animation-profiles.md`
 
 ### Layout modes
 
@@ -979,7 +1024,7 @@ The CLI is defined in `src/cli/index.ts` and subcommands in `src/cli/commands/*`
 Commands:
 
 - `omi-neuron init` - scaffold config, docker compose, env file, and Next.js route.
-  - `--name`, `--port`, `--skip-docker`, `--skip-api`, `--skip-config`, `--app-dir`, `--force`
+  - `--name`, `--port`, `--storage`, `--file-path`, `--persist-interval`, `--skip-docker`, `--skip-api`, `--skip-config`, `--app-dir`, `--force`
 - `omi-neuron db up|down|migrate|status|reset|seed`
   - `up`: `--port`, `--force-recreate`, `--wait`
   - `down`: `--remove-volumes`
@@ -992,6 +1037,12 @@ Commands:
   - `cluster`: `--count`, `--algorithm`
   - `relationships`: `--threshold`, `--dry-run`
   - `full`: `--force`
+- `omi-neuron ingest init|markdown|github|rss|notion` - ingest external sources into the graph.
+  - `init`: scaffold a connector source JSON
+  - `markdown`: `--source`, `--path`, `--limit`, `--since`, `--dry-run`
+  - `github`: `--source`, `--repo`, `--token`, `--state`, `--limit`, `--since`, `--dry-run`
+  - `rss`: `--source`, `--url`, `--limit`, `--since`, `--dry-run`
+  - `notion`: `--source`, `--path`, `--limit`, `--since`, `--dry-run`
 - `omi-neuron validate` - checks config, docker, DB, and OpenAI env.
 - `omi-neuron config get|set|list|reset` - manage `neuron.config.ts` values.
 

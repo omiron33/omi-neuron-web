@@ -1,6 +1,6 @@
 ---
 title: Update docs and CLI scaffolding to include production-safe patterns.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,18 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Hardened core middleware defaults for production:
+  - `src/api/middleware/request-context.ts` now catches handler errors and returns consistent JSON error responses with `requestId`.
+  - `src/api/middleware/error-handler.ts` supports including `requestId` in error shapes.
+  - `src/api/middleware/logging.ts` is now disabled by default and supports injected loggers (no console noise unless enabled).
+  - `src/api/middleware/cors.ts` now uses an explicit allowlist (no `*` by default; disabled when origins are not configured).
+  - `src/api/middleware/index.ts` exposes `logging` options via `withNeuronMiddleware(handler, { cors?, logging? })`.
+- Updated CLI scaffolding (`omi-neuron init`) to generate production-safer templates:
+  - `src/cli/commands/init.ts` server config template now includes `api.rateLimit` defaults.
+  - Next.js API route stub template now demonstrates request context, body size limits, and optional auth/rate limiting hooks.
+  - Route stub wraps dispatch with `withNeuronMiddleware` and includes commented CORS/logging allowlist examples.
+- Updated docs to reflect production hardening options and headers:
+  - `docs/secure-nextjs-setup.md`
+  - `docs/api-reference.md`
+  - `docs/configuration.md`
+  - `README.md`

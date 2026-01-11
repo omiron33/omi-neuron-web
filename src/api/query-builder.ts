@@ -8,6 +8,8 @@ import type {
   GetGraphResponse,
 } from '../core/types/api';
 import type { NeuronVisualEdge, NeuronVisualNode } from '../core/types';
+import type { GraphStoreContext } from '../core/store/graph-store';
+import { resolveScope } from '../core/store/graph-store';
 
 const mapVisualNode = (row: Record<string, unknown>): NeuronVisualNode => ({
   id: row.id as string,
@@ -33,9 +35,13 @@ const mapVisualEdge = (row: Record<string, unknown>): NeuronVisualEdge => ({
 export class GraphQueryBuilder {
   constructor(private db: Database) {}
 
-  buildGraphQuery(params: GetGraphParams): { sql: string; values: unknown[] } {
+  buildGraphQuery(params: GetGraphParams, context?: GraphStoreContext): { sql: string; values: unknown[] } {
+    const scope = resolveScope(context);
     const values: unknown[] = [];
     const filters: string[] = [];
+
+    values.push(scope);
+    filters.push(`scope = $${values.length}`);
 
     if (params.domains?.length) {
       values.push(params.domains);
@@ -69,20 +75,36 @@ export class GraphQueryBuilder {
     return { sql, values };
   }
 
-  buildExpansionQuery(params: ExpandGraphRequest): { sql: string; values: unknown[] } {
-    const values: unknown[] = [params.fromNodeIds, params.depth ?? 1];
+  buildExpansionQuery(params: ExpandGraphRequest, context?: GraphStoreContext): { sql: string; values: unknown[] } {
+    const scope = resolveScope(context);
+    const values: unknown[] = [params.fromNodeIds, params.depth ?? 1, scope];
+
+    const joinEdge =
+      params.direction === 'outbound'
+        ? 'ed.from_node_id = e.id'
+        : params.direction === 'inbound'
+          ? 'ed.to_node_id = e.id'
+          : 'ed.from_node_id = e.id OR ed.to_node_id = e.id';
+
+    const joinNode =
+      params.direction === 'outbound'
+        ? 'n.id = ed.to_node_id'
+        : params.direction === 'inbound'
+          ? 'n.id = ed.from_node_id'
+          : 'n.id = CASE WHEN ed.from_node_id = e.id THEN ed.to_node_id ELSE ed.from_node_id END';
+
     const sql = `
       WITH RECURSIVE expanded AS (
-        SELECT id, slug, label, domain, tier, metadata, position_override, connection_count, 1 as depth
+        SELECT id, slug, label, domain, tier, metadata, position_override, connection_count, 0 as depth
         FROM nodes
-        WHERE id = ANY($1)
+        WHERE id = ANY($1) AND scope = $3
 
         UNION ALL
 
         SELECT n.id, n.slug, n.label, n.domain, n.tier, n.metadata, n.position_override, n.connection_count, e.depth + 1
         FROM expanded e
-        JOIN edges ed ON ed.from_node_id = e.id OR ed.to_node_id = e.id
-        JOIN nodes n ON (n.id = ed.from_node_id OR n.id = ed.to_node_id)
+        JOIN edges ed ON (${joinEdge}) AND ed.scope = $3
+        JOIN nodes n ON (${joinNode}) AND n.scope = $3
         WHERE e.depth < $2
       )
       SELECT DISTINCT * FROM expanded;
@@ -91,8 +113,9 @@ export class GraphQueryBuilder {
     return { sql, values };
   }
 
-  buildPathQuery(params: FindPathRequest): { sql: string; values: unknown[] } {
-    const values: unknown[] = [params.fromNodeId, params.toNodeId, params.maxDepth ?? 5];
+  buildPathQuery(params: FindPathRequest, context?: GraphStoreContext): { sql: string; values: unknown[] } {
+    const scope = resolveScope(context);
+    const values: unknown[] = [params.fromNodeId, params.toNodeId, params.maxDepth ?? 5, scope];
     const sql = `
       WITH RECURSIVE paths AS (
         SELECT ARRAY[from_node_id, to_node_id] as path,
@@ -100,7 +123,7 @@ export class GraphQueryBuilder {
                strength as total_strength,
                1 as depth
         FROM edges
-        WHERE from_node_id = $1
+        WHERE from_node_id = $1 AND scope = $4
 
         UNION ALL
 
@@ -109,7 +132,7 @@ export class GraphQueryBuilder {
                p.total_strength + e.strength,
                p.depth + 1
         FROM paths p
-        JOIN edges e ON e.from_node_id = p.path[array_upper(p.path, 1)]
+        JOIN edges e ON e.from_node_id = p.path[array_upper(p.path, 1)] AND e.scope = $4
         WHERE NOT e.to_node_id = ANY(p.path)
           AND p.depth < $3
       )
@@ -121,18 +144,19 @@ export class GraphQueryBuilder {
     return { sql, values };
   }
 
-  async getGraph(params: GetGraphParams): Promise<GetGraphResponse> {
-    const { sql, values } = this.buildGraphQuery(params);
+  async getGraph(params: GetGraphParams, context?: GraphStoreContext): Promise<GetGraphResponse> {
+    const scope = resolveScope(context);
+    const { sql, values } = this.buildGraphQuery(params, context);
     const nodes = await this.db.query<Record<string, unknown>>(sql, values);
     const nodeIds = nodes.map((node) => node.id as string);
 
     const edges = await this.db.query<Record<string, unknown>>(
       `SELECT e.*, n1.slug as from_slug, n2.slug as to_slug
        FROM edges e
-       JOIN nodes n1 ON e.from_node_id = n1.id
-       JOIN nodes n2 ON e.to_node_id = n2.id
-       WHERE e.from_node_id = ANY($1) AND e.to_node_id = ANY($1)`,
-      [nodeIds]
+       JOIN nodes n1 ON e.from_node_id = n1.id AND n1.scope = $2
+       JOIN nodes n2 ON e.to_node_id = n2.id AND n2.scope = $2
+       WHERE e.scope = $2 AND e.from_node_id = ANY($1) AND e.to_node_id = ANY($1)`,
+      [nodeIds, scope]
     );
 
     return {
@@ -148,18 +172,19 @@ export class GraphQueryBuilder {
     };
   }
 
-  async expandGraph(params: ExpandGraphRequest): Promise<ExpandGraphResponse> {
-    const { sql, values } = this.buildExpansionQuery(params);
+  async expandGraph(params: ExpandGraphRequest, context?: GraphStoreContext): Promise<ExpandGraphResponse> {
+    const scope = resolveScope(context);
+    const { sql, values } = this.buildExpansionQuery(params, context);
     const nodes = await this.db.query<Record<string, unknown>>(sql, values);
     const nodeIds = nodes.map((node) => node.id as string);
 
     const edges = await this.db.query<Record<string, unknown>>(
       `SELECT e.*, n1.slug as from_slug, n2.slug as to_slug
        FROM edges e
-       JOIN nodes n1 ON e.from_node_id = n1.id
-       JOIN nodes n2 ON e.to_node_id = n2.id
-       WHERE e.from_node_id = ANY($1) AND e.to_node_id = ANY($1)`,
-      [nodeIds]
+       JOIN nodes n1 ON e.from_node_id = n1.id AND n1.scope = $2
+       JOIN nodes n2 ON e.to_node_id = n2.id AND n2.scope = $2
+       WHERE e.scope = $2 AND e.from_node_id = ANY($1) AND e.to_node_id = ANY($1)`,
+      [nodeIds, scope]
     );
 
     return {
@@ -168,8 +193,8 @@ export class GraphQueryBuilder {
     };
   }
 
-  async findPaths(params: FindPathRequest): Promise<FindPathResponse> {
-    const { sql, values } = this.buildPathQuery(params);
+  async findPaths(params: FindPathRequest, context?: GraphStoreContext): Promise<FindPathResponse> {
+    const { sql, values } = this.buildPathQuery(params, context);
     const rows = await this.db.query<{ path: string[]; edge_ids: string[]; total_strength: number }>(
       sql,
       values

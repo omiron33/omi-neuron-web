@@ -1,6 +1,6 @@
 ---
 title: Identify performance bottlenecks to address first (draw calls, labels, line rendering, raycasting, postprocessing).
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

@@ -5,6 +5,7 @@ import { dbCommand } from './commands/db';
 import { analyzeCommand } from './commands/analyze';
 import { validateCommand } from './commands/validate';
 import { configCommand } from './commands/config';
+import { ingestCommand } from './commands/ingest';
 
 program
   .name('omi-neuron')
@@ -16,6 +17,6 @@ program.addCommand(dbCommand);
 program.addCommand(analyzeCommand);
 program.addCommand(validateCommand);
 program.addCommand(configCommand);
+program.addCommand(ingestCommand);
 
 program.parse();
-

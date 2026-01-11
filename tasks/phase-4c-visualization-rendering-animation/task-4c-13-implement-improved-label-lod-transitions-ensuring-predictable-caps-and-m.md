@@ -1,6 +1,6 @@
 ---
 title: Implement improved label LOD + transitions, ensuring predictable caps and mode behavior.
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

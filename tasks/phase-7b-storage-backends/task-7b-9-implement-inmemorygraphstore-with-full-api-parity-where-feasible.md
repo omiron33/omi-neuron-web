@@ -1,6 +1,6 @@
 ---
 title: Implement `InMemoryGraphStore` with full API parity where feasible (nodes, edges, settings, graph queries, search).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented `src/core/store/inmemory-graph-store.ts` + `src/core/store/utils/cosine.ts` and exported via `src/core/store/index.ts`.
+- Added unit tests covering CRUD, graph queries, embeddings similarity, and settings (`tests/core/inmemory-graph-store.test.ts`).

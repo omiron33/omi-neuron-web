@@ -7,6 +7,7 @@ import { EmbeddingsService } from '../../core/analysis/embeddings-service';
 import { ClusteringEngine } from '../../core/analysis/clustering-engine';
 import { RelationshipEngine } from '../../core/analysis/relationship-engine';
 import { AnalysisPipeline } from '../../core/analysis/pipeline';
+import { OpenAILLMProvider } from '../../core/providers/openai/openai-llm-provider';
 
 const buildConnectionString = (config: {
   databaseUrl?: string;
@@ -48,7 +49,7 @@ async function buildPipeline(): Promise<AnalysisPipeline> {
     includeExisting: false,
     batchSize: 10,
     rateLimit: 30,
-  });
+  }, new OpenAILLMProvider({ apiKey: process.env.OPENAI_API_KEY ?? '' }));
 
   return new AnalysisPipeline(db, embeddings, clustering, relationships, events);
 }

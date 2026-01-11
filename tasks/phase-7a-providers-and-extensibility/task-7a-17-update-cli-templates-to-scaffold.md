@@ -1,6 +1,6 @@
 ---
 title: Update CLI templates (`omi-neuron init`) to scaffold:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,4 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Updated `omi-neuron init` templates to generate `neuron.server.ts` (server-only secrets), `neuron.client.ts` (client-safe config), and a compat `neuron.config.ts`, plus a catch-all Next.js route dispatcher under `app/api/neuron/[...path]/route.ts`.

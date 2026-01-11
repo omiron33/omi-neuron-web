@@ -1,6 +1,6 @@
 ---
 title: Design job progress reporting contract:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Authored the v1 job progress polling/events contract in `docs/phase-7e/job-progress-contract.md`.
+- Key decisions:
+  - Treat `cancelled` as a first-class terminal state (not a failure).
+  - Persist a safe “progress snapshot” suitable for polling and SSE (no secrets/stack traces).
+  - Keep existing `POST /analyze` response compatible; add optional fields additively.

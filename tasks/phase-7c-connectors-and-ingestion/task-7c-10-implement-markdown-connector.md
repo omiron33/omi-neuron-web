@@ -1,6 +1,6 @@
 ---
 title: Implement Markdown connector (file scanning, frontmatter parsing, link extraction → edges).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -41,3 +41,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented `MarkdownConnector` with recursive `.md` scanning, minimal frontmatter parsing, and best-effort link resolution:
+  - `src/core/ingestion/connectors/markdown-connector.ts`

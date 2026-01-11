@@ -1,6 +1,6 @@
 ---
 title: Design suggested-edge schema:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Defined the v1 suggested-edges schema (fields, indexes, transitions, dedupe strategy) in `docs/phase-7e/suggested-edges-schema.md`.
+- Key decisions:
+  - Separate `suggested_edges` table; suggestions do not appear in `edges` until approved.
+  - Scope-aware (`scope` default `"default"`).
+  - Prefer dedupe via `UNIQUE(scope, from_node_id, to_node_id, relationship_type)` for a low-noise governance queue.

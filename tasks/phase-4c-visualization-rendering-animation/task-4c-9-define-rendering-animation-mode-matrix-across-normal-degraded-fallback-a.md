@@ -1,6 +1,6 @@
 ---
 title: Define rendering/animation “mode matrix” across `normal`/`degraded`/`fallback` and document it.
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

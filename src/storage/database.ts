@@ -123,7 +123,6 @@ export class Database {
       return;
     }
 
-    // eslint-disable-next-line no-console
     console.warn(`[omi-neuron] Slow query (${durationMs}ms): ${sql}`);
   }
 }

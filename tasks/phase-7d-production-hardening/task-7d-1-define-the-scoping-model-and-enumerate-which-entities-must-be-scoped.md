@@ -1,6 +1,6 @@
 ---
 title: Define the scoping model (“scope” vs “workspaceId”) and enumerate which entities must be scoped (nodes, edges, clusters, analysis runs, settings, provenance tables).
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -39,3 +39,6 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Decision: use `scope` (string) with default `"default"` (not `workspaceId`) for portability and auth-provider neutrality.
+- Entities scoped in v1: nodes, edges, clusters, cluster memberships, analysis runs, provenance tables, and settings (settings scoped by `settings.id = scope`).
+- Design doc: `docs/phase-7d/scoping-schema.md`.

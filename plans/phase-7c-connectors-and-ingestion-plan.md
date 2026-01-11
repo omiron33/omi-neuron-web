@@ -63,13 +63,13 @@ Notes:
 ## Execution Phases
 
 ### Phase 1 – Discovery 🟥
-- [ ] Define canonical ingestion model:
+- [x] Define canonical ingestion model:
   - external IDs
   - source identity
   - sync run metadata
   - delete semantics (none/soft/hard)
-- [ ] Audit current ingestion utilities (`DataProcessor`) and identify what is missing for real connectors (provenance, mapping tables, incremental sync).
-- [ ] Select the initial connector set (Markdown, GitHub, RSS, Notion) and define minimal v1 feature parity for each.
+- [x] Audit current ingestion utilities (`DataProcessor`) and identify what is missing for real connectors (provenance, mapping tables, incremental sync).
+- [x] Select the initial connector set (Markdown, GitHub, RSS, Notion) and define minimal v1 feature parity for each.
 
 ### Phase 2 – Design/Architecture 🟥
 Design artifacts to produce in this phase (recommended):
@@ -77,39 +77,39 @@ Design artifacts to produce in this phase (recommended):
 - `docs/phase-7c/provenance-schema.md` (tables/columns/indexes, backfill strategy)
 - `docs/phase-7c/ingestion-cli-ux.md` (commands/flags, examples, safety rails)
 
-- [ ] Design connector contracts:
+- [x] Design connector contracts:
   - `Connector` interface (list items, fetch item content, map to nodes/edges)
   - “record model” for normalized source items
   - error handling and partial failure behavior
-- [ ] Design provenance storage:
+- [x] Design provenance storage:
   - tables/columns for `source`, `source_item`, `sync_run`
   - mapping from `source_item` → `node_id`
   - indexes for fast upserts
-- [ ] Design CLI UX:
+- [x] Design CLI UX:
   - `omi-neuron ingest markdown --path ./docs`
   - `omi-neuron ingest github --repo owner/name`
   - `omi-neuron ingest rss --url ...`
   - flags for `--upsert`, `--delete-missing`, `--dry-run`, `--limit`
-- [ ] Design “sync safety rails”:
+- [x] Design “sync safety rails”:
   - dry-run summary output
   - explicit confirmation for destructive ops
   - idempotent slug generation and conflict strategy
 
 ### Phase 3 – Implementation 🟥
-- [ ] Add DB migrations for provenance + sync tracking and update repositories to support external ID upserts.
-- [ ] Implement connector framework + shared normalization helpers (slugging, metadata mapping, content extraction).
-- [ ] Implement Markdown connector (file scanning, frontmatter parsing, link extraction → edges).
-- [ ] Implement GitHub connector (issues/PRs as nodes; cross-references and mentions as edges).
-- [ ] Implement RSS connector (feed parsing, content extraction; dedupe by GUID/link).
-- [ ] Implement Notion export connector (parse export format → nodes; preserve hierarchy via `part_of` edges).
-- [ ] Add CLI commands + templates to scaffold connector config and run ingestion.
-- [ ] Add docs + examples + fixtures for each connector.
+- [x] Add DB migrations for provenance + sync tracking and update repositories to support external ID upserts.
+- [x] Implement connector framework + shared normalization helpers (slugging, metadata mapping, content extraction).
+- [x] Implement Markdown connector (file scanning, frontmatter parsing, link extraction → edges).
+- [x] Implement GitHub connector (issues/PRs as nodes; cross-references and mentions as edges).
+- [x] Implement RSS connector (feed parsing, content extraction; dedupe by GUID/link).
+- [x] Implement Notion export connector (parse export format → nodes; preserve hierarchy via `part_of` edges).
+- [x] Add CLI commands + templates to scaffold connector config and run ingestion.
+- [x] Add docs + examples + fixtures for each connector.
 
 ### Phase 4 – Validation 🟥
-- [ ] Add unit tests for connector normalization and slug/idempotency rules.
-- [ ] Add integration tests for provenance upsert behavior and safe delete modes.
-- [ ] Validate connectors on representative fixtures (markdown vault fixture, GitHub fixture, RSS fixture, Notion export fixture).
-- [ ] Validate end-to-end “ingest → analyze → visualize” example flows.
+- [x] Add unit tests for connector normalization and slug/idempotency rules.
+- [x] Add integration tests for provenance upsert behavior and safe delete modes.
+- [x] Validate connectors on representative fixtures (markdown vault fixture, GitHub fixture, RSS fixture, Notion export fixture).
+- [x] Validate end-to-end “ingest → analyze → visualize” example flows.
 
 ## Risks & Mitigations
 - Accidental destructive sync behavior → Default to non-destructive; require explicit flags; require dry-run summaries.

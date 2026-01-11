@@ -1,6 +1,6 @@
 ---
 title: Validate public API compatibility:
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

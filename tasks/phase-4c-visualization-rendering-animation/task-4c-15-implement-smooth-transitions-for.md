@@ -1,6 +1,6 @@
 ---
 title: Implement smooth transitions for:
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

@@ -13,6 +13,10 @@ export { ClusteringEngine } from './core/analysis/clustering-engine';
 export { RelationshipEngine } from './core/analysis/relationship-engine';
 export { ScoringEngine } from './core/analysis/scoring-engine';
 export { AnalysisPipeline } from './core/analysis/pipeline';
+export * from './core/analysis/steps';
+export * from './core/providers';
+export * from './core/store';
+export * from './core/ingestion';
 export * from './storage';
 export * from './config';
 

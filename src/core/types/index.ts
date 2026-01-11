@@ -52,6 +52,17 @@ export type {
   AnalysisPipelineConfig,
 } from './analysis';
 
+// Ingestion / provenance types
+export type {
+  ConnectorType,
+  IngestionDeleteMode,
+  SyncRunStatus,
+  IngestionSource,
+  IngestionSourceItem,
+  IngestionSourceItemNode,
+  IngestionSyncRun,
+} from './ingestion';
+
 // Settings types
 export type {
   EmbeddingModel,
@@ -152,4 +163,3 @@ export type {
   ApiErrorResponse,
   HealthCheckResponse,
 } from './api';
-

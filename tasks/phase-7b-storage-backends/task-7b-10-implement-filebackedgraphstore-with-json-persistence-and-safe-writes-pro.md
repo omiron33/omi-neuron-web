@@ -1,6 +1,6 @@
 ---
 title: Implement `FileBackedGraphStore` with JSON persistence and safe writes; provide migration/versioning strategy for the file format.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Implemented `src/core/store/file-backed-graph-store.ts` with v1 JSON format + `.tmp` atomic writes and optional `.bak` fallback.
+- Added unit tests covering persistence, corruption fallback, and version guarding (`tests/core/file-backed-graph-store.test.ts`).

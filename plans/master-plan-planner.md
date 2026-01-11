@@ -26,7 +26,8 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 ## Outcomes
 
 - Phases 1–6 implemented with scaffolding and core modules in place
-- Phase 4B (Visualization Polish) remains planned work
+- Phase 4B (Visualization Polish) implemented and validated
+- Phase 4C (Rendering + Animation Depth) implemented and validated
 - Phase 7 portfolio (adoption + extensibility) is planned work
 - Library exports stabilized for core types, analysis, storage, API, visualization, and React
 - Documentation, examples, tests, and CI/publishing scaffolding completed
@@ -39,14 +40,14 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 - [x] ✅ **Phase 2: Analysis Engine** — Embeddings, clustering, relationship inference pipeline (`plans/phase-2-analysis-engine-plan.md`)
 - [x] ✅ **Phase 3: API Layer** — REST endpoints for nodes, edges, graph, analysis, settings (`plans/phase-3-api-layer-plan.md`)
 - [x] ✅ **Phase 4: Visualization** — Three.js NeuronWeb component with full customization (`plans/phase-4-visualization-plan.md`)
-- [ ] 🟥 **Phase 4B: Visualization Polish** — Cinematic motion, hover cards, density controls (`plans/phase-4-visualization-polish-plan.md`)
-- [ ] 🟥 **Phase 4C: Rendering + Animation Depth** — More rendering styles, animation profiles, and drawing options (`plans/phase-4c-visualization-rendering-animation-plan.md`)
+- [x] ✅ **Phase 4B: Visualization Polish** — Cinematic motion, hover cards, density controls (`plans/phase-4-visualization-polish-plan.md`)
+- [x] ✅ **Phase 4C: Rendering + Animation Depth** — More rendering styles, animation profiles, and drawing options (`plans/phase-4c-visualization-rendering-animation-plan.md`)
 - [x] ✅ **Phase 5: React Integration** — Provider, hooks, Next.js integration, examples (`plans/phase-5-integration-plan.md`)
 - [x] ✅ **Phase 6: Validation & Publish** — Tests, documentation, npm publishing (`plans/phase-6-validation-plan.md`)
-- [ ] 🟥 **Phase 7A: Providers + Extensibility** — Pluggable AI providers, pipeline steps, GraphStore contract (`plans/phase-7a-providers-and-extensibility-plan.md`)
-- [ ] 🟥 **Phase 7B: Storage Backends + Local-First DX** — In-memory + file-backed backends for low-ops onboarding (`plans/phase-7b-storage-backends-plan.md`)
-- [ ] 🟥 **Phase 7C: Connectors + Ingestion Recipes** — Markdown/GitHub/RSS/Notion ingestion + provenance (`plans/phase-7c-connectors-and-ingestion-plan.md`)
-- [ ] 🟥 **Phase 7D: Production Hardening** — Auth hooks, multi-tenancy scoping, security, observability (`plans/phase-7d-production-hardening-plan.md`)
+- [x] ✅ **Phase 7A: Providers + Extensibility** — Pluggable AI providers, pipeline steps, GraphStore contract (`plans/phase-7a-providers-and-extensibility-plan.md`)
+- [x] ✅ **Phase 7B: Storage Backends + Local-First DX** — In-memory + file-backed backends for low-ops onboarding (`plans/phase-7b-storage-backends-plan.md`)
+- [x] ✅ **Phase 7C: Connectors + Ingestion Recipes** — Markdown/GitHub/RSS/Notion ingestion + provenance (`plans/phase-7c-connectors-and-ingestion-plan.md`)
+- [x] ✅ **Phase 7D: Production Hardening** — Auth hooks, multi-tenancy scoping, security, observability (`plans/phase-7d-production-hardening-plan.md`)
 - [ ] 🟥 **Phase 7E: Jobs + Governance** — Streaming progress, suggested-edge approvals workflow (`plans/phase-7e-jobs-and-governance-plan.md`)
 - [ ] 🟥 **Phase 7F: Visualization UX + Scale** — Optional explorer UX + performance/scalability knobs (`plans/phase-7f-visualization-ux-and-scale-plan.md`)
 
@@ -80,22 +81,22 @@ Private tracker for agent execution. Goal: build a comprehensive drop-in Next.js
 ### ✅ Phase 4 - Visualization
 - `plans/phase-4-visualization-plan.md` — Three.js component, scene management, interactions, theming
 
-### 🟥 Phase 4B - Visualization Polish
+### ✅ Phase 4B - Visualization Polish
 - `plans/phase-4-visualization-polish-plan.md` — Motion polish, hover cards, density controls, effects
 
-### 🟥 Phase 4C - Rendering + Animation Depth
+### ✅ Phase 4C - Rendering + Animation Depth
 - `plans/phase-4c-visualization-rendering-animation-plan.md` — Rendering styles, animation profiles, and deeper drawing options
 
-### 🟥 Phase 7A - Providers + Extensibility
+### ✅ Phase 7A - Providers + Extensibility
 - `plans/phase-7a-providers-and-extensibility-plan.md` — Pluggable providers, pipeline composition, GraphStore + config layering
 
-### 🟥 Phase 7B - Storage Backends + Local-First DX
+### ✅ Phase 7B - Storage Backends + Local-First DX
 - `plans/phase-7b-storage-backends-plan.md` — In-memory + file-backed stores, low-ops onboarding, parity tests
 
-### 🟥 Phase 7C - Connectors + Ingestion Recipes
+### ✅ Phase 7C - Connectors + Ingestion Recipes
 - `plans/phase-7c-connectors-and-ingestion-plan.md` — Connectors, provenance/sync model, ingestion CLI
 
-### 🟥 Phase 7D - Production Hardening
+### ✅ Phase 7D - Production Hardening
 - `plans/phase-7d-production-hardening-plan.md` — Scope/multi-tenancy, auth hooks, security middleware, observability
 
 ### 🟥 Phase 7E - Jobs + Governance

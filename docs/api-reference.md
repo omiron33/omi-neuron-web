@@ -2,6 +2,11 @@
 
 Base path defaults to `/api/neuron`.
 
+## Headers
+
+- `x-neuron-scope` (optional): multi-tenant scope key. Defaults to `"default"` when omitted.
+- `x-request-id` (optional): request correlation id. Echoed back in responses when possible.
+
 ## Nodes
 - `GET /nodes`
 - `POST /nodes`

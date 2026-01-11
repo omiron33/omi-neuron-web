@@ -58,11 +58,14 @@ export const semanticSearchRequestSchema = z.object({
   nodeTypes: z.array(z.string()).optional(),
   domains: z.array(z.string()).optional(),
   limit: z.coerce.number().int().min(1).optional(),
+  minSimilarity: z.coerce.number().min(-1).max(1).optional(),
+  includeExplanation: z.coerce.boolean().optional(),
 });
 
 export const findSimilarRequestSchema = z.object({
   nodeId: z.string().uuid(),
   limit: z.coerce.number().int().min(1).optional(),
+  minSimilarity: z.coerce.number().min(-1).max(1).optional(),
   excludeConnected: z.coerce.boolean().optional(),
 });
 

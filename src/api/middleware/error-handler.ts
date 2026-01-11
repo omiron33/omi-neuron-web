@@ -11,13 +11,18 @@ export class ApiError extends Error {
 
 export type RouteHandler = (request: Request) => Promise<Response>;
 
-export const handleError = (error: unknown): Response => {
+export type ErrorHandlerContext = {
+  requestId?: string;
+};
+
+export const handleError = (error: unknown, context?: ErrorHandlerContext): Response => {
   if (error instanceof ApiError) {
     return Response.json(
       {
         error: error.message,
         code: error.code,
         statusCode: error.statusCode,
+        requestId: context?.requestId,
         details: error.details,
       },
       { status: error.statusCode }
@@ -30,6 +35,7 @@ export const handleError = (error: unknown): Response => {
       error: message,
       code: 'INTERNAL_ERROR',
       statusCode: 500,
+      requestId: context?.requestId,
     },
     { status: 500 }
   );

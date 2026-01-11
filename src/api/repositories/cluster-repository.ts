@@ -1,5 +1,7 @@
 import type { Database } from '../../storage/database';
 import type { NeuronCluster } from '../../core/types/cluster';
+import type { GraphStoreContext } from '../../core/store/graph-store';
+import { resolveScope } from '../../core/store/graph-store';
 import { BaseRepository } from './base';
 
 const mapClusterRow = (row: Record<string, unknown>): NeuronCluster => ({
@@ -23,19 +25,21 @@ export class ClusterRepository extends BaseRepository<NeuronCluster, NeuronClust
     super(db, 'clusters');
   }
 
-  override async findById(id: string): Promise<NeuronCluster | null> {
-    const row = await this.db.queryOne<Record<string, unknown>>('SELECT * FROM clusters WHERE id = $1', [id]);
+  override async findById(id: string, context?: GraphStoreContext): Promise<NeuronCluster | null> {
+    const scope = resolveScope(context);
+    const row = await this.db.queryOne<Record<string, unknown>>('SELECT * FROM clusters WHERE id = $1 AND scope = $2', [id, scope]);
     return row ? mapClusterRow(row) : null;
   }
 
-  async findWithMembers(clusterId: string): Promise<{
+  async findWithMembers(clusterId: string, context?: GraphStoreContext): Promise<{
     cluster: NeuronCluster | null;
     members: Array<{ nodeId: string; similarityScore: number }>;
   }> {
-    const cluster = await this.findById(clusterId);
+    const scope = resolveScope(context);
+    const cluster = await this.findById(clusterId, context);
     const memberships = await this.db.query<{ node_id: string; similarity_score: number }>(
-      'SELECT node_id, similarity_score FROM cluster_memberships WHERE cluster_id = $1',
-      [clusterId]
+      'SELECT node_id, similarity_score FROM cluster_memberships WHERE cluster_id = $1 AND scope = $2',
+      [clusterId, scope]
     );
     return {
       cluster,
@@ -43,21 +47,25 @@ export class ClusterRepository extends BaseRepository<NeuronCluster, NeuronClust
     };
   }
 
-  async updateCentroid(clusterId: string, centroid: number[]): Promise<void> {
-    await this.db.execute('UPDATE clusters SET centroid = $1 WHERE id = $2', [centroid, clusterId]);
+  async updateCentroid(clusterId: string, centroid: number[], context?: GraphStoreContext): Promise<void> {
+    const scope = resolveScope(context);
+    await this.db.execute('UPDATE clusters SET centroid = $1 WHERE id = $2 AND scope = $3', [centroid, clusterId, scope]);
   }
 
-  async addMember(clusterId: string, nodeId: string, similarity: number): Promise<void> {
+  async addMember(clusterId: string, nodeId: string, similarity: number, context?: GraphStoreContext): Promise<void> {
+    const scope = resolveScope(context);
     await this.db.execute(
-      'INSERT INTO cluster_memberships (node_id, cluster_id, similarity_score, is_primary) VALUES ($1, $2, $3, true) ON CONFLICT (node_id, cluster_id) DO UPDATE SET similarity_score = $3',
-      [nodeId, clusterId, similarity]
+      'INSERT INTO cluster_memberships (scope, node_id, cluster_id, similarity_score, is_primary) VALUES ($1, $2, $3, $4, true) ON CONFLICT (node_id, cluster_id) DO UPDATE SET similarity_score = $4',
+      [scope, nodeId, clusterId, similarity]
     );
   }
 
-  async removeMember(clusterId: string, nodeId: string): Promise<void> {
-    await this.db.execute('DELETE FROM cluster_memberships WHERE cluster_id = $1 AND node_id = $2', [
+  async removeMember(clusterId: string, nodeId: string, context?: GraphStoreContext): Promise<void> {
+    const scope = resolveScope(context);
+    await this.db.execute('DELETE FROM cluster_memberships WHERE cluster_id = $1 AND node_id = $2 AND scope = $3', [
       clusterId,
       nodeId,
+      scope,
     ]);
   }
 }

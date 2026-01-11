@@ -1,6 +1,6 @@
 ---
 title: Validate connectors on representative fixtures (markdown vault fixture, GitHub fixture, RSS fixture, Notion export fixture).
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -41,3 +41,6 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Validated connectors against representative fixtures via unit coverage:
+  - `tests/core/ingestion-connectors.test.ts`
+  - Fixtures under `tests/fixtures/ingestion/*` cover Markdown, GitHub (issues/PRs), RSS, and Notion export parsing.

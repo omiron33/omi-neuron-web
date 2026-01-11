@@ -1,6 +1,6 @@
 ---
 title: Validate end-to-end “ingest → analyze → visualize” example flows.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -41,3 +41,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added an end-to-end integration test that exercises:
+  - ingestion (MarkdownConnector → IngestionEngine)
+  - analysis (semantic search via MockEmbeddingProvider + embeddings stored in GraphStore)
+  - visualization (NeuronWeb accepts graphData produced by graph API)
+  - `tests/integration/ingestion-end-to-end.test.ts`

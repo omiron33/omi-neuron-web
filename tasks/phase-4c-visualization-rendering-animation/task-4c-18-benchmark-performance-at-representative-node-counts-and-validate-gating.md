@@ -1,6 +1,6 @@
 ---
 title: Benchmark performance at representative node counts and validate gating behavior matches budgets.
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

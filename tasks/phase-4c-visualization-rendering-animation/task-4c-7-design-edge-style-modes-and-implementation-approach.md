@@ -1,6 +1,6 @@
 ---
 title: Design edge style modes and implementation approach:
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

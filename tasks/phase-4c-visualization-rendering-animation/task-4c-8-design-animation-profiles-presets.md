@@ -1,6 +1,6 @@
 ---
 title: Design animation profiles/presets:
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

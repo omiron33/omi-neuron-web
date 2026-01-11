@@ -65,6 +65,8 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+      // TypeScript already checks identifiers; this rule produces false positives for lib types (e.g. RequestInit).
+      'no-undef': 'off',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
@@ -73,5 +75,4 @@ export default [
     ignores: ['dist/', 'node_modules/', '*.js', '*.cjs', '*.mjs'],
   },
 ];
-
 

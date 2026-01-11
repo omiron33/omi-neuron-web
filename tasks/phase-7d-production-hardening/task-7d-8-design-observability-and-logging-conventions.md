@@ -1,6 +1,6 @@
 ---
 title: Design observability and logging conventions (request id propagation, structured logs, error metadata).
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Observability conventions documented (request IDs + structured logging guidance + error metadata).
+- Design doc: `docs/phase-7d/observability.md`.

@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1001,
+    "number": 1,
+    "title": "Issue one",
+    "body": "References #2",
+    "html_url": "https://github.com/acme/example/issues/1",
+    "state": "open",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-03T00:00:00Z",
+    "user": { "login": "alice" },
+    "labels": [{ "name": "bug" }]
+  },
+  {
+    "id": 1002,
+    "number": 2,
+    "title": "PR two",
+    "body": "Fixes #1",
+    "html_url": "https://github.com/acme/example/pull/2",
+    "state": "open",
+    "created_at": "2024-01-02T00:00:00Z",
+    "updated_at": "2024-01-04T00:00:00Z",
+    "user": { "login": "bob" },
+    "labels": [],
+    "pull_request": {}
+  }
+]
+

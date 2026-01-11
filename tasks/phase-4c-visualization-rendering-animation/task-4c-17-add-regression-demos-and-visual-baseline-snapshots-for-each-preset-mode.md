@@ -1,6 +1,6 @@
 ---
 title: Add regression demos and “visual baseline” snapshots for each preset/mode combination (normal/degraded/fallback).
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

@@ -77,46 +77,46 @@
 
 ## Execution Phases
 
-### Phase 1 – Discovery 🟥
-- [ ] Audit current OpenAI coupling points (embeddings + relationship inference + config key flow) and document all required provider capabilities.
-- [ ] Inventory current pipeline composition points (what is hard-coded vs configurable) and map desired extension seams.
-- [ ] Define backward-compatibility constraints for public APIs (exports, constructors, config fields) and decide what gets deprecated vs preserved.
-- [ ] Identify where configuration is currently ambiguous (server vs client) and define an explicit layered config model.
+### Phase 1 – Discovery ✅
+- [x] Audit current OpenAI coupling points (embeddings + relationship inference + config key flow) and document all required provider capabilities.
+- [x] Inventory current pipeline composition points (what is hard-coded vs configurable) and map desired extension seams.
+- [x] Define backward-compatibility constraints for public APIs (exports, constructors, config fields) and decide what gets deprecated vs preserved.
+- [x] Identify where configuration is currently ambiguous (server vs client) and define an explicit layered config model.
 
-### Phase 2 – Design/Architecture 🟥
+### Phase 2 – Design/Architecture ✅
 Design artifacts to produce in this phase (recommended):
 - `docs/phase-7a/providers-contract.md` (interfaces, error semantics, cancellation)
 - `docs/phase-7a/graphstore-contract.md` (methods, paging, filters, scope hooks)
 - `docs/phase-7a/pipeline-steps-contract.md` (step API, progress, cancellation)
 - `docs/phase-7a/config-layering.md` (server/client config, Next.js patterns)
 
-- [ ] Define provider contracts (`EmbeddingProvider`, `LLMProvider`, optional token/cost helpers) and decide method signatures + error semantics.
-- [ ] Design `GraphStore` interface to cover the minimal CRUD + graph/query needs (nodes/edges/clusters/settings/search) used by API + analysis.
-- [ ] Design `AnalysisStep` contract and pipeline composition API (step ordering, dependencies, progress callbacks, cancellation).
-- [ ] Design a `NeuronServer` (or equivalent) builder that wires store + providers + pipeline + routes with minimal ceremony.
-- [ ] Define config layering types:
+- [x] Define provider contracts (`EmbeddingProvider`, `LLMProvider`, optional token/cost helpers) and decide method signatures + error semantics.
+- [x] Design `GraphStore` interface to cover the minimal CRUD + graph/query needs (nodes/edges/clusters/settings/search) used by API + analysis.
+- [x] Design `AnalysisStep` contract and pipeline composition API (step ordering, dependencies, progress callbacks, cancellation).
+- [x] Design a `NeuronServer` (or equivalent) builder that wires store + providers + pipeline + routes with minimal ceremony.
+- [x] Define config layering types:
   - `NeuronServerConfig` (secrets + DB)
   - `NeuronClientConfig` (API basePath + UI defaults)
   - merging rules and validation points
-- [ ] Define “migration plan” docs: what existing consumers do today vs the recommended setup after Phase 7A.
+- [x] Define “migration plan” docs: what existing consumers do today vs the recommended setup after Phase 7A.
 
-### Phase 3 – Implementation 🟥
-- [ ] Add provider interfaces + baseline implementations (OpenAI adapters + mock providers) under a new `src/core/providers/*` module.
-- [ ] Refactor `EmbeddingsService` to depend on `EmbeddingProvider` (and optional token/cost helpers), preserving existing behavior and batching/rate-limits.
-- [ ] Refactor `RelationshipEngine` to depend on `LLMProvider` (and optional safety constraints), preserving existing inference behavior.
-- [ ] Introduce `GraphStore` and implement `PostgresGraphStore` by composing existing repositories/query builder.
-- [ ] Introduce `AnalysisStep` + pipeline builder utilities and refactor `AnalysisPipeline` to use step composition.
-- [ ] Add layered config helpers (server/client) and update `NeuronWebProvider` patterns to avoid implying browser secrets.
-- [ ] Update CLI templates (`omi-neuron init`) to scaffold:
+### Phase 3 – Implementation ✅
+- [x] Add provider interfaces + baseline implementations (OpenAI adapters + mock providers) under a new `src/core/providers/*` module.
+- [x] Refactor `EmbeddingsService` to depend on `EmbeddingProvider` (and optional token/cost helpers), preserving existing behavior and batching/rate-limits.
+- [x] Refactor `RelationshipEngine` to depend on `LLMProvider` (and optional safety constraints), preserving existing inference behavior.
+- [x] Introduce `GraphStore` and implement `PostgresGraphStore` by composing existing repositories/query builder.
+- [x] Introduce `AnalysisStep` + pipeline builder utilities and refactor `AnalysisPipeline` to use step composition.
+- [x] Add layered config helpers (server/client) and update `NeuronWebProvider` patterns to avoid implying browser secrets.
+- [x] Update CLI templates (`omi-neuron init`) to scaffold:
   - safe server-side OpenAI usage in Next.js routes
   - client-side provider config that only points to API routes
-- [ ] Update exports (`src/index.ts`, `src/api/index.ts`) to expose new interfaces in a stable way.
+- [x] Update exports (`src/index.ts`, `src/api/index.ts`) to expose new interfaces in a stable way.
 
-### Phase 4 – Validation 🟥
-- [ ] Add unit tests for provider adapters and contract conformance (mock provider, error mapping, retries).
-- [ ] Add integration tests for pipeline composition (step ordering, cancellation, progress events, provider injection).
-- [ ] Verify backward compatibility (typecheck + example builds) and document any intentional deprecations.
-- [ ] Update docs: provider guide, config layering guide, and “secure Next.js setup” reference snippets.
+### Phase 4 – Validation ✅
+- [x] Add unit tests for provider adapters and contract conformance (mock provider, error mapping, retries).
+- [x] Add integration tests for pipeline composition (step ordering, cancellation, progress events, provider injection).
+- [x] Verify backward compatibility (typecheck + example builds) and document any intentional deprecations.
+- [x] Update docs: provider guide, config layering guide, and “secure Next.js setup” reference snippets.
 
 ## Risks & Mitigations
 - Breaking changes to constructors/config → Preserve existing exports; add new APIs alongside; document migration path; add deprecation warnings only in docs.

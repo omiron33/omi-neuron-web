@@ -1,6 +1,6 @@
 ---
 title: Design client behavior:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,7 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Client scoping behavior: send `x-neuron-scope` header when configured; default scope is server-side `"default"` when not set.
+- Design docs:
+  - `docs/phase-7d/request-context.md`
+  - `docs/phase-7d/scoping-schema.md`

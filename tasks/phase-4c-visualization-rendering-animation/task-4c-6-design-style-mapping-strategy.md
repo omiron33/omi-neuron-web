@@ -1,6 +1,6 @@
 ---
 title: Design style mapping strategy:
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

@@ -1,6 +1,6 @@
 ---
 title: Define the “must-have” option set for v1 depth:
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

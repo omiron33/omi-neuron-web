@@ -10,7 +10,7 @@ export { SceneManager } from './scene/scene-manager';
 
 // Themes
 export { ThemeEngine } from './themes/theme-engine';
-export { DEFAULT_THEME } from './constants';
+export { DEFAULT_THEME, DEFAULT_RENDERING_OPTIONS } from './constants';
 
 // Types
 export type { NeuronVisualNode, NeuronVisualEdge } from '../core/types';
@@ -27,6 +27,21 @@ export type {
   ClickCardOptions,
   ClickZoomOptions,
   CardsMode,
+  RenderingOptions,
+  RenderingPreset,
+  AnimationProfile,
+  AnimationOptions,
+  LabelOptions,
+  LabelTierRules,
+  LabelTierVisibility,
+  NodeRenderMode,
+  EdgeRenderMode,
+  NodeStyleOptions,
+  EdgeStyleOptions,
+  NodeStyle,
+  EdgeStyle,
+  NodeStyleResolver,
+  EdgeStyleResolver,
 } from './types';
 
 // Layout helpers

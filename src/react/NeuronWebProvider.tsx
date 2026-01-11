@@ -11,11 +11,21 @@ import { NeuronContext, type ErrorContext } from './context';
 export interface NeuronWebProviderProps {
   children: React.ReactNode;
   config: {
-    openaiApiKey?: string;
-    databaseUrl?: string;
+    /** Client-safe API base path (default: `/api/neuron`) */
+    apiBasePath?: string;
+    /** Optional tenant scope (sent as `x-neuron-scope` by the API client). */
+    scope?: string;
     settings?: Partial<NeuronSettings>;
     onEvent?: (event: NeuronEvent) => void;
     onError?: (error: Error, context: ErrorContext) => void;
+    /**
+     * @deprecated Secrets must be server-only. Do not pass OpenAI API keys to client components.
+     */
+    openaiApiKey?: string;
+    /**
+     * @deprecated Database connection strings are server-only. Configure databases in server routes.
+     */
+    databaseUrl?: string;
   };
 }
 
@@ -59,17 +69,17 @@ export function NeuronWebProvider({ children, config }: NeuronWebProviderProps):
     const base = buildDefaultConfig(config.settings);
     return {
       ...base,
-      openai: {
-        apiKey: config.openaiApiKey ?? base.openai.apiKey,
-      },
-      database: {
-        ...base.database,
-        url: config.databaseUrl ?? base.database.url,
+      api: {
+        ...base.api,
+        basePath: config.apiBasePath ?? base.api.basePath,
       },
     } as NeuronConfig;
   }, [config]);
 
-  const apiClient = useMemo(() => new NeuronApiClient(resolvedConfig.api.basePath), [resolvedConfig]);
+  const apiClient = useMemo(
+    () => new NeuronApiClient(resolvedConfig.api.basePath, { scope: config.scope }),
+    [resolvedConfig.api.basePath, config.scope]
+  );
   const eventBus = useMemo(() => new EventBus(), []);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 ---
 title: Add integration tests for provenance upsert behavior and safe delete modes.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -41,3 +41,6 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added ingestion integration coverage for provenance upsert + delete modes (memory-backed provenance for deterministic tests):
+  - `tests/integration/ingestion-provenance.test.ts`
+- Implemented missing-item delete handling in `IngestionEngine` for `deleteMode: "soft" | "hard"` and ensured run timestamps are monotonically increasing to avoid same-ms flakiness.

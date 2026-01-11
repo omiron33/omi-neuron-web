@@ -232,6 +232,84 @@ when paired with `activeStoryBeatId`.
 />
 ```
 
+### Rendering Options (Phase 4C)
+
+`NeuronWebProps.rendering` provides a declarative, type-safe way to opt into richer rendering styles and
+animation behavior (without needing to fork `NeuronWeb`).
+
+Start with presets (copy/paste), then optionally layer in overrides:
+- `rendering.preset` sets the overall “depth” posture (`minimal` / `subtle` / `cinematic`).
+- `rendering.nodes` / `rendering.edges` / `rendering.labels` override specific style knobs.
+- `rendering.resolvers` provides advanced per-node/per-edge styling callbacks.
+
+Migration note:
+- Existing consumers can leave `rendering` undefined; behavior stays the same (safe defaults).
+- Prefer `rendering` for new rendering/animation tweaks; `theme` remains supported for global look-and-feel.
+
+Canonical snippet (presets-first):
+
+```tsx
+import { NeuronWeb, DEFAULT_RENDERING_OPTIONS } from '@omiron33/omi-neuron-web/visualization';
+
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  rendering={{
+    ...DEFAULT_RENDERING_OPTIONS,
+    preset: 'subtle',
+  }}
+/>
+```
+
+Preset copy/paste:
+
+```tsx
+<NeuronWeb graphData={{ nodes, edges }} rendering={{ preset: 'minimal' }} />
+```
+
+Screenshot target: `docs/assets/rendering-preset-minimal.png` (generated in Phase 4C validation).
+
+```tsx
+<NeuronWeb graphData={{ nodes, edges }} rendering={{ preset: 'subtle' }} />
+```
+
+Screenshot target: `docs/assets/rendering-preset-subtle.png` (generated in Phase 4C validation).
+
+```tsx
+<NeuronWeb graphData={{ nodes, edges }} rendering={{ preset: 'cinematic' }} />
+```
+
+Screenshot target: `docs/assets/rendering-preset-cinematic.png` (generated in Phase 4C validation).
+
+Advanced resolver example (deterministic):
+
+```tsx
+<NeuronWeb
+  graphData={{ nodes, edges }}
+  rendering={{
+    preset: 'subtle',
+    resolvers: {
+      getNodeStyle: (node) =>
+        node.tier === 'insight'
+          ? { scale: 1.25, opacity: 1, color: '#b08cff' }
+          : node.connectionCount > 10
+            ? { scale: 1.1, opacity: 0.95 }
+            : {},
+      getEdgeStyle: (edge) =>
+        edge.strength > 0.8 ? { opacity: 0.9, width: 1.4 } : edge.strength < 0.25 ? { opacity: 0.15 } : {},
+    },
+  }}
+/>
+```
+
+Performance + safety guidance:
+- In `performanceMode="degraded"` and `performanceMode="fallback"`, expensive features are gated off.
+  For example: curved edges, arrows, edge-flow animations, mesh nodes, and graph enter/exit transitions
+  are intentionally limited to `normal` mode.
+- When the OS preference `prefers-reduced-motion: reduce` is active, continuous motion (ambient drift, edge flow)
+  is disabled and camera tweening is clamped/disabled to avoid motion sickness.
+- The authoritative gating table lives in `docs/visualization/performance-budgets.md` and
+  `docs/visualization/animation-profiles.md`.
+
 ### Effects + Animation Overrides
 
 Use `theme.effects` and `theme.animation` to toggle polish features:

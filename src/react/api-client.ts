@@ -32,13 +32,47 @@ import type {
   ResetSettingsResponse,
 } from '../core/types/api';
 
+export type NeuronApiClientOptions = {
+  /**
+   * Optional scope header value to include with every request.
+   * Used for multi-tenant isolation (Phase 7D).
+   */
+  scope?: string;
+  /**
+   * Optional additional headers to include with every request.
+   * Per-request headers override these values.
+   */
+  headers?: HeadersInit;
+  /**
+   * Header name for scope (default: `x-neuron-scope`).
+   */
+  scopeHeader?: string;
+};
+
 export class NeuronApiClient {
-  constructor(private basePath: string) {}
+  constructor(
+    private basePath: string,
+    private options?: NeuronApiClientOptions
+  ) {}
 
   private async request<T>(path: string, options?: RequestInit): Promise<T> {
+    const headers = new Headers(this.options?.headers);
+    if (options?.headers) {
+      new Headers(options.headers).forEach((value, key) => headers.set(key, value));
+    }
+
+    if (!headers.has('Content-Type') && !headers.has('content-type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+
+    const scope = this.options?.scope?.trim();
+    if (scope) {
+      headers.set(this.options?.scopeHeader ?? 'x-neuron-scope', scope);
+    }
+
     const response = await fetch(`${this.basePath}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
       ...options,
+      headers,
     });
     if (!response.ok) {
       throw new Error(`Request failed: ${response.status}`);

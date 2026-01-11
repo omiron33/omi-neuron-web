@@ -88,7 +88,7 @@ export interface GetNodeResponse {
   relatedNodes: NeuronNode[];
 }
 
-export interface UpdateNodeRequest extends NeuronNodeUpdate {}
+export type UpdateNodeRequest = NeuronNodeUpdate;
 
 export interface DeleteNodeResponse {
   deleted: boolean;
@@ -123,7 +123,7 @@ export interface CreateEdgesResponse {
   errors: Array<{ index: number; error: string }>;
 }
 
-export interface UpdateEdgeRequest extends NeuronEdgeUpdate {}
+export type UpdateEdgeRequest = NeuronEdgeUpdate;
 
 export interface DeleteEdgeResponse {
   deleted: boolean;
@@ -265,7 +265,7 @@ export interface GetSettingsResponse {
   source: 'database' | 'config_file' | 'defaults';
 }
 
-export interface UpdateSettingsRequest extends NeuronSettingsUpdate {}
+export type UpdateSettingsRequest = NeuronSettingsUpdate;
 
 export interface UpdateSettingsResponse {
   settings: NeuronSettings;
@@ -306,4 +306,3 @@ export interface HealthCheckResponse {
     docker: boolean;
   };
 }
-

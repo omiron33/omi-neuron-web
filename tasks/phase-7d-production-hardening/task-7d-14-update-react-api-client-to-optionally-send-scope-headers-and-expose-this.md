@@ -1,6 +1,6 @@
 ---
 title: Update React API client to optionally send scope headers and expose this via provider config.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,14 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Added optional scope header support to the React API client:
+  - `src/react/api-client.ts` now supports `new NeuronApiClient(basePath, { scope })`
+  - requests include `x-neuron-scope` when configured
+  - headers are now merged correctly (per-request headers override defaults)
+- Exposed scope configuration through the React provider:
+  - `src/react/NeuronWebProvider.tsx` accepts `config.scope` and forwards it to the API client
+  - changing `scope` re-initializes the API client so per-scope settings fetch aligns with server scoping
+- Tests added:
+  - `tests/react/api-client.test.ts`
+- Docs updated:
+  - `README.md` provider example now includes `scope` and describes behavior.

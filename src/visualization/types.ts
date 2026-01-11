@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { NeuronVisualEdge, NeuronVisualNode, NeuronNode, NeuronEdge } from '../core/types';
+import type { NeuronVisualEdge, NeuronVisualNode, NeuronNode, NeuronEdge, NodeTier } from '../core/types';
 
 export interface NeuronStoryBeat {
   id: string;
@@ -170,6 +170,146 @@ export interface CameraFitOptions {
   padding?: number;
 }
 
+export type RenderingPreset = 'minimal' | 'subtle' | 'cinematic';
+
+export type AnimationProfile = 'off' | 'minimal' | 'subtle' | 'cinematic';
+
+export type NodeRenderMode = 'sprite' | 'mesh';
+
+export type EdgeRenderMode = 'straight' | 'curved';
+
+export type NumberMappingCurve = 'linear' | 'sqrt' | 'log';
+
+export interface NumberMappingRule<TField extends string = string> {
+  /** Use a constant value (simple mode). */
+  value?: number;
+  /** Map from a known numeric field (advanced mode). */
+  fromField?: TField;
+  /** Input range for mapping (defaults depend on field). */
+  inputMin?: number;
+  inputMax?: number;
+  /** Output range for mapping (required for fromField mapping). */
+  outputMin?: number;
+  outputMax?: number;
+  /** Clamp mapped value into [outputMin,outputMax]. Defaults to true when output range is set. */
+  clamp?: boolean;
+  /** Optional mapping curve. Defaults to linear. */
+  curve?: NumberMappingCurve;
+}
+
+export type NodeStyleNumberField = 'connectionCount';
+export type EdgeStyleNumberField = 'strength';
+
+export type NodeNumberMappingRule = NumberMappingRule<NodeStyleNumberField>;
+export type EdgeNumberMappingRule = NumberMappingRule<EdgeStyleNumberField>;
+
+export interface NodeStyle {
+  /** CSS-like color string (hex/rgb/rgba). */
+  color?: string;
+  /** Multiplier applied to the base node scale. */
+  scale?: number;
+  /** 0..1 opacity multiplier for the node material. */
+  opacity?: number;
+}
+
+export interface EdgeStyle {
+  /** CSS-like color string (hex/rgb/rgba). */
+  color?: string;
+  /** 0..1 opacity multiplier for the edge material. */
+  opacity?: number;
+  /** Intended edge width in pixels or world units (implementation-defined). */
+  width?: number;
+  /** Optional dashed styling (implementation-defined). */
+  dashed?: boolean;
+}
+
+export type NodeStyleResolver = (node: NeuronVisualNode) => NodeStyle;
+export type EdgeStyleResolver = (edge: NeuronVisualEdge) => EdgeStyle;
+
+export interface NodeStyleOptions {
+  mode?: NodeRenderMode;
+  /** Size mapping rule (tier scaling remains the default when omitted). */
+  size?: NodeNumberMappingRule;
+  opacity?: NodeNumberMappingRule;
+  glow?: {
+    enabled?: boolean;
+    intensity?: number;
+  };
+  hover?: {
+    scale?: number;
+  };
+  selection?: {
+    scale?: number;
+    highlightColor?: string;
+  };
+}
+
+export interface EdgeStyleOptions {
+  mode?: EdgeRenderMode;
+  opacity?: EdgeNumberMappingRule;
+  width?: EdgeNumberMappingRule;
+  arrows?: {
+    enabled?: boolean;
+    scale?: number;
+  };
+  flow?: {
+    enabled?: boolean;
+    speed?: number;
+    /** Animation mode. Defaults to 'pulse' to preserve existing behavior. */
+    mode?: 'pulse' | 'dash';
+    /** Dash size when flow.mode is 'dash' (world-units; best-effort). */
+    dashSize?: number;
+    /** Gap size when flow.mode is 'dash' (world-units; best-effort). */
+    gapSize?: number;
+  };
+  curve?: {
+    tension?: number;
+    segments?: number;
+  };
+}
+
+export type LabelTierVisibility = 'always' | 'auto' | 'none';
+export type LabelTierRules = Partial<Record<NodeTier, LabelTierVisibility>>;
+
+export interface LabelOptions {
+  visibility?: 'auto' | 'interaction' | 'none';
+  maxCount?: number;
+  distance?: number;
+  tiers?: LabelTierRules;
+  transitions?: {
+    enabled?: boolean;
+    durationMs?: number;
+  };
+}
+
+export interface AnimationOptions {
+  profile?: AnimationProfile;
+  enableCameraTween?: boolean;
+  focusDurationMs?: number;
+  transitionDurationMs?: number;
+  easing?: 'linear' | 'easeInOut' | 'easeOut';
+}
+
+export interface RenderingPerformanceOptions {
+  /** Upper bound for normal-mode auto selection (exclusive). */
+  normalMaxNodes?: number;
+  /** Upper bound for degraded-mode auto selection (exclusive). */
+  degradedMaxNodes?: number;
+}
+
+export interface RenderingOptions {
+  preset?: RenderingPreset;
+  nodes?: NodeStyleOptions;
+  edges?: EdgeStyleOptions;
+  labels?: LabelOptions;
+  animations?: AnimationOptions;
+  performance?: RenderingPerformanceOptions;
+  resolvers?: {
+    getNodeStyle?: NodeStyleResolver;
+    getEdgeStyle?: EdgeStyleResolver;
+  };
+}
+
 export interface NeuronWebProps {
   graphData: {
     nodes: NeuronVisualNode[];
@@ -224,6 +364,8 @@ export interface NeuronWebProps {
   renderEmptyState?: () => React.ReactNode;
   renderLoadingState?: () => React.ReactNode;
   performanceMode?: 'auto' | 'normal' | 'degraded' | 'fallback';
+  /** Rendering depth options (styles, mapping, animation presets). Additive; defaults preserve current behavior. */
+  rendering?: RenderingOptions;
   /** Controls spacing and declutter behavior for dense graphs. */
   density?: DensityOptions;
   ariaLabel?: string;

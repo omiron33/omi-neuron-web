@@ -56,45 +56,45 @@
 
 ## Execution Phases
 
-### Phase 1 – Discovery 🟥
-- [ ] Define minimum feature parity required for local-first modes (CRUD, graph fetch, basic search) and document what is intentionally not supported.
-- [ ] Audit current database assumptions (SQL-only queries, pgvector-specific logic) and identify required abstraction boundaries.
-- [ ] Define data size expectations + guidance for each backend (in-memory vs file-backed) and where consumers should migrate to Postgres.
+### Phase 1 – Discovery ✅
+- [x] Define minimum feature parity required for local-first modes (CRUD, graph fetch, basic search) and document what is intentionally not supported.
+- [x] Audit current database assumptions (SQL-only queries, pgvector-specific logic) and identify required abstraction boundaries.
+- [x] Define data size expectations + guidance for each backend (in-memory vs file-backed) and where consumers should migrate to Postgres.
 
-### Phase 2 – Design/Architecture 🟥
+### Phase 2 – Design/Architecture ✅
 Design artifacts to produce in this phase (recommended):
 - `docs/phase-7b/local-first-parity.md` (what matches Postgres vs what doesn’t)
 - `docs/phase-7b/file-store-format.md` (JSON schema, versioning, atomic write strategy)
 
-- [ ] Specify `InMemoryGraphStore` semantics (IDs, slug uniqueness, timestamps, filtering, pagination) to match API expectations.
-- [ ] Specify `FileBackedGraphStore` persistence format, write strategy, and failure behavior (atomic writes, corruption handling).
-- [ ] Define local-first search behavior:
+- [x] Specify `InMemoryGraphStore` semantics (IDs, slug uniqueness, timestamps, filtering, pagination) to match API expectations.
+- [x] Specify `FileBackedGraphStore` persistence format, write strategy, and failure behavior (atomic writes, corruption handling).
+- [x] Define local-first search behavior:
   - embedding storage format
   - cosine similarity implementation
   - limitations vs pgvector
-- [ ] Design config extensions and selection:
+- [x] Design config extensions and selection:
   - `storage.mode: 'postgres' | 'memory' | 'file'`
   - `storage.filePath` for file mode
-- [ ] Define a portability strategy for analysis:
+- [x] Define a portability strategy for analysis:
   - which steps require embeddings
   - how caching works in local-first modes
 
 ### Phase 3 – Implementation 🟥
-- [ ] Implement `InMemoryGraphStore` with full API parity where feasible (nodes, edges, settings, graph queries, search).
-- [ ] Implement `FileBackedGraphStore` with JSON persistence and safe writes; provide migration/versioning strategy for the file format.
-- [ ] Add shared utilities for local-first similarity scoring (cosine similarity, normalization).
-- [ ] Update storage factory wiring to choose store backend by config, without impacting Postgres default behavior.
-- [ ] Update API routes to accept an injected store (or store factory) so backends can be swapped without editing route handlers.
-- [ ] Update CLI scaffolding to support local-first templates and add a “quickstart without Docker” path.
-- [ ] Add docs and examples demonstrating:
+- [x] Implement `InMemoryGraphStore` with full API parity where feasible (nodes, edges, settings, graph queries, search).
+- [x] Implement `FileBackedGraphStore` with JSON persistence and safe writes; provide migration/versioning strategy for the file format.
+- [x] Add shared utilities for local-first similarity scoring (cosine similarity, normalization).
+- [x] Update storage factory wiring to choose store backend by config, without impacting Postgres default behavior.
+- [x] Update API routes to accept an injected store (or store factory) so backends can be swapped without editing route handlers.
+- [x] Update CLI scaffolding to support local-first templates and add a “quickstart without Docker” path.
+- [x] Add docs and examples demonstrating:
   - local-first quickstart
   - migration to Postgres when ready
 
 ### Phase 4 – Validation 🟥
-- [ ] Add unit tests for backend semantics and parity (CRUD behavior, pagination/filtering).
-- [ ] Add integration tests to ensure API routes behave identically across backends for core operations.
-- [ ] Validate local-first search correctness on small fixtures (deterministic embeddings via mock provider).
-- [ ] Document performance expectations and explicit limitations.
+- [x] Add unit tests for backend semantics and parity (CRUD behavior, pagination/filtering).
+- [x] Add integration tests to ensure API routes behave identically across backends for core operations.
+- [x] Validate local-first search correctness on small fixtures (deterministic embeddings via mock provider).
+- [x] Document performance expectations and explicit limitations.
 
 ## Risks & Mitigations
 - Divergence between Postgres and local backends → Define parity expectations; add shared conformance tests.

@@ -1,6 +1,6 @@
 ---
 title: Select the initial connector set (Markdown, GitHub, RSS, Notion) and define minimal v1 feature parity for each.
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -38,3 +38,4 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Artifact: `docs/phase-7c/connector-scope.md`

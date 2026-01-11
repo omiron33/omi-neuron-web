@@ -1,6 +1,6 @@
 ---
 title: Define event taxonomy for jobs and governance (event names, payload shapes, error semantics).
-status: pending
+status: completed
 bucket: To-Do
 priority: 1
 labels:
@@ -40,3 +40,31 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Existing event system (`src/core/types/events.ts`) already supports analysis lifecycle (`analysis:*`) and edge lifecycle (`edge:*`) events.
+- Phase 7E event taxonomy (v1) should add a stable “job” namespace for streaming/polling and a separate namespace for governance actions.
+
+Recommended v1 job event topics (portable; suitable for SSE):
+- `analysis.job.started`
+- `analysis.job.progress`
+- `analysis.job.completed`
+- `analysis.job.failed`
+- `analysis.job.canceled`
+
+Recommended v1 job event payload shape:
+- Always include: `jobId`, `scope` (when Phase 7D is enabled), and a timestamp (provided by `NeuronEvent.timestamp`).
+- Progress payload should be compatible with `PipelineProgress` fields:
+  - `stage` (`embeddings|clustering|relationships|complete`)
+  - `progress` (0–100; overall or per-stage, but be consistent)
+  - `currentItem`, `itemsProcessed`, `totalItems`
+  - optional `estimatedTimeRemaining`
+- Failed payload should include a safe error message (avoid leaking secrets/stack traces over SSE by default).
+
+Recommended v1 governance event topics:
+- `edges.suggestion.created`
+- `edges.suggestion.approved`
+- `edges.suggestion.rejected`
+
+Governance payload guidance:
+- Created should include the suggested edge record (or at minimum its id + key fields).
+- Approved should include `suggestionId` and (if created) the resulting `edgeId`.
+- Rejected should include `suggestionId` and an optional `reason`.

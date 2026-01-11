@@ -1,4 +1,5 @@
 import type { NeuronConfig } from '../core/types/settings';
+import { FileBackedGraphStore, InMemoryGraphStore, PostgresGraphStore, type GraphStore } from '../core/store';
 import { Database, type DatabaseConfig } from './database';
 
 let singleton: Database | null = null;
@@ -40,4 +41,20 @@ export function getDatabase(config?: DatabaseConfig): Database {
 
 export function resetDatabaseSingleton(): void {
   singleton = null;
+}
+
+export function createGraphStore(config: NeuronConfig): GraphStore {
+  const mode = config.storage?.mode ?? 'postgres';
+  if (mode === 'memory') return new InMemoryGraphStore();
+
+  if (mode === 'file') {
+    const filePath = config.storage?.filePath;
+    if (!filePath) throw new Error('storage.filePath is required when storage.mode === "file"');
+    return new FileBackedGraphStore({
+      filePath,
+      persistIntervalMs: config.storage?.persistIntervalMs,
+    });
+  }
+
+  return new PostgresGraphStore(createDatabase(config));
 }

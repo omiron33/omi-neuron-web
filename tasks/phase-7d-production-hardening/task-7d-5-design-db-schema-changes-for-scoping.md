@@ -1,6 +1,6 @@
 ---
 title: Design DB schema changes for scoping:
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Scoped schema plan documented, including default scope + unique/index strategy.
+- Design doc: `docs/phase-7d/scoping-schema.md`.

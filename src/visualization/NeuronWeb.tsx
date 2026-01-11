@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import type { NeuronStoryBeat, NeuronWebProps, StudyPathStep } from './types';
+import type { AnimationProfile, NeuronStoryBeat, NeuronWebProps, StudyPathStep } from './types';
 import type { NeuronEdge, NeuronNode } from '../core/types';
 import { DEFAULT_THEME } from './constants';
 import { useSceneManager } from './hooks/useSceneManager';
@@ -57,6 +57,7 @@ export function NeuronWeb({
   onCameraChange,
   performanceMode,
   density,
+  rendering,
   activeStoryBeatId,
   storyBeatStepDurationMs,
   onStoryBeatComplete,
@@ -140,25 +141,28 @@ export function NeuronWeb({
     return visibleNodeSlugs.length ? visibleNodeSlugs.join('|') : 'none';
   }, [visibleNodeSlugs]);
 
-  useEffect(() => {
-    if (firstFilterChangeRef.current) {
-      firstFilterChangeRef.current = false;
-      return;
-    }
-    setFilterTransitioning(true);
-    const timer = setTimeout(() => setFilterTransitioning(false), resolvedTheme.animation.transitionDuration);
-    return () => clearTimeout(timer);
-  }, [filterSignature, resolvedTheme.animation.transitionDuration]);
-
   const workingGraph = filteredGraphData;
 
   const resolvedPerformanceMode = useMemo(() => {
     if (performanceMode && performanceMode !== 'auto') return performanceMode;
     const count = workingGraph.nodes.length;
-    if (count > 360) return 'fallback';
-    if (count > 180) return 'degraded';
+
+    const normalMaxRaw = rendering?.performance?.normalMaxNodes;
+    const degradedMaxRaw = rendering?.performance?.degradedMaxNodes;
+    let normalMax = typeof normalMaxRaw === 'number' && Number.isFinite(normalMaxRaw) ? normalMaxRaw : 180;
+    let degradedMax =
+      typeof degradedMaxRaw === 'number' && Number.isFinite(degradedMaxRaw) ? degradedMaxRaw : 360;
+    normalMax = Math.max(1, Math.floor(normalMax));
+    degradedMax = Math.max(normalMax + 1, Math.floor(degradedMax));
+
+    const pixelRatio =
+      typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    const effectiveCount = count * Math.sqrt(pixelRatio);
+
+    if (effectiveCount > degradedMax) return 'fallback';
+    if (effectiveCount > normalMax) return 'degraded';
     return 'normal';
-  }, [performanceMode, workingGraph.nodes.length]);
+  }, [performanceMode, workingGraph.nodes.length, rendering?.performance?.normalMaxNodes, rendering?.performance?.degradedMaxNodes]);
 
   const resolvedDensity = useMemo(() => {
     const presets = {
@@ -185,6 +189,155 @@ export function NeuronWeb({
       labelVisibility: density?.labelVisibility ?? 'auto',
     };
   }, [density, resolvedPerformanceMode]);
+
+  const resolvedAnimationProfile = useMemo<AnimationProfile>(() => {
+    const preset = rendering?.preset;
+    const presetProfile: AnimationProfile | undefined =
+      preset === 'minimal' ? 'minimal' : preset === 'cinematic' ? 'cinematic' : preset ? 'subtle' : undefined;
+    const requested = rendering?.animations?.profile ?? presetProfile ?? 'subtle';
+    let profile: AnimationProfile = requested;
+
+    if (resolvedPerformanceMode === 'degraded' && profile === 'cinematic') {
+      profile = 'subtle';
+    } else if (
+      resolvedPerformanceMode === 'fallback' &&
+      (profile === 'subtle' || profile === 'cinematic')
+    ) {
+      profile = 'minimal';
+    }
+
+    if (prefersReducedMotion) {
+      profile = profile === 'off' ? 'off' : 'minimal';
+    }
+
+    return profile;
+  }, [rendering?.preset, rendering?.animations?.profile, resolvedPerformanceMode, prefersReducedMotion]);
+
+  const resolvedAnimationConfig = useMemo(() => {
+    const profile = resolvedAnimationProfile;
+
+    const easingRaw = resolvedTheme.animation.easing;
+    const baseEasing: 'linear' | 'easeInOut' | 'easeOut' =
+      easingRaw === 'linear' || easingRaw === 'easeInOut' || easingRaw === 'easeOut'
+        ? easingRaw
+        : 'easeInOut';
+
+    const hoverScaleBase = rendering?.nodes?.hover?.scale ?? resolvedTheme.animation.hoverScale;
+    const selectedScaleBase = rendering?.nodes?.selection?.scale ?? resolvedTheme.animation.selectedScale;
+
+    let hoverScale = hoverScaleBase;
+    let selectedScale = selectedScaleBase;
+    let pulseScale = resolvedTheme.animation.selectionPulseScale;
+    let pulseDurationMs = resolvedTheme.animation.selectionPulseDuration;
+    let focusDurationMs = resolvedTheme.animation.focusDuration;
+    let transitionDurationMs = resolvedTheme.animation.transitionDuration;
+    let easing = baseEasing;
+
+    let enableHoverScale = resolvedTheme.animation.enableHoverScale;
+    let enableSelectionPulse = resolvedTheme.animation.enableSelectionPulse;
+    let enableSelectionRipple = resolvedTheme.animation.enableSelectionRipple;
+    let enableCameraTween = resolvedTheme.animation.enableCameraTween;
+
+    if (profile === 'off') {
+      enableHoverScale = false;
+      enableSelectionPulse = false;
+      enableSelectionRipple = false;
+      enableCameraTween = false;
+      hoverScale = 1;
+      selectedScale = 1;
+      pulseScale = 0;
+      pulseDurationMs = 0;
+      focusDurationMs = 0;
+      transitionDurationMs = 0;
+      easing = 'linear';
+    } else if (profile === 'minimal') {
+      hoverScale = Math.min(hoverScale, 1.08);
+      selectedScale = Math.min(selectedScale, 1.25);
+      pulseScale = Math.min(pulseScale, 0.24);
+      pulseDurationMs = Math.min(pulseDurationMs, 450);
+      focusDurationMs = Math.min(focusDurationMs, 450);
+      transitionDurationMs = Math.min(transitionDurationMs, 450);
+      easing = 'easeOut';
+    } else if (profile === 'cinematic') {
+      hoverScale = Math.max(hoverScale, 1.12);
+      selectedScale = Math.max(selectedScale, 1.4);
+      pulseScale = Math.max(pulseScale, 0.35);
+      pulseDurationMs = Math.max(pulseDurationMs, 520);
+      focusDurationMs = Math.max(focusDurationMs, 800);
+      transitionDurationMs = Math.max(transitionDurationMs, 650);
+      easing = 'easeInOut';
+    }
+
+    const overrides = rendering?.animations;
+    if (overrides) {
+      if (overrides.enableCameraTween !== undefined) {
+        enableCameraTween = overrides.enableCameraTween;
+      }
+      if (typeof overrides.focusDurationMs === 'number' && Number.isFinite(overrides.focusDurationMs)) {
+        focusDurationMs = Math.max(0, overrides.focusDurationMs);
+      }
+      if (
+        typeof overrides.transitionDurationMs === 'number' &&
+        Number.isFinite(overrides.transitionDurationMs)
+      ) {
+        transitionDurationMs = Math.max(0, overrides.transitionDurationMs);
+      }
+      if (overrides.easing) {
+        easing = overrides.easing;
+      }
+    }
+
+    if (profile === 'off') {
+      enableHoverScale = false;
+      enableSelectionPulse = false;
+      enableSelectionRipple = false;
+      enableCameraTween = false;
+      hoverScale = 1;
+      selectedScale = 1;
+      pulseScale = 0;
+      pulseDurationMs = 0;
+      focusDurationMs = 0;
+      transitionDurationMs = 0;
+      easing = 'linear';
+    }
+
+    if (prefersReducedMotion) {
+      enableHoverScale = false;
+      enableSelectionPulse = false;
+      enableSelectionRipple = false;
+      enableCameraTween = false;
+      hoverScale = 1;
+      pulseScale = 0;
+    }
+
+    return {
+      profile,
+      hoverScale,
+      selectedScale,
+      pulseScale,
+      pulseDurationMs,
+      focusDurationMs,
+      transitionDurationMs,
+      easing,
+      enableHoverScale,
+      enableSelectionPulse,
+      enableSelectionRipple,
+      enableCameraTween,
+    };
+  }, [resolvedTheme, rendering, resolvedAnimationProfile, prefersReducedMotion]);
+
+  useEffect(() => {
+    if (firstFilterChangeRef.current) {
+      firstFilterChangeRef.current = false;
+      return;
+    }
+    setFilterTransitioning(true);
+    const timer = setTimeout(
+      () => setFilterTransitioning(false),
+      resolvedAnimationConfig.transitionDurationMs
+    );
+    return () => clearTimeout(timer);
+  }, [filterSignature, resolvedAnimationConfig.transitionDurationMs]);
 
   const sceneManager = useSceneManager(containerRef, {
     backgroundColor: resolvedTheme.colors.background,
@@ -229,8 +382,51 @@ export function NeuronWeb({
     if (!sceneManager) return null;
     const defaultLabelDistance = resolvedPerformanceMode === 'normal' ? 26 : 0;
     const defaultLabelMax = resolvedPerformanceMode === 'normal' ? 80 : 0;
-    const labelDistance = resolvedDensity.labelDistance ?? defaultLabelDistance;
-    const labelMax = resolvedDensity.labelMaxCount ?? defaultLabelMax;
+    let labelDistance = resolvedDensity.labelDistance ?? defaultLabelDistance;
+    let labelMax = resolvedDensity.labelMaxCount ?? defaultLabelMax;
+    let labelVisibility = resolvedDensity.labelVisibility;
+    let labelTierRules = rendering?.labels?.tiers;
+    let labelTransitionsEnabled = false;
+    let labelTransitionDurationMs = 0;
+
+    if (rendering?.labels) {
+      if (rendering.labels.visibility) {
+        labelVisibility = rendering.labels.visibility;
+      }
+      if (typeof rendering.labels.distance === 'number') {
+        labelDistance = rendering.labels.distance;
+      }
+      if (typeof rendering.labels.maxCount === 'number') {
+        labelMax = rendering.labels.maxCount;
+      }
+      labelTierRules = rendering.labels.tiers;
+      labelTransitionsEnabled = Boolean(rendering.labels.transitions?.enabled);
+      labelTransitionDurationMs = Math.max(0, rendering.labels.transitions?.durationMs ?? 160);
+
+      if (resolvedPerformanceMode === 'fallback') {
+        labelDistance = 0;
+        labelMax = 0;
+        labelTransitionsEnabled = false;
+      } else if (resolvedPerformanceMode !== 'normal') {
+        labelTransitionsEnabled = false;
+      }
+    }
+
+    if (prefersReducedMotion) {
+      labelTransitionsEnabled = false;
+    }
+    const requestedMode = rendering?.nodes?.mode ?? 'sprite';
+    const resolvedNodeMode =
+      requestedMode === 'mesh' && resolvedPerformanceMode !== 'normal' ? 'sprite' : requestedMode;
+    const hoverScale = resolvedAnimationConfig.hoverScale;
+    const selectedScale = resolvedAnimationConfig.selectedScale;
+    const profileAllowsContinuous =
+      resolvedAnimationConfig.profile === 'subtle' || resolvedAnimationConfig.profile === 'cinematic';
+    const transitionsEnabled =
+      resolvedPerformanceMode === 'normal' &&
+      !prefersReducedMotion &&
+      profileAllowsContinuous &&
+      resolvedAnimationConfig.transitionDurationMs > 0;
     return new NodeRenderer(sceneManager.scene, {
       domainColors: resolvedTheme.colors.domainColors,
       defaultColor: resolvedTheme.colors.defaultDomainColor,
@@ -244,45 +440,115 @@ export function NeuronWeb({
       glowIntensity: resolvedTheme.effects.glowEnabled ? resolvedTheme.effects.glowIntensity : 0,
       labelDistance,
       maxVisibleLabels: labelMax,
-      labelVisibility: resolvedDensity.labelVisibility,
+      labelVisibility,
+      labelTierRules,
+      labelTransitionsEnabled,
+      labelTransitionDurationMs,
+      transitionsEnabled,
+      transitionDurationMs: resolvedAnimationConfig.transitionDurationMs,
+      hitTargetScale: 2.2,
       labelOffset: [0, 0.65, 0],
       labelFontFamily: resolvedTheme.typography.labelFontFamily,
       labelFontSize: resolvedTheme.typography.labelFontSize,
       labelFontWeight: resolvedTheme.typography.labelFontWeight,
       labelTextColor: resolvedTheme.colors.labelText,
       labelBackground: resolvedTheme.colors.labelBackground,
+      mode: resolvedNodeMode,
+      sizeRule: rendering?.nodes?.size,
+      opacityRule: rendering?.nodes?.opacity,
+      getNodeStyle: rendering?.resolvers?.getNodeStyle,
+      selectionHighlightColor: rendering?.nodes?.selection?.highlightColor,
       ambientMotionEnabled:
         resolvedTheme.effects.ambientMotionEnabled &&
         resolvedPerformanceMode === 'normal' &&
-        !prefersReducedMotion,
+        !prefersReducedMotion &&
+        profileAllowsContinuous,
       ambientMotionAmplitude: resolvedTheme.effects.ambientMotionAmplitude,
       ambientMotionSpeed: resolvedTheme.effects.ambientMotionSpeed,
-      hoverScale: resolvedTheme.animation.hoverScale,
-      selectedScale: resolvedTheme.animation.selectedScale,
-      pulseScale: resolvedTheme.animation.selectionPulseScale,
-      pulseDuration: resolvedTheme.animation.selectionPulseDuration / 1000,
-      enableHoverScale: resolvedTheme.animation.enableHoverScale && !prefersReducedMotion,
-      enableSelectionPulse: resolvedTheme.animation.enableSelectionPulse && !prefersReducedMotion,
+      hoverScale,
+      selectedScale,
+      pulseScale: resolvedAnimationConfig.pulseScale,
+      pulseDuration: resolvedAnimationConfig.pulseDurationMs / 1000,
+      enableHoverScale: resolvedAnimationConfig.enableHoverScale,
+      enableSelectionPulse: resolvedAnimationConfig.enableSelectionPulse,
     });
-  }, [sceneManager, resolvedTheme, resolvedPerformanceMode, resolvedDensity, prefersReducedMotion]);
+  }, [
+    sceneManager,
+    resolvedTheme,
+    resolvedPerformanceMode,
+    resolvedDensity,
+    prefersReducedMotion,
+    rendering,
+    resolvedAnimationConfig,
+  ]);
 
   const edgeRenderer = useMemo(() => {
     if (!sceneManager) return null;
+    const requestedMode = rendering?.edges?.mode ?? 'straight';
+    const resolvedEdgeMode =
+      requestedMode === 'curved' && resolvedPerformanceMode !== 'normal' ? 'straight' : requestedMode;
+    const profileAllowsFlow =
+      resolvedAnimationConfig.profile === 'subtle' || resolvedAnimationConfig.profile === 'cinematic';
+    const transitionsEnabled =
+      resolvedPerformanceMode === 'normal' &&
+      !prefersReducedMotion &&
+      profileAllowsFlow &&
+      resolvedAnimationConfig.transitionDurationMs > 0;
+    const requestedFlowEnabled = profileAllowsFlow
+      ? (rendering?.edges?.flow?.enabled ?? resolvedTheme.effects.edgeFlowEnabled)
+      : false;
+    const resolvedFlowEnabled =
+      requestedFlowEnabled && resolvedPerformanceMode === 'normal' && !prefersReducedMotion;
+    const flowMode = rendering?.edges?.flow?.mode ?? 'pulse';
+    const arrowsRequested = rendering?.edges?.arrows?.enabled ?? false;
+    const arrowsEnabled = arrowsRequested && resolvedPerformanceMode === 'normal';
+    const curveTension = rendering?.edges?.curve?.tension;
+    const curveSegments = rendering?.edges?.curve?.segments;
     return new EdgeRenderer(sceneManager.scene, {
       defaultColor: resolvedTheme.colors.edgeDefault,
       activeColor: resolvedTheme.colors.edgeActive,
       selectedColor: resolvedTheme.colors.edgeSelected,
       baseOpacity: 0.45,
       strengthOpacityScale: true,
-      edgeFlowEnabled:
-        resolvedTheme.effects.edgeFlowEnabled &&
-        resolvedPerformanceMode === 'normal' &&
-        !prefersReducedMotion,
-      edgeFlowSpeed: resolvedTheme.effects.edgeFlowSpeed,
+      edgeFlowEnabled: resolvedFlowEnabled,
+      edgeFlowSpeed: rendering?.edges?.flow?.speed ?? resolvedTheme.effects.edgeFlowSpeed,
       focusFadeOpacity: resolvedDensity.edgeFade,
       minStrength: resolvedDensity.minEdgeStrength,
+      transitionsEnabled,
+      transitionDurationMs: resolvedAnimationConfig.transitionDurationMs,
+      mode: resolvedEdgeMode,
+      opacityRule: rendering?.edges?.opacity,
+      widthRule: rendering?.edges?.width,
+      arrowsEnabled,
+      arrowScale: rendering?.edges?.arrows?.scale,
+      curveTension,
+      curveSegments,
+      flowMode,
+      flowDashSize: rendering?.edges?.flow?.dashSize,
+      flowGapSize: rendering?.edges?.flow?.gapSize,
+      getEdgeStyle: rendering?.resolvers?.getEdgeStyle,
     });
-  }, [sceneManager, resolvedTheme, resolvedPerformanceMode, resolvedDensity, prefersReducedMotion]);
+  }, [
+    sceneManager,
+    resolvedTheme,
+    resolvedPerformanceMode,
+    resolvedDensity,
+    prefersReducedMotion,
+    rendering,
+    resolvedAnimationConfig,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      nodeRenderer?.dispose();
+    };
+  }, [nodeRenderer]);
+
+  useEffect(() => {
+    return () => {
+      edgeRenderer?.dispose();
+    };
+  }, [edgeRenderer]);
 
   const doubleClickEnabled = false;
 
@@ -300,26 +566,24 @@ export function NeuronWeb({
   const animationController = useMemo(() => {
     if (!sceneManager) return null;
     return new AnimationController(sceneManager.camera, sceneManager.controls, {
-      focusDuration: resolvedTheme.animation.focusDuration,
-      transitionDuration: resolvedTheme.animation.transitionDuration,
-      easing: resolvedTheme.animation.easing as 'linear' | 'easeInOut' | 'easeOut',
+      focusDuration: resolvedAnimationConfig.focusDurationMs,
+      transitionDuration: resolvedAnimationConfig.transitionDurationMs,
+      easing: resolvedAnimationConfig.easing,
     });
-  }, [sceneManager, resolvedTheme]);
+  }, [sceneManager, resolvedAnimationConfig]);
 
   const rippleEnabled =
-    resolvedTheme.animation.enableSelectionRipple &&
-    resolvedPerformanceMode !== 'fallback' &&
-    !prefersReducedMotion;
+    resolvedAnimationConfig.enableSelectionRipple && resolvedPerformanceMode !== 'fallback';
 
   const selectionRipple = useMemo(() => {
     if (!sceneManager || !rippleEnabled) return null;
     return new SelectionRipple(sceneManager.scene, {
       color: resolvedTheme.colors.edgeSelected,
-      duration: Math.max(0.2, resolvedTheme.animation.selectionPulseDuration / 1000),
+      duration: Math.max(0.2, resolvedAnimationConfig.pulseDurationMs / 1000),
       maxScale: 1.4,
       opacity: 0.6,
     });
-  }, [sceneManager, resolvedTheme, rippleEnabled]);
+  }, [sceneManager, resolvedTheme.colors.edgeSelected, rippleEnabled, resolvedAnimationConfig.pulseDurationMs]);
 
   useEffect(() => {
     return () => {
@@ -479,6 +743,14 @@ export function NeuronWeb({
 
   const selectionControlled = selectedNode !== undefined;
 
+  const keyboardNodeIds = useMemo(
+    () =>
+      resolvedNodes
+        .map((node) => node.id)
+        .slice()
+        .sort((a, b) => a.localeCompare(b)),
+    [resolvedNodes]
+  );
 
   const hoverCardEnabled =
     (cardsMode ? (cardsMode === 'hover' || cardsMode === 'both') : (hoverCard?.enabled ?? true)) &&
@@ -488,7 +760,12 @@ export function NeuronWeb({
   const hoverCardVisible = hoverCardEnabled && Boolean(hoverCardNodeId);
   const hoverCardActive =
     hoverCardEnabled && Boolean(hoveredNodeId && hoverCardNodeId === hoveredNodeId);
-  const hoverCardSlideDistance = prefersReducedMotion ? 0 : resolvedTheme.animation.hoverCardSlideDistance;
+  const hoverCardSlideDistance =
+    prefersReducedMotion ||
+    resolvedAnimationConfig.profile === 'off' ||
+    resolvedAnimationConfig.profile === 'minimal'
+      ? 0
+      : resolvedTheme.animation.hoverCardSlideDistance;
   const hoverCardNode = hoverCardNodeId ? nodeMap.get(hoverCardNodeId) ?? null : null;
   const hoverSummaryMax = hoverCard?.maxSummaryLength ?? 140;
   const showHoverTags = hoverCard?.showTags ?? true;
@@ -501,7 +778,7 @@ export function NeuronWeb({
   const clickZoomEnabled = clickZoom?.enabled ?? true;
   const clickZoomDistance = clickZoom?.distance;
   const clickZoomOffset = clickZoom?.offset;
-  const cameraTweenEnabled = resolvedTheme.animation.enableCameraTween && !prefersReducedMotion;
+  const cameraTweenEnabled = resolvedAnimationConfig.enableCameraTween;
 
   const truncateText = useCallback((value: string, maxLength: number) => {
     if (value.length <= maxLength) return value;
@@ -621,6 +898,75 @@ export function NeuronWeb({
     [animationController, clickZoomOffset, clickZoomDistance, sceneManager, cameraTweenEnabled]
   );
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (!nodeRenderer) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setStudyPathPlayer(null);
+        pathEdgeIdsRef.current = [];
+        if (!selectionControlled) {
+          setSelectedNodeId(null);
+          nodeRenderer.setSelectedNode(null);
+          applyFocusEdges(null);
+        } else {
+          applyFocusEdges(focusEdgesRef.current);
+        }
+        if (onBackgroundClick) onBackgroundClick();
+        return;
+      }
+
+      if ((event.key === 'Enter' || event.key === ' ') && selectedNodeId) {
+        event.preventDefault();
+        const position = nodeRenderer.getNodePosition(selectedNodeId);
+        if (position && clickZoomEnabled) {
+          focusOnNodePosition(position, () => {
+            const node = nodeMap.get(selectedNodeId) ?? null;
+            if (node && onNodeFocused) onNodeFocused(node as unknown as NeuronNode);
+          });
+        }
+        return;
+      }
+
+      if (selectionControlled) return;
+      const direction =
+        event.key === 'ArrowRight' || event.key === 'ArrowDown'
+          ? 1
+          : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+            ? -1
+            : 0;
+      if (!direction) return;
+      if (!keyboardNodeIds.length) return;
+
+      event.preventDefault();
+      const currentIndex = selectedNodeId ? keyboardNodeIds.indexOf(selectedNodeId) : -1;
+      const nextIndex =
+        currentIndex === -1
+          ? 0
+          : (currentIndex + direction + keyboardNodeIds.length) % keyboardNodeIds.length;
+      const nextId = keyboardNodeIds[nextIndex];
+      setSelectedNodeId(nextId);
+      nodeRenderer.setSelectedNode(nextId);
+      const slug = nodeSlugById.get(nextId);
+      applyFocusEdges(slug ? edgesBySlug.get(slug) ?? [] : []);
+    },
+    [
+      nodeRenderer,
+      selectionControlled,
+      selectedNodeId,
+      clickZoomEnabled,
+      focusOnNodePosition,
+      keyboardNodeIds,
+      nodeSlugById,
+      edgesBySlug,
+      applyFocusEdges,
+      nodeMap,
+      onNodeFocused,
+      onBackgroundClick,
+    ]
+  );
+
   useEffect(() => {
     if (!studyPathPlayer) return;
     const step = studyPathPlayer.steps[studyPathPlayer.index];
@@ -713,11 +1059,7 @@ export function NeuronWeb({
   useEffect(() => {
     if (!sceneManager || !nodeRenderer || !edgeRenderer) return;
     nodeRenderer.renderNodes(displayNodes);
-    const positions = new Map<string, THREE.Vector3>();
-    displayNodes.forEach((node) => {
-      if (!node.position) return;
-      positions.set(node.slug, new THREE.Vector3(...node.position));
-    });
+    const positions = nodeRenderer.getNodePositionsBySlug(new Map<string, THREE.Vector3>());
     edgeRenderer.renderEdges(workingGraph.edges, positions);
   }, [displayNodes, workingGraph.edges, sceneManager, nodeRenderer, edgeRenderer]);
 
@@ -822,7 +1164,13 @@ export function NeuronWeb({
     direction.normalize();
 
     const targetPosition = sphere.center.clone().add(direction.multiplyScalar(distance));
-    animationController.focusOnPosition(targetPosition, sphere.center.clone());
+    if (cameraTweenEnabled) {
+      animationController.focusOnPosition(targetPosition, sphere.center.clone());
+    } else {
+      sceneManager.camera.position.copy(targetPosition);
+      sceneManager.controls.target.copy(sphere.center);
+      sceneManager.controls.update();
+    }
 
     fitStateRef.current = { hasFit: true, signature: fitSignature };
   }, [
@@ -832,6 +1180,7 @@ export function NeuronWeb({
     displayNodes,
     fitSignature,
     cameraFitSuspended,
+    cameraTweenEnabled,
   ]);
 
   useEffect(() => {
@@ -868,9 +1217,14 @@ export function NeuronWeb({
 
   useEffect(() => {
     if (!sceneManager || !nodeRenderer || !edgeRenderer) return;
+    const positionsBySlug = new Map<string, THREE.Vector3>();
     return sceneManager.addFrameListener((delta, elapsed) => {
       nodeRenderer.update(delta, elapsed);
       nodeRenderer.updateLabelVisibility(sceneManager.camera);
+      if (nodeRenderer.hasDynamicPositions()) {
+        nodeRenderer.getNodePositionsBySlug(positionsBySlug);
+        edgeRenderer.updatePositions(positionsBySlug);
+      }
       edgeRenderer.update(delta, elapsed);
       animationController?.update();
       selectionRipple?.update(elapsed, sceneManager.camera);
@@ -1169,12 +1523,14 @@ export function NeuronWeb({
     inset: 0,
     width: '100%',
     height: '100%',
-    transition: `opacity ${resolvedTheme.animation.transitionDuration}ms ease, transform ${resolvedTheme.animation.transitionDuration}ms ease, filter ${resolvedTheme.animation.transitionDuration}ms ease`,
+    transition: prefersReducedMotion
+      ? `opacity ${resolvedAnimationConfig.transitionDurationMs}ms ease`
+      : `opacity ${resolvedAnimationConfig.transitionDurationMs}ms ease, transform ${resolvedAnimationConfig.transitionDurationMs}ms ease, filter ${resolvedAnimationConfig.transitionDurationMs}ms ease`,
     opacity: filterTransitioning ? 0.85 : 1,
-    transform: filterTransitioning ? 'scale(0.985)' : 'scale(1)',
-    filter: filterTransitioning ? 'blur(1px)' : 'blur(0px)',
+    transform: prefersReducedMotion ? 'scale(1)' : filterTransitioning ? 'scale(0.985)' : 'scale(1)',
+    filter: prefersReducedMotion ? 'blur(0px)' : filterTransitioning ? 'blur(1px)' : 'blur(0px)',
     transformOrigin: 'center',
-    willChange: 'transform, filter, opacity',
+    willChange: prefersReducedMotion ? 'opacity' : 'transform, filter, opacity',
   };
 
   const filterOverlayStyle: React.CSSProperties = {
@@ -1183,7 +1539,7 @@ export function NeuronWeb({
     pointerEvents: 'none',
     background: 'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.35), transparent 60%)',
     opacity: filterTransitioning ? 1 : 0,
-    transition: `opacity ${resolvedTheme.animation.transitionDuration}ms ease`,
+    transition: `opacity ${resolvedAnimationConfig.transitionDurationMs}ms ease`,
     zIndex: 2,
   };
 
@@ -1203,6 +1559,9 @@ export function NeuronWeb({
       className={className}
       style={resolvedStyle}
       aria-label={ariaLabel}
+      role="region"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
     >
       <div
         ref={containerRef}

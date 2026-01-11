@@ -1,6 +1,6 @@
 ---
 title: Design API routes and client methods for suggestion listing + approval actions.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -43,3 +43,8 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Defined v1 governance endpoints and client-facing semantics in `docs/phase-7e/governance-api.md`.
+- Key decisions:
+  - Use a top-level `/api/neuron/suggestions` resource (avoids overloading `/edges/*` and keeps dispatch simple).
+  - Provide both single and bulk approve/reject routes, with idempotent semantics.
+  - Endpoints must be scope-aware and compatible with Phase 7D auth hooks.

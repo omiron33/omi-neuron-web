@@ -1,6 +1,6 @@
 ---
 title: Update CLI scaffolding to support local-first templates and add a “quickstart without Docker” path.
-status: pending
+status: completed
 bucket: To-Do
 priority: 2
 labels:
@@ -42,3 +42,5 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Updated `omi-neuron init` to support `--storage postgres|memory|file` and file-mode options (`--file-path`, `--persist-interval`).
+- Docker compose generation is now skipped automatically for non-Postgres storage modes.

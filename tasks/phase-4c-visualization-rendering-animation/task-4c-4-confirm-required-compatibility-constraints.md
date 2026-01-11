@@ -1,6 +1,6 @@
 ---
 title: Confirm required compatibility constraints (Next.js client components, SSR-safe exports, fallback behavior).
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

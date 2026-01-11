@@ -4,6 +4,26 @@ export const polishDemoConfigs = [
     query: '?count=120&perf=normal&effects=1&density=balanced&cards=hover',
   },
   {
+    name: 'rendering-preset-minimal',
+    query: '?count=120&perf=normal&preset=minimal',
+  },
+  {
+    name: 'rendering-preset-subtle',
+    query: '?count=120&perf=normal&preset=subtle',
+  },
+  {
+    name: 'rendering-preset-cinematic',
+    query: '?count=120&perf=normal&preset=cinematic&edges=curved&arrows=1&flow=dash',
+  },
+  {
+    name: 'rendering-resolver-demo',
+    query: '?count=120&perf=normal&preset=subtle&resolver=1',
+  },
+  {
+    name: 'story-beat-playback',
+    query: '?count=120&perf=normal&preset=subtle&beat=beat-1',
+  },
+  {
     name: 'hover-cards',
     query: '?count=120&perf=normal&cards=hover',
   },

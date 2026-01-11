@@ -1,6 +1,6 @@
 ---
 title: Implement animation profile system and wire it through AnimationController/ThemeEngine.
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

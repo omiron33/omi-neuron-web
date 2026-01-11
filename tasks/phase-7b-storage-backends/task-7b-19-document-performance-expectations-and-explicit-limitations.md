@@ -1,6 +1,6 @@
 ---
 title: Document performance expectations and explicit limitations.
-status: pending
+status: completed
 bucket: To-Do
 priority: 3
 labels:
@@ -42,3 +42,4 @@ Execute this plan item and record design decisions/edge cases in task notes (or 
 
 ## Notes
 - Created by generator on 2026-01-10T15:59:28.230Z.
+- Updated `docs/local-first.md` with explicit performance expectations, recommended scale, and operational limitations for `memory` and `file` backends (and clear guidance to migrate to Postgres).

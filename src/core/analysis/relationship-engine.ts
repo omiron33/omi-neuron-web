@@ -1,6 +1,9 @@
-import OpenAI from 'openai';
 import type { Database } from '../../storage/database';
 import type { EdgeEvidence, NeuronEdge, RelationshipType } from '../types/edge';
+import type { LLMProvider } from '../providers/llm-provider';
+import { OpenAILLMProvider } from '../providers/openai/openai-llm-provider';
+import type { GraphStoreContext } from '../store/graph-store';
+import { resolveScope } from '../store/graph-store';
 
 export interface InferenceConfig {
   model: string;
@@ -46,10 +49,21 @@ Respond in JSON:
 `;
 
 export class RelationshipEngine {
-  private client: OpenAI;
+  private provider: LLMProvider;
+  private scope: string;
 
-  constructor(private db: Database, private config: InferenceConfig) {
-    this.client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY ?? '' });
+  constructor(
+    private db: Database,
+    private config: InferenceConfig,
+    provider?: LLMProvider,
+    context?: GraphStoreContext
+  ) {
+    this.provider =
+      provider ??
+      new OpenAILLMProvider({
+        apiKey: process.env.OPENAI_API_KEY ?? '',
+      });
+    this.scope = resolveScope(context);
   }
 
   async inferForNode(nodeId: string): Promise<InferredRelationship[]> {
@@ -71,15 +85,40 @@ export class RelationshipEngine {
     inferred: InferredRelationship[];
     errors: Array<{ nodeId: string; error: string }>;
   }> {
+    return this.inferForNodesWithProgress(nodeIds);
+  }
+
+  async inferForNodesWithProgress(
+    nodeIds: string[],
+    options?: {
+      signal?: AbortSignal;
+      onProgress?: (progress: { processed: number; total: number; currentItem?: string }) => void;
+    }
+  ): Promise<{
+    inferred: InferredRelationship[];
+    errors: Array<{ nodeId: string; error: string }>;
+  }> {
     const inferred: InferredRelationship[] = [];
     const errors: Array<{ nodeId: string; error: string }> = [];
 
+    const total = nodeIds.length;
+    let processed = 0;
+    options?.onProgress?.({ processed, total });
+
     for (const nodeId of nodeIds) {
+      if (options?.signal?.aborted) {
+        const error = new Error('AbortError');
+        error.name = 'AbortError';
+        throw error;
+      }
       try {
         const results = await this.inferForNode(nodeId);
         inferred.push(...results);
       } catch (error) {
         errors.push({ nodeId, error: error instanceof Error ? error.message : String(error) });
+      } finally {
+        processed += 1;
+        options?.onProgress?.({ processed, total, currentItem: nodeId });
       }
     }
 
@@ -87,19 +126,19 @@ export class RelationshipEngine {
   }
 
   async inferAll(): Promise<InferredRelationship[]> {
-    const nodes = await this.db.query<{ id: string }>('SELECT id FROM nodes');
+    const nodes = await this.db.query<{ id: string }>('SELECT id FROM nodes WHERE scope = $1', [this.scope]);
     const result = await this.inferForNodes(nodes.map((node) => node.id));
     return result.inferred;
   }
 
   async findCandidates(nodeId: string): Promise<Array<{ nodeId: string; similarity: number }>> {
     const rows = await this.db.query<{ id: string; similarity: number }>(
-      `SELECT id, 1 - (embedding <=> (SELECT embedding FROM nodes WHERE id = $1)) as similarity
+      `SELECT id, 1 - (embedding <=> (SELECT embedding FROM nodes WHERE id = $1 AND scope = $3)) as similarity
        FROM nodes
-       WHERE embedding IS NOT NULL AND id != $1
-       ORDER BY embedding <=> (SELECT embedding FROM nodes WHERE id = $1)
+       WHERE scope = $3 AND embedding IS NOT NULL AND id != $1
+       ORDER BY embedding <=> (SELECT embedding FROM nodes WHERE id = $1 AND scope = $3)
        LIMIT $2`,
-      [nodeId, this.config.maxPerNode * 3]
+      [nodeId, this.config.maxPerNode * 3, this.scope]
     );
 
     return rows
@@ -120,11 +159,12 @@ export class RelationshipEngine {
 
     for (const inference of inferences) {
       const rows = await this.db.query<NeuronEdge>(
-        `INSERT INTO edges (from_node_id, to_node_id, relationship_type, strength, confidence, evidence, source, source_model)
-         VALUES ($1, $2, $3, $4, $5, $6, 'ai_inferred', $7)
-         ON CONFLICT (from_node_id, to_node_id, relationship_type) DO NOTHING
+        `INSERT INTO edges (scope, from_node_id, to_node_id, relationship_type, strength, confidence, evidence, source, source_model)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'ai_inferred', $8)
+         ON CONFLICT (scope, from_node_id, to_node_id, relationship_type) DO NOTHING
          RETURNING *`,
         [
+          this.scope,
           inference.fromNodeId,
           inference.toNodeId,
           inference.relationshipType,
@@ -148,12 +188,12 @@ export class RelationshipEngine {
   ): Promise<InferredRelationship | null> {
     const [nodeA, nodeB] = await Promise.all([
       this.db.queryOne<{ id: string; label: string; summary: string | null; content: string | null }>(
-        'SELECT id, label, summary, content FROM nodes WHERE id = $1',
-        [fromNodeId]
+        'SELECT id, label, summary, content FROM nodes WHERE id = $1 AND scope = $2',
+        [fromNodeId, this.scope]
       ),
       this.db.queryOne<{ id: string; label: string; summary: string | null; content: string | null }>(
-        'SELECT id, label, summary, content FROM nodes WHERE id = $1',
-        [toNodeId]
+        'SELECT id, label, summary, content FROM nodes WHERE id = $1 AND scope = $2',
+        [toNodeId, this.scope]
       ),
     ]);
 
@@ -166,16 +206,15 @@ export class RelationshipEngine {
       .replace('{nodeB.summary}', nodeB.summary ?? '')
       .replace('{nodeB.content}', nodeB.content ?? '');
 
-    const response = await this.client.chat.completions.create({
+    const response = await this.provider.generate({
       model: this.config.model,
-      messages: [{ role: 'user', content: prompt }],
-      response_format: { type: 'json_object' },
+      prompt,
+      responseFormat: 'json',
     });
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) return null;
+    if (!response.content) return null;
 
-    const parsed = JSON.parse(content) as {
+    const parsed = JSON.parse(response.content) as {
       hasRelationship: boolean;
       relationshipType: RelationshipType;
       confidence: number;

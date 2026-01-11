@@ -1,6 +1,6 @@
 ---
 title: Add/expand demo scenes and docs that showcase each style/animation mode and how to configure them.
-status: pending
+status: completed
 priority: 2
 labels:
   - 'Phase:4-Visualization'

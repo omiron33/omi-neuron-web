@@ -1,17 +1,30 @@
 import { expandGraphRequestSchema, findPathRequestSchema, getGraphParamsSchema } from '../../core/schemas/api';
 import type { NeuronConfig } from '../../core/types/settings';
-import { createDatabase } from '../../storage/factory';
-import { GraphQueryBuilder } from '../query-builder';
+import type { GraphStore } from '../../core/store/graph-store';
+import { createGraphStore } from '../../storage/factory';
+import { toGraphStoreContext, withRequestContext, type ContextualRouteHandler, type RequestContextOptions } from '../middleware/request-context';
+import { withAuthGuard, type AuthGuardOptions } from '../middleware/auth';
+import { withBodySizeLimit, type BodySizeLimitOptions } from '../middleware/body-size-limit';
+import { withRateLimit, type RateLimitOptions } from '../middleware/rate-limit';
 
-export const createGraphRoutes = (config: NeuronConfig) => {
-  const db = createDatabase(config);
-  const builder = new GraphQueryBuilder(db);
+type RouteSecurityOptions = { bodySizeLimit?: BodySizeLimitOptions; rateLimit?: RateLimitOptions };
+
+export const createGraphRoutes = (
+  config: NeuronConfig,
+  injectedStore?: GraphStore,
+  requestContextOptions?: RequestContextOptions,
+  authOptions?: AuthGuardOptions,
+  security?: RouteSecurityOptions
+) => {
+  const store = injectedStore ?? createGraphStore(config);
+  const wrap = (handler: ContextualRouteHandler) =>
+    withBodySizeLimit(withRateLimit(withAuthGuard(handler, authOptions), security?.rateLimit), security?.bodySizeLimit);
 
   return {
-    async GET(request: Request) {
+    GET: withRequestContext(wrap(async (request, context) => {
       const url = new URL(request.url);
       const params = getGraphParamsSchema.parse(Object.fromEntries(url.searchParams));
-      const result = await builder.getGraph({
+      const result = await store.getGraph({
         ...params,
         nodeTypes: params.nodeTypes ? (Array.isArray(params.nodeTypes) ? params.nodeTypes : [params.nodeTypes]) : undefined,
         domains: params.domains ? (Array.isArray(params.domains) ? params.domains : [params.domains]) : undefined,
@@ -20,24 +33,24 @@ export const createGraphRoutes = (config: NeuronConfig) => {
         relationshipTypes: params.relationshipTypes
           ? (Array.isArray(params.relationshipTypes) ? params.relationshipTypes : [params.relationshipTypes])
           : undefined,
-      });
+      }, toGraphStoreContext(context));
       return Response.json(result);
-    },
-    async POST(request: Request) {
+    }), requestContextOptions),
+    POST: withRequestContext(wrap(async (request, context) => {
       const url = new URL(request.url);
       if (url.pathname.endsWith('/expand')) {
         const body = await request.json();
         const input = expandGraphRequestSchema.parse(body);
-        const result = await builder.expandGraph(input);
+        const result = await store.expandGraph(input, toGraphStoreContext(context));
         return Response.json(result);
       }
       if (url.pathname.endsWith('/path')) {
         const body = await request.json();
         const input = findPathRequestSchema.parse(body);
-        const result = await builder.findPaths(input);
+        const result = await store.findPaths(input, toGraphStoreContext(context));
         return Response.json(result);
       }
       return new Response('Unsupported', { status: 404 });
-    },
+    }), requestContextOptions),
   };
 };
