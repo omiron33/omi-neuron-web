@@ -91,6 +91,7 @@ export type {
   NeuronWebTheme,
   NeuronLayoutOptions,
   NeuronLayoutMode,
+  TreeLayoutOptions,
   DensityOptions,
   DensityMode,
   ClickCardOptions,
@@ -965,7 +966,7 @@ More detail:
 
 ### Layout modes
 
-`NeuronLayoutMode` = `'auto' | 'positioned' | 'fuzzy' | 'atlas'`.
+`NeuronLayoutMode` = `'auto' | 'positioned' | 'fuzzy' | 'atlas' | 'tree'`.
 
 `applyFuzzyLayout()` behavior:
 
@@ -973,6 +974,7 @@ More detail:
 - `auto`: if any node lacks a `position`, run `atlas` layout; otherwise return nodes as-is.
 - `atlas`: sphere layout with built-in override map (`ATLAS_POSITION_OVERRIDES` in `src/visualization/layouts/fuzzy-layout.ts`).
 - `fuzzy`: deterministic pseudo-random scatter based on `seed` and node key.
+- `tree`: hierarchical tree layout constrained to 2D plane (z=0), positions nodes based on parent/child relationships from edges.
 
 Layout options:
 
@@ -986,8 +988,76 @@ Layout options:
   seed?: string;         // deterministic seed
   spread?: number;       // global scale factor
   overrides?: Record<string, [number, number, number]>; // slug/id -> position
+  tree?: TreeLayoutOptions; // tree-specific options (used when mode is 'tree')
 }
 ```
+
+### Tree layout (storyboarding)
+
+The `'tree'` layout mode renders nodes in a hierarchical tree structure, ideal for storyboarding or visualizing parent/child relationships. Nodes are constrained to a 2D plane (z=0).
+
+```ts
+interface TreeLayoutOptions {
+  horizontalSpacing?: number;  // spacing between siblings (default: 3)
+  verticalSpacing?: number;    // spacing between levels (default: 4)
+  rootNodeId?: string;         // force a specific root node (slug or id)
+  direction?: 'down' | 'up' | 'left' | 'right'; // tree growth direction (default: 'down')
+}
+```
+
+**Direction options:**
+- `'down'`: root at top, children below (default)
+- `'up'`: root at bottom, children above
+- `'right'`: root on left, children to the right
+- `'left'`: root on right, children to the left
+
+**Example: Vertical tree (top-down)**
+```tsx
+<NeuronWeb
+  graphData={{
+    nodes: [
+      { id: 'root', label: 'Root', slug: 'root' },
+      { id: 'a', label: 'Child A', slug: 'child-a' },
+      { id: 'b', label: 'Child B', slug: 'child-b' },
+      { id: 'a1', label: 'Grandchild A1', slug: 'grandchild-a1' },
+    ],
+    edges: [
+      { id: 'e1', from: 'root', to: 'child-a', relationshipType: 'parent_of', strength: 1 },
+      { id: 'e2', from: 'root', to: 'child-b', relationshipType: 'parent_of', strength: 1 },
+      { id: 'e3', from: 'child-a', to: 'grandchild-a1', relationshipType: 'parent_of', strength: 1 },
+    ],
+  }}
+  layout={{
+    mode: 'tree',
+    tree: {
+      direction: 'down',
+      horizontalSpacing: 4,
+      verticalSpacing: 5,
+    },
+  }}
+/>
+```
+
+**Example: Horizontal tree (left-to-right)**
+```tsx
+<NeuronWeb
+  graphData={graphData}
+  layout={{
+    mode: 'tree',
+    tree: {
+      direction: 'right',
+      horizontalSpacing: 3,
+      verticalSpacing: 4,
+    },
+  }}
+/>
+```
+
+The tree layout automatically:
+- Identifies root nodes (nodes with no incoming edges)
+- Positions children centered below/beside their parent
+- Handles multiple disconnected trees (multiple roots)
+- Places orphan nodes (not connected to any tree) in a separate row
 
 ### Camera auto-fit (center-third framing)
 
@@ -1219,7 +1289,8 @@ Key internal modules:
 - `src/visualization/scene/cluster-renderer.ts` - renders convex hull boundaries around static clusters.
 - `src/visualization/interactions/interaction-manager.ts` - hover/click/double-click handling.
 - `src/visualization/animations/animation-controller.ts` - camera focus/transition animations.
-- `src/visualization/layouts/fuzzy-layout.ts` - layout generation.
+- `src/visualization/layouts/fuzzy-layout.ts` - layout generation (fuzzy, atlas, positioned modes).
+- `src/visualization/layouts/tree-layout.ts` - hierarchical tree layout for storyboarding.
 
 ## Events
 

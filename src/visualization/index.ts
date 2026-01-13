@@ -31,6 +31,7 @@ export type {
   NeuronWebThemeOverride,
   NeuronLayoutOptions,
   NeuronLayoutMode,
+  TreeLayoutOptions,
   DensityOptions,
   DensityMode,
   HoverCardOptions,
@@ -66,3 +67,4 @@ export {
 
 // Layout helpers
 export { applyFuzzyLayout } from './layouts/fuzzy-layout';
+export { applyTreeLayout } from './layouts/tree-layout';

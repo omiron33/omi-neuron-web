@@ -610,8 +610,8 @@ export function NeuronWeb({
   );
 
   const resolvedNodes = useMemo(
-    () => applyFuzzyLayout(workingGraph.nodes, layoutOptions),
-    [workingGraph.nodes, layoutOptions]
+    () => applyFuzzyLayout(workingGraph.nodes, layoutOptions, workingGraph.edges),
+    [workingGraph.nodes, workingGraph.edges, layoutOptions]
   );
 
   const displayNodes = useMemo(() => {

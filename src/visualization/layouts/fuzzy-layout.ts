@@ -1,5 +1,6 @@
-import type { NeuronVisualNode } from '../../core/types';
+import type { NeuronVisualNode, NeuronVisualEdge } from '../../core/types';
 import type { NeuronLayoutOptions } from '../types';
+import { applyTreeLayout } from './tree-layout';
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 const ATLAS_POSITION_OVERRIDES: Record<string, [number, number, number]> = {
@@ -58,11 +59,16 @@ function buildSeed(baseSeed: string, nodeKey: string): () => number {
 
 export function applyFuzzyLayout(
   nodes: NeuronVisualNode[],
-  options: NeuronLayoutOptions = {}
+  options: NeuronLayoutOptions = {},
+  edges?: NeuronVisualEdge[]
 ): NeuronVisualNode[] {
   const mode = options.mode ?? 'atlas';
   if (mode === 'positioned') {
     return nodes;
+  }
+
+  if (mode === 'tree') {
+    return applyTreeLayout(nodes, edges ?? [], options);
   }
 
   const needsLayout = nodes.some((node) => !node.position);

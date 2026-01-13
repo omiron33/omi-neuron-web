@@ -104,7 +104,18 @@ export interface NeuronWebThemeOverride {
   animation?: Partial<NeuronWebTheme['animation']>;
 }
 
-export type NeuronLayoutMode = 'auto' | 'positioned' | 'fuzzy' | 'atlas';
+export type NeuronLayoutMode = 'auto' | 'positioned' | 'fuzzy' | 'atlas' | 'tree';
+
+export interface TreeLayoutOptions {
+  /** Horizontal spacing between sibling nodes (default: 3) */
+  horizontalSpacing?: number;
+  /** Vertical spacing between parent/child levels (default: 4) */
+  verticalSpacing?: number;
+  /** Root node ID or slug (if not specified, nodes with no incoming edges are roots) */
+  rootNodeId?: string;
+  /** Direction the tree grows: 'down'/'up' for vertical, 'left'/'right' for horizontal (default: 'down') */
+  direction?: 'down' | 'up' | 'left' | 'right';
+}
 
 export interface NeuronLayoutOptions {
   mode?: NeuronLayoutMode;
@@ -115,6 +126,8 @@ export interface NeuronLayoutOptions {
   seed?: string;
   spread?: number;
   overrides?: Record<string, [number, number, number]>;
+  /** Tree layout specific options (used when mode is 'tree') */
+  tree?: TreeLayoutOptions;
 }
 
 export type DensityMode = 'relaxed' | 'balanced' | 'compact';
