@@ -38,6 +38,13 @@ export interface SceneConfig {
   fogColor?: string;
   fogNear?: number;
   fogFar?: number;
+  /**
+   * When enabled, constrains the view to a 2D plane:
+   * - Left-click pans instead of rotates
+   * - Rotation is disabled
+   * - Camera looks straight at the XY plane
+   */
+  enable2DMode?: boolean;
 }
 
 const VIGNETTE_SHADER = {
@@ -116,6 +123,22 @@ export class SceneManager {
     if (this.config.autoRotateSpeed !== undefined) {
       this.controls.autoRotateSpeed = this.config.autoRotateSpeed;
     }
+
+    // 2D mode: left-click pans, rotation disabled, screen-space panning
+    if (this.config.enable2DMode) {
+      this.controls.enableRotate = false;
+      this.controls.screenSpacePanning = true;
+      this.controls.mouseButtons = {
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.PAN,
+      };
+      this.controls.touches = {
+        ONE: THREE.TOUCH.PAN,
+        TWO: THREE.TOUCH.DOLLY_PAN,
+      };
+    }
+
     this.controls.update();
 
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.config.pixelRatioCap));

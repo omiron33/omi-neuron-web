@@ -316,14 +316,17 @@ export function NeuronWeb({
     return () => clearTimeout(timer);
   }, [filterSignature, resolvedAnimationConfig.transitionDurationMs]);
 
+  // Enable 2D controls (left-click pan, no rotation) for tree layout mode
+  const isTreeLayout = layout?.mode === 'tree';
+
   const sceneManager = useSceneManager(containerRef, {
     backgroundColor: resolvedTheme.colors.background,
     cameraFov: 52,
-    cameraPosition: [4, 8, 20],
+    cameraPosition: isTreeLayout ? [0, 0, 20] : [4, 8, 20],
     cameraTarget: [0, 0, 0],
     minZoom: 4,
     maxZoom: 42,
-    autoRotateEnabled: resolvedTheme.effects.autoRotateEnabled,
+    autoRotateEnabled: isTreeLayout ? false : resolvedTheme.effects.autoRotateEnabled,
     autoRotateSpeed: resolvedTheme.effects.autoRotateSpeed,
     enableStarfield: resolvedTheme.effects.starfieldEnabled,
     starfieldCount:
@@ -353,6 +356,7 @@ export function NeuronWeb({
     fogColor: resolvedTheme.effects.fogColor,
     fogNear: resolvedTheme.effects.fogNear,
     fogFar: resolvedTheme.effects.fogFar,
+    enable2DMode: isTreeLayout,
   });
 
   const nodeRenderer = useMemo(() => {

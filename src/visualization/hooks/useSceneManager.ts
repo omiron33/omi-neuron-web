@@ -30,6 +30,7 @@ export function useSceneManager(
     config.vignetteEnabled,
     config.colorGradeEnabled,
     config.fogEnabled,
+    config.enable2DMode,
   ]);
 
   return manager;
