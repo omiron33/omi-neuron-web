@@ -38,6 +38,10 @@ export class InteractionManager {
   onNodeDoubleClick: (node: NeuronVisualNode) => void = () => {};
   onEdgeClick: (edge: NeuronVisualEdge) => void = () => {};
   onBackgroundClick: () => void = () => {};
+  /** Called when pointer-down occurs on a node (before drag threshold). Use to disable controls. */
+  onNodePointerDown: (node: NeuronVisualNode) => void = () => {};
+  /** Called when pointer-up occurs without a drag. Use to re-enable controls. */
+  onNodePointerUp: () => void = () => {};
   onNodeDragStart: (node: NeuronVisualNode, position: THREE.Vector3) => void = () => {};
   onNodeDrag: (node: NeuronVisualNode, position: THREE.Vector3) => void = () => {};
   onNodeDragEnd: (node: NeuronVisualNode, position: THREE.Vector3) => void = () => {};
@@ -105,6 +109,9 @@ export class InteractionManager {
 
     const node = this.getIntersectedNode(this.pointer);
     if (node) {
+      // Immediately notify that a node was clicked (to disable controls)
+      this.onNodePointerDown(node);
+
       // Get the node's 3D object to find its position
       const nodeObject = this.nodeObjects.find(
         (obj) => obj.userData?.nodeId === node.id
@@ -156,8 +163,11 @@ export class InteractionManager {
       return; // Don't trigger click after drag
     }
 
-    // Reset drag state even if not dragging
-    this.dragNode = null;
+    // If we had a node pressed but didn't drag, notify to re-enable controls
+    if (this.dragNode) {
+      this.onNodePointerUp();
+      this.dragNode = null;
+    }
 
     if (!this.config.enableClick) return;
     const node = this.getIntersectedNode(this.pointer);

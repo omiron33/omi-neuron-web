@@ -369,6 +369,19 @@ export interface NeuronWebProps {
   onNodeDrag?: (node: NeuronNode, position: [number, number, number]) => void;
   /** Called when a node drag operation completes. */
   onNodeDragEnd?: (node: NeuronNode, position: [number, number, number]) => void;
+  /**
+   * Enable keyboard controls for camera movement:
+   * - WASD: Pan camera
+   * - Q/E: Zoom in/out
+   * This frees the mouse for node interaction.
+   */
+  keyboardControls?: boolean | {
+    enabled: boolean;
+    /** Pan speed multiplier (default: 1) */
+    panSpeed?: number;
+    /** Zoom speed multiplier (default: 1) */
+    zoomSpeed?: number;
+  };
   /** When set, plays a story beat by id using the built-in study path player. */
   activeStoryBeatId?: string | null;
   /** Optional override for story beat step duration (ms). */

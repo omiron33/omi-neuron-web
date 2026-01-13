@@ -61,6 +61,7 @@ export function NeuronWeb({
   draggable,
   onNodeDrag,
   onNodeDragEnd,
+  keyboardControls,
   performanceMode,
   density,
   rendering,
@@ -581,6 +582,96 @@ export function NeuronWeb({
       constrainToPlane: draggable.constrainToPlane ?? 'xy',
     };
   }, [draggable]);
+
+  // Parse keyboard controls prop
+  const keyboardControlsConfig = useMemo(() => {
+    if (!keyboardControls) return { enabled: false, panSpeed: 1, zoomSpeed: 1 };
+    if (keyboardControls === true) {
+      return { enabled: true, panSpeed: 1, zoomSpeed: 1 };
+    }
+    return {
+      enabled: keyboardControls.enabled,
+      panSpeed: keyboardControls.panSpeed ?? 1,
+      zoomSpeed: keyboardControls.zoomSpeed ?? 1,
+    };
+  }, [keyboardControls]);
+
+  // Track pressed keys for keyboard camera controls
+  const pressedKeysRef = useRef<Set<string>>(new Set());
+
+  // Keyboard camera controls effect
+  useEffect(() => {
+    if (!keyboardControlsConfig.enabled || !sceneManager) return;
+
+    const basePanSpeed = 0.15 * keyboardControlsConfig.panSpeed;
+    const baseZoomSpeed = 0.5 * keyboardControlsConfig.zoomSpeed;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if (['w', 'a', 's', 'd', 'q', 'e'].includes(key)) {
+        pressedKeysRef.current.add(key);
+        e.preventDefault();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      pressedKeysRef.current.delete(key);
+    };
+
+    let animationFrameId: number;
+    const animate = () => {
+      const keys = pressedKeysRef.current;
+      if (keys.size > 0) {
+        const camera = sceneManager.camera;
+        const controls = sceneManager.controls;
+
+        // Get camera right and up vectors for panning in screen space
+        const right = new THREE.Vector3();
+        const up = new THREE.Vector3();
+        camera.getWorldDirection(up);
+        right.crossVectors(camera.up, up).normalize();
+        up.copy(camera.up);
+
+        let dx = 0, dy = 0, dz = 0;
+
+        if (keys.has('a')) dx -= basePanSpeed;
+        if (keys.has('d')) dx += basePanSpeed;
+        if (keys.has('w')) dy += basePanSpeed;
+        if (keys.has('s')) dy -= basePanSpeed;
+        if (keys.has('q')) dz += baseZoomSpeed;
+        if (keys.has('e')) dz -= baseZoomSpeed;
+
+        // Apply pan (move both camera and target)
+        const panOffset = right.multiplyScalar(dx).add(up.multiplyScalar(dy));
+        camera.position.add(panOffset);
+        controls.target.add(panOffset);
+
+        // Apply zoom (move camera along view direction)
+        if (dz !== 0) {
+          const direction = new THREE.Vector3();
+          camera.getWorldDirection(direction);
+          const distance = camera.position.distanceTo(controls.target);
+          const newDistance = Math.max(controls.minDistance, Math.min(controls.maxDistance, distance - dz));
+          camera.position.copy(controls.target).add(direction.multiplyScalar(-newDistance));
+        }
+
+        controls.update();
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      cancelAnimationFrame(animationFrameId);
+      pressedKeysRef.current.clear();
+    };
+  }, [keyboardControlsConfig, sceneManager]);
 
   const interactionManager = useMemo(() => {
     if (!sceneManager) return null;
@@ -1520,11 +1611,22 @@ export function NeuronWeb({
 
     // Set up drag handlers
     if (dragConfig.enabled) {
-      interactionManager.onNodeDragStart = () => {
-        // Disable OrbitControls panning during drag
+      // Disable controls immediately on pointer-down to prevent camera movement
+      interactionManager.onNodePointerDown = () => {
         if (sceneManager) {
           sceneManager.controls.enabled = false;
         }
+      };
+
+      // Re-enable controls if pointer-up without drag
+      interactionManager.onNodePointerUp = () => {
+        if (sceneManager) {
+          sceneManager.controls.enabled = true;
+        }
+      };
+
+      interactionManager.onNodeDragStart = () => {
+        // Controls already disabled by onNodePointerDown
       };
 
       interactionManager.onNodeDrag = (node, position) => {
@@ -1537,7 +1639,7 @@ export function NeuronWeb({
       };
 
       interactionManager.onNodeDragEnd = (node, position) => {
-        // Re-enable OrbitControls
+        // Re-enable OrbitControls after drag completes
         if (sceneManager) {
           sceneManager.controls.enabled = true;
         }
