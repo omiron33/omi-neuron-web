@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { NeuronVisualEdge, NeuronVisualNode, NeuronNode, NeuronEdge, NodeTier } from '../core/types';
+import type { NeuronVisualEdge, NeuronVisualNode, NeuronVisualCluster, NeuronNode, NeuronEdge, NodeTier, NodeStatus } from '../core/types';
 
 export interface NeuronStoryBeat {
   id: string;
@@ -39,6 +39,8 @@ export interface NeuronWebTheme {
     background: string;
     domainColors: Record<string, string>;
     defaultDomainColor: string;
+    /** Status-based node colors for workflow visualization */
+    statusColors?: Record<NodeStatus, string>;
     edgeDefault: string;
     edgeActive: string;
     edgeSelected: string;
@@ -315,6 +317,8 @@ export interface NeuronWebProps {
     nodes: NeuronVisualNode[];
     edges: NeuronVisualEdge[];
     storyBeats?: NeuronStoryBeat[];
+    /** Static cluster definitions for visual grouping */
+    clusters?: NeuronVisualCluster[];
   };
   fullHeight?: boolean;
   isFullScreen?: boolean;

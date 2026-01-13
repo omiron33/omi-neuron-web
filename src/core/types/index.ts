@@ -7,6 +7,7 @@
 export type {
   NodeTier,
   AnalysisStatus,
+  NodeStatus,
   NeuronNodeBase,
   NeuronNode,
   NeuronNodeCreate,

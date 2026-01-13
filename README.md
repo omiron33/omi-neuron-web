@@ -12,6 +12,9 @@ If you are working inside this repo, also read `AGENTS.md` for execution rules, 
 - A CLI that scaffolds configuration, Docker Postgres (pgvector), and Next.js route handlers.
 - A Node/Edge/Cluster data model, plus analysis and embeddings pipelines.
 - A React provider and hooks that wrap the API client.
+- **Static mode** (`StaticDataProvider`) for authored graphs without API/database dependency.
+- **Status-based node coloring** for workflow visualization (draft/active/complete/blocked/archived).
+- **Static cluster rendering** with convex hull boundaries around explicit node groups.
 
 ## Package entry points
 
@@ -98,6 +101,11 @@ export type {
 // React integration
 export * from './react/hooks';
 export { NeuronWebProvider } from './react/NeuronWebProvider';
+
+// Static mode (no API/database required)
+export { StaticDataProvider } from './react/StaticDataProvider';
+export type { StaticDataProviderProps } from './react/StaticDataProvider';
+export { StaticModeError } from './react/static/in-memory-api-client';
 
 // Version constant
 export { VERSION } from './version';
@@ -300,7 +308,16 @@ export default defineNeuronConfig({
 - analysis fields: `embedding`, `embeddingModel`, `embeddingGeneratedAt`, `clusterId`, `clusterSimilarity`
 - relationship counts: `connectionCount`, `inboundCount`, `outboundCount`
 - status: `analysisStatus`, `analysisError`
+- workflow status: `status?: NodeStatus` (for status-based coloring)
 - visualization hints: `tier`, `visualPriority`, `positionOverride`
+
+`NodeStatus` type (for workflow-based coloring):
+
+```ts
+export type NodeStatus = 'default' | 'draft' | 'active' | 'complete' | 'blocked' | 'archived';
+```
+
+When a node has a `status` set, it takes priority over domain-based coloring in visualization.
 
 Input types:
 
@@ -333,6 +350,21 @@ Visualization type: `NeuronVisualEdge` uses `from` and `to` slugs.
 - centroid: `centroid: number[]`
 - stats: `memberCount`, `avgSimilarity`, `cohesion`
 - metadata: `description`, `keywords`, `metadata`
+
+`NeuronVisualCluster` (for static/authored cluster visualization):
+
+```ts
+export interface NeuronVisualCluster {
+  id: string;
+  label: string;
+  nodeIds: string[];          // explicit node membership
+  color?: string;             // optional cluster color
+  position?: { x: number; y: number; z: number }; // optional fixed center
+  metadata?: Record<string, unknown>;
+}
+```
+
+Visual clusters render as convex hull boundaries around their member nodes with labels at the centroid.
 
 ### Analysis
 
@@ -686,6 +718,128 @@ Notes:
 - Keep secrets server-side. Do not pass `OPENAI_API_KEY` (or database URLs) into client components.
 - Configure OpenAI + database access in your Next.js route handlers (see `docs/secure-nextjs-setup.md`).
 
+### StaticDataProvider (Standalone Mode)
+
+Use `StaticDataProvider` for static/authored graphs that don't require API or database connectivity. Perfect for:
+- Quest/narrative authoring tools
+- Documentation/knowledge graphs
+- Workflow/pipeline visualizers
+- Game skill trees
+- Org charts and hierarchies
+
+```tsx
+import { StaticDataProvider, NeuronWeb } from '@omiron33/omi-neuron-web';
+
+const nodes = [
+  { id: 'q001', label: 'Start Quest', domain: 'quest', status: 'complete' },
+  { id: 'q002', label: 'Find Artifact', domain: 'quest', status: 'active' },
+  { id: 'q003', label: 'Return Home', domain: 'quest', status: 'draft' },
+];
+
+const edges = [
+  { id: 'e1', from: 'q001', to: 'q002', relationshipType: 'leads_to' },
+  { id: 'e2', from: 'q002', to: 'q003', relationshipType: 'leads_to' },
+];
+
+const clusters = [
+  { id: 'act1', label: 'Act 1', nodeIds: ['q001', 'q002'], color: '#4a5568' },
+  { id: 'act2', label: 'Act 2', nodeIds: ['q003'], color: '#2d3748' },
+];
+
+export default function QuestGraph() {
+  return (
+    <StaticDataProvider
+      nodes={nodes}
+      edges={edges}
+      clusters={clusters}
+      mutableMode={false}
+    >
+      <NeuronWeb graphData={{ nodes, edges, clusters }} />
+    </StaticDataProvider>
+  );
+}
+```
+
+`StaticDataProviderProps`:
+
+```ts
+interface StaticDataProviderProps {
+  children: React.ReactNode;
+  nodes: (NeuronNode | NeuronVisualNode)[];
+  edges: (NeuronEdge | NeuronVisualEdge)[];
+  clusters?: NeuronVisualCluster[];
+  settings?: Partial<NeuronSettings>;
+  mutableMode?: boolean;  // if true, mutations modify in-memory store
+  onEvent?: (event: NeuronEvent) => void;
+  onError?: (error: Error, context: ErrorContext) => void;
+}
+```
+
+Behavior:
+- All hooks (`useNeuronNodes`, `useNeuronGraph`, etc.) work unchanged
+- Analysis and search methods throw `StaticModeError` (not available in static mode)
+- Context provides `isStaticMode: true` flag
+- Data updates via `updateData()` on the internal client or by passing new props
+
+### Status-based coloring
+
+Nodes with a `status` field render with status colors that override domain colors:
+
+```ts
+const DEFAULT_STATUS_COLORS = {
+  default: '#c0c5ff',   // Same as defaultDomainColor
+  draft: '#9ca3af',     // Gray
+  active: '#4ade80',    // Green
+  complete: '#60a5fa',  // Blue
+  blocked: '#f87171',   // Red
+  archived: '#6b7280',  // Dark gray
+};
+```
+
+Override via theme:
+
+```tsx
+<NeuronWeb
+  graphData={graphData}
+  theme={{
+    colors: {
+      statusColors: {
+        default: '#c0c5ff',
+        draft: '#888888',
+        active: '#00ff00',
+        complete: '#0088ff',
+        blocked: '#ff0000',
+        archived: '#444444',
+      },
+    },
+  }}
+/>
+```
+
+### Static clusters (convex hull visualization)
+
+Pass `clusters` in `graphData` to render convex hull boundaries around node groups:
+
+```tsx
+<NeuronWeb
+  graphData={{
+    nodes,
+    edges,
+    clusters: [
+      { id: 'cluster1', label: 'Group A', nodeIds: ['n1', 'n2', 'n3'], color: '#4a5568' },
+      { id: 'cluster2', label: 'Group B', nodeIds: ['n4', 'n5'], color: '#2d3748' },
+    ],
+  }}
+/>
+```
+
+Cluster rendering:
+- Computes 2D convex hull from projected node positions (Graham scan algorithm)
+- Renders semi-transparent mesh fill with border outline
+- Displays label at cluster centroid
+- Updates when node positions change (e.g., ambient motion)
+- Requires 3+ nodes to show hull; fewer shows only the label
+
 ### Hooks
 
 - `useNeuronContext()` -> access provider context.
@@ -729,6 +883,7 @@ export interface NeuronWebProps {
     nodes: NeuronVisualNode[];
     edges: NeuronVisualEdge[];
     storyBeats?: NeuronStoryBeat[];
+    clusters?: NeuronVisualCluster[];
   };
   fullHeight?: boolean;
   isFullScreen?: boolean;
@@ -1059,8 +1214,9 @@ Key behavior in `NeuronWeb`:
 Key internal modules:
 
 - `src/visualization/scene/scene-manager.ts` - sets up Three.js scene, camera, renderer, lights, starfield, labels.
-- `src/visualization/scene/node-renderer.ts` - renders nodes, labels, hover/selection states.
+- `src/visualization/scene/node-renderer.ts` - renders nodes, labels, hover/selection states, status-based coloring.
 - `src/visualization/scene/edge-renderer.ts` - renders edges, flow animations.
+- `src/visualization/scene/cluster-renderer.ts` - renders convex hull boundaries around static clusters.
 - `src/visualization/interactions/interaction-manager.ts` - hover/click/double-click handling.
 - `src/visualization/animations/animation-controller.ts` - camera focus/transition animations.
 - `src/visualization/layouts/fuzzy-layout.ts` - layout generation.

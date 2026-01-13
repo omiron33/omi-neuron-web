@@ -239,6 +239,16 @@ NEURON_LOG_LEVEL=debug
 
 ## Important Guidelines
 
+### Documentation Updates
+**This is an agent-first repository.** When adding new features, always update `README.md` with:
+- New exports and their usage
+- New types and interfaces
+- New props and configuration options
+- Usage examples with code snippets
+- Any new patterns or modes
+
+Keep documentation agent-readable: use code blocks, explicit type signatures, and clear examples that agents can use directly.
+
 ### Code Style
 - Strict TypeScript with no `any` (except where necessary)
 - Zod for all runtime validation

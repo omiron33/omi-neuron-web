@@ -12,6 +12,8 @@ import type {
 
 export interface NodeRenderConfig {
   domainColors: Record<string, string>;
+  /** Status-based colors for workflow visualization (takes priority over domain) */
+  statusColors?: Record<string, string>;
   defaultColor: string;
   baseScale: number;
   tierScales: Record<NodeTier, number>;
@@ -117,9 +119,15 @@ export class NodeRenderer {
 
     const resolveNode = (node: NeuronVisualNode) => {
       const tier = node.tier ?? 'tertiary';
-      const baseColor = new THREE.Color(
-        this.config.domainColors[node.domain] ?? this.config.defaultColor
-      );
+      // Status color takes priority over domain color for workflow visualization
+      let baseColor: THREE.Color;
+      if (node.status && this.config.statusColors?.[node.status]) {
+        baseColor = new THREE.Color(this.config.statusColors[node.status]);
+      } else {
+        baseColor = new THREE.Color(
+          this.config.domainColors[node.domain] ?? this.config.defaultColor
+        );
+      }
       const position = new THREE.Vector3();
       if (node.position) {
         position.set(...node.position);

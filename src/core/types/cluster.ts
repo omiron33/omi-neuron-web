@@ -82,12 +82,19 @@ export interface NeuronClusterUpdate {
 
 /**
  * Visual cluster representation
+ * Used for static/authored clusters with explicit membership
  */
 export interface NeuronVisualCluster {
   id: string;
   label: string;
+  /** Explicit list of node IDs in this cluster */
   nodeIds: string[];
+  /** Optional color override (CSS color string) */
   color?: string;
+  /** Optional fixed center position for the cluster */
+  position?: { x: number; y: number; z: number };
+  /** Optional metadata */
+  metadata?: Record<string, unknown>;
 }
 
 /**

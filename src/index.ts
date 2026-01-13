@@ -43,5 +43,10 @@ export * from './react/hooks';
 // Re-export provider (when implemented)
 export { NeuronWebProvider } from './react/NeuronWebProvider';
 
+// Static mode provider for authored/static graphs (no API/database needed)
+export { StaticDataProvider } from './react/StaticDataProvider';
+export type { StaticDataProviderProps } from './react/StaticDataProvider';
+export { StaticModeError } from './react/static/in-memory-api-client';
+
 // Version
 export { VERSION } from './version';

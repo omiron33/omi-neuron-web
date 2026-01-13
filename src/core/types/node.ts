@@ -14,6 +14,12 @@ export type NodeTier = 'primary' | 'secondary' | 'tertiary' | 'insight';
 export type AnalysisStatus = 'pending' | 'processing' | 'complete' | 'failed';
 
 /**
+ * Workflow status for color coding nodes in static/authored graphs
+ * Used for quest systems, kanban boards, pipelines, etc.
+ */
+export type NodeStatus = 'default' | 'draft' | 'active' | 'complete' | 'blocked' | 'archived';
+
+/**
  * Base node interface - all nodes in the system extend this
  * Kept minimal to allow maximum flexibility in consuming apps
  */
@@ -84,6 +90,10 @@ export interface NeuronNode extends NeuronNodeBase {
   visualPriority?: number;
   /** Manual position override [x, y, z] */
   positionOverride?: [number, number, number] | null;
+
+  // Workflow status (for static/authored graphs)
+  /** Workflow status for color coding */
+  status?: NodeStatus;
 }
 
 /**
@@ -108,6 +118,8 @@ export interface NeuronNodeCreate {
   metadata?: Record<string, unknown>;
   /** Optional tier */
   tier?: NodeTier;
+  /** Optional workflow status */
+  status?: NodeStatus;
 }
 
 /**
@@ -156,6 +168,8 @@ export interface NeuronVisualNode {
   connectionCount: number;
   /** Optional position override */
   position?: [number, number, number];
+  /** Workflow status for color coding */
+  status?: NodeStatus;
 }
 
 

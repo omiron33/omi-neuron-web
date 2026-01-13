@@ -10,6 +10,7 @@ import { resolveDensityOptions } from './density/resolve-density';
 import { getAutoPerformanceMode } from './performance/auto-performance-mode';
 import { NodeRenderer } from './scene/node-renderer';
 import { EdgeRenderer } from './scene/edge-renderer';
+import { ClusterRenderer } from './scene/cluster-renderer';
 import { applyFuzzyLayout } from './layouts/fuzzy-layout';
 import { InteractionManager } from './interactions/interaction-manager';
 import { AnimationController } from './animations/animation-controller';
@@ -411,6 +412,7 @@ export function NeuronWeb({
       resolvedAnimationConfig.transitionDurationMs > 0;
     return new NodeRenderer(sceneManager.scene, {
       domainColors: resolvedTheme.colors.domainColors,
+      statusColors: resolvedTheme.colors.statusColors,
       defaultColor: resolvedTheme.colors.defaultDomainColor,
       baseScale: 1.15,
       tierScales: {
@@ -531,6 +533,32 @@ export function NeuronWeb({
       edgeRenderer?.dispose();
     };
   }, [edgeRenderer]);
+
+  // Cluster renderer for static cluster visualization
+  const clusterRenderer = useMemo(() => {
+    if (!sceneManager) return null;
+    // Only create if clusters are provided
+    if (!graphData.clusters?.length) return null;
+
+    return new ClusterRenderer(sceneManager.scene, {
+      defaultColor: resolvedTheme.colors.defaultDomainColor,
+      fillOpacity: 0.08,
+      strokeOpacity: 0.25,
+      strokeWidth: 1.5,
+      labelFontFamily: resolvedTheme.typography.labelFontFamily,
+      labelFontSize: resolvedTheme.typography.labelFontSize - 1,
+      labelTextColor: resolvedTheme.colors.labelText,
+      labelBackground: resolvedTheme.colors.labelBackground,
+      zOffset: -0.5,
+      hullPadding: 1.2,
+    });
+  }, [sceneManager, graphData.clusters?.length, resolvedTheme]);
+
+  useEffect(() => {
+    return () => {
+      clusterRenderer?.dispose();
+    };
+  }, [clusterRenderer]);
 
   const doubleClickEnabled = false;
 
@@ -1043,7 +1071,22 @@ export function NeuronWeb({
     nodeRenderer.renderNodes(displayNodes);
     const positions = nodeRenderer.getNodePositionsBySlug(new Map<string, THREE.Vector3>());
     edgeRenderer.renderEdges(workingGraph.edges, positions);
-  }, [displayNodes, workingGraph.edges, sceneManager, nodeRenderer, edgeRenderer]);
+
+    // Render clusters if available
+    if (clusterRenderer && graphData.clusters?.length) {
+      // Build node position map by ID for cluster rendering
+      const nodePositionsById = new Map<string, THREE.Vector3>();
+      for (const node of displayNodes) {
+        const pos = nodeRenderer.getNodePosition(node.id);
+        if (pos) {
+          nodePositionsById.set(node.id, pos);
+          // Also map by slug for flexibility
+          nodePositionsById.set(node.slug, pos);
+        }
+      }
+      clusterRenderer.renderClusters(graphData.clusters, nodePositionsById);
+    }
+  }, [displayNodes, workingGraph.edges, graphData.clusters, sceneManager, nodeRenderer, edgeRenderer, clusterRenderer]);
 
   useEffect(() => {
     if (!sceneManager) return;

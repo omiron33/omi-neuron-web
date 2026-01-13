@@ -14,6 +14,8 @@ export interface NeuronContextValue {
   api: NeuronApiClient;
   events: EventBus;
   isInitialized: boolean;
+  /** True when using StaticDataProvider (no API/database) */
+  isStaticMode?: boolean;
   error: Error | null;
   updateSettings: (settings: Partial<NeuronSettings>) => Promise<void>;
   resetSettings: () => Promise<void>;

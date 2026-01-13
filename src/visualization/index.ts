@@ -11,7 +11,7 @@ export { SceneManager } from './scene/scene-manager';
 
 // Themes
 export { ThemeEngine } from './themes/theme-engine';
-export { DEFAULT_THEME, DEFAULT_RENDERING_OPTIONS } from './constants';
+export { DEFAULT_THEME, DEFAULT_RENDERING_OPTIONS, DEFAULT_STATUS_COLORS } from './constants';
 
 // Performance helpers
 export { getAutoPerformanceMode } from './performance/auto-performance-mode';

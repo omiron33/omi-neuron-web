@@ -1,10 +1,24 @@
+import type { NodeStatus } from '../core/types';
 import type { NeuronWebTheme, RenderingOptions } from './types';
+
+/**
+ * Default status colors for workflow visualization
+ */
+export const DEFAULT_STATUS_COLORS: Record<NodeStatus, string> = {
+  default: '#c0c5ff',   // Same as defaultDomainColor (lavender)
+  draft: '#9ca3af',     // Gray
+  active: '#4ade80',    // Green
+  complete: '#60a5fa',  // Blue
+  blocked: '#f87171',   // Red
+  archived: '#6b7280',  // Dark gray
+};
 
 export const DEFAULT_THEME: NeuronWebTheme = {
   colors: {
     background: '#020314',
     domainColors: {},
     defaultDomainColor: '#c0c5ff',
+    statusColors: DEFAULT_STATUS_COLORS,
     edgeDefault: '#4d4d55',
     edgeActive: '#c6d4ff',
     edgeSelected: '#ffffff',
