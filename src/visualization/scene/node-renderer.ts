@@ -766,6 +766,21 @@ export class NodeRenderer {
     return state ? state.object.position.clone() : null;
   }
 
+  /** Updates a node's position during drag operations */
+  updateNodePosition(nodeId: string, position: THREE.Vector3): void {
+    const state = this.nodeStates.get(nodeId);
+    if (!state) return;
+
+    // Update the base position (used for ambient motion calculations)
+    state.basePosition.copy(position);
+
+    // Update the actual object position
+    state.object.position.copy(position);
+
+    // Cancel any ongoing position tween
+    state.positionTween = null;
+  }
+
   getNodeObject(nodeId: string): THREE.Object3D | null {
     const state = this.nodeStates.get(nodeId);
     return state?.object ?? null;

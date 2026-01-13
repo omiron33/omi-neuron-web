@@ -115,6 +115,12 @@ export interface TreeLayoutOptions {
   rootNodeId?: string;
   /** Direction the tree grows: 'down'/'up' for vertical, 'left'/'right' for horizontal (default: 'down') */
   direction?: 'down' | 'up' | 'left' | 'right';
+  /**
+   * When true, reverses edge interpretation: edge.from becomes child and edge.to becomes parent.
+   * Use this if your edges point from child to parent (e.g., "derives from" relationships).
+   * Default: false (edges point from parent to child)
+   */
+  reverseEdgeDirection?: boolean;
 }
 
 export interface NeuronLayoutOptions {
@@ -353,6 +359,16 @@ export interface NeuronWebProps {
   onEdgeClick?: (edge: NeuronEdge) => void;
   onBackgroundClick?: () => void;
   onCameraChange?: (position: [number, number, number]) => void;
+  /**
+   * Enable node dragging for manual arrangement.
+   * - `true` or `{ enabled: true }`: Enable dragging, constrain to XY plane in tree mode
+   * - `{ enabled: true, constrainToPlane: 'xy' | 'xz' | 'yz' }`: Constrain to specific plane
+   */
+  draggable?: boolean | { enabled: boolean; constrainToPlane?: 'xy' | 'xz' | 'yz' };
+  /** Called continuously while a node is being dragged. */
+  onNodeDrag?: (node: NeuronNode, position: [number, number, number]) => void;
+  /** Called when a node drag operation completes. */
+  onNodeDragEnd?: (node: NeuronNode, position: [number, number, number]) => void;
   /** When set, plays a story beat by id using the built-in study path player. */
   activeStoryBeatId?: string | null;
   /** Optional override for story beat step duration (ms). */

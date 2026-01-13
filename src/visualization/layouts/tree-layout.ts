@@ -29,6 +29,7 @@ export function applyTreeLayout(
   const verticalSpacing = treeOptions.verticalSpacing ?? 4;
   const direction = treeOptions.direction ?? 'down';
   const rootNodeId = treeOptions.rootNodeId;
+  const reverseEdgeDirection = treeOptions.reverseEdgeDirection ?? false;
 
   // Build node lookup by id and slug
   const nodeById = new Map<string, NeuronVisualNode>();
@@ -51,8 +52,9 @@ export function applyTreeLayout(
 
     if (!fromNode || !toNode) continue;
 
-    const parentId = fromNode.id;
-    const childId = toNode.id;
+    // When reverseEdgeDirection is true, treat edge.to as parent and edge.from as child
+    const parentId = reverseEdgeDirection ? toNode.id : fromNode.id;
+    const childId = reverseEdgeDirection ? fromNode.id : toNode.id;
 
     // Only set parent if this node doesn't already have one (first edge wins)
     if (!parentMap.has(childId)) {

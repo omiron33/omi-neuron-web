@@ -5,6 +5,12 @@ export interface AnimationConfig {
   focusDuration: number;
   transitionDuration: number;
   easing: 'linear' | 'easeInOut' | 'easeOut';
+  /**
+   * When true, constrains focus animations to 2D plane:
+   * - Camera maintains fixed Z-axis direction (no rotation drift)
+   * - Focus moves camera parallel to XY plane
+   */
+  constrainTo2D?: boolean;
 }
 
 interface CameraTween {
@@ -27,8 +33,16 @@ export class AnimationController {
   ) {}
 
   focusOnNode(position: THREE.Vector3, callback?: () => void): void {
-    const direction = this.camera.position.clone().sub(this.controls.target).normalize();
     const distance = this.camera.position.distanceTo(this.controls.target);
+    let direction: THREE.Vector3;
+
+    if (this.config.constrainTo2D) {
+      // Fixed Z-axis direction to prevent rotation drift in 2D mode
+      direction = new THREE.Vector3(0, 0, 1);
+    } else {
+      direction = this.camera.position.clone().sub(this.controls.target).normalize();
+    }
+
     const targetPosition = position.clone().add(direction.multiplyScalar(distance));
     this.focusOnPosition(targetPosition, position, callback);
   }

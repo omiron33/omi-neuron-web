@@ -5,8 +5,11 @@ export interface InteractionConfig {
   enableHover: boolean;
   enableClick: boolean;
   enableDoubleClick: boolean;
+  enableDrag: boolean;
   hoverDelay: number;
   doubleClickDelay: number;
+  /** Plane to constrain drag movements to. Default: 'xy' */
+  dragConstrainPlane: 'xy' | 'xz' | 'yz';
 }
 
 export class InteractionManager {
@@ -21,11 +24,23 @@ export class InteractionManager {
   private lastClickTime = 0;
   private lastClickId: string | null = null;
 
+  // Drag state
+  private isDragging = false;
+  private dragNode: NeuronVisualNode | null = null;
+  private dragPlane = new THREE.Plane();
+  private dragOffset = new THREE.Vector3();
+  private dragIntersection = new THREE.Vector3();
+  private pointerDownPosition = new THREE.Vector2();
+  private dragThreshold = 5; // pixels
+
   onNodeHover: (node: NeuronVisualNode | null) => void = () => {};
   onNodeClick: (node: NeuronVisualNode) => void = () => {};
   onNodeDoubleClick: (node: NeuronVisualNode) => void = () => {};
   onEdgeClick: (edge: NeuronVisualEdge) => void = () => {};
   onBackgroundClick: () => void = () => {};
+  onNodeDragStart: (node: NeuronVisualNode, position: THREE.Vector3) => void = () => {};
+  onNodeDrag: (node: NeuronVisualNode, position: THREE.Vector3) => void = () => {};
+  onNodeDragEnd: (node: NeuronVisualNode, position: THREE.Vector3) => void = () => {};
 
   constructor(
     private scene: THREE.Scene,
@@ -37,8 +52,39 @@ export class InteractionManager {
   }
 
   onPointerMove(event: PointerEvent): void {
-    if (!this.config.enableHover) return;
     this.updatePointer(event);
+
+    // Handle dragging
+    if (this.config.enableDrag && this.dragNode) {
+      // Check if we've moved enough to start dragging
+      if (!this.isDragging) {
+        const dx = (this.pointer.x - this.pointerDownPosition.x) * this.renderer.domElement.clientWidth;
+        const dy = (this.pointer.y - this.pointerDownPosition.y) * this.renderer.domElement.clientHeight;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > this.dragThreshold) {
+          this.isDragging = true;
+          const nodeObject = this.nodeObjects.find(
+            (obj) => obj.userData?.nodeId === this.dragNode!.id
+          );
+          if (nodeObject) {
+            this.onNodeDragStart(this.dragNode, nodeObject.position.clone());
+          }
+        }
+      }
+
+      // Update position during drag
+      if (this.isDragging) {
+        this.raycaster.setFromCamera(this.pointer, this.camera);
+        if (this.raycaster.ray.intersectPlane(this.dragPlane, this.dragIntersection)) {
+          const newPosition = this.dragIntersection.clone().add(this.dragOffset);
+          this.onNodeDrag(this.dragNode, newPosition);
+        }
+        return; // Skip hover handling during drag
+      }
+    }
+
+    // Handle hover
+    if (!this.config.enableHover) return;
     const node = this.getIntersectedNode(this.pointer);
     if (this.hoverTimeout) {
       window.clearTimeout(this.hoverTimeout);
@@ -51,11 +97,69 @@ export class InteractionManager {
     }, this.config.hoverDelay);
   }
 
-  onPointerDown(): void {}
+  onPointerDown(event: PointerEvent): void {
+    if (!this.config.enableDrag) return;
+
+    this.updatePointer(event);
+    this.pointerDownPosition.copy(this.pointer);
+
+    const node = this.getIntersectedNode(this.pointer);
+    if (node) {
+      // Get the node's 3D object to find its position
+      const nodeObject = this.nodeObjects.find(
+        (obj) => obj.userData?.nodeId === node.id
+      );
+      if (nodeObject) {
+        // Set up drag plane based on config
+        const normal = this.getPlaneNormal();
+        this.dragPlane.setFromNormalAndCoplanarPoint(normal, nodeObject.position);
+
+        // Calculate offset from intersection to node center
+        this.raycaster.setFromCamera(this.pointer, this.camera);
+        if (this.raycaster.ray.intersectPlane(this.dragPlane, this.dragIntersection)) {
+          this.dragOffset.copy(nodeObject.position).sub(this.dragIntersection);
+          this.dragNode = node;
+        }
+      }
+    }
+  }
+
+  private getPlaneNormal(): THREE.Vector3 {
+    switch (this.config.dragConstrainPlane) {
+      case 'xz':
+        return new THREE.Vector3(0, 1, 0);
+      case 'yz':
+        return new THREE.Vector3(1, 0, 0);
+      case 'xy':
+      default:
+        return new THREE.Vector3(0, 0, 1);
+    }
+  }
+
+  /** Returns true if currently dragging a node */
+  get dragging(): boolean {
+    return this.isDragging;
+  }
 
   onPointerUp(event: PointerEvent): void {
-    if (!this.config.enableClick) return;
     this.updatePointer(event);
+
+    // Handle drag end
+    if (this.isDragging && this.dragNode) {
+      this.raycaster.setFromCamera(this.pointer, this.camera);
+      if (this.raycaster.ray.intersectPlane(this.dragPlane, this.dragIntersection)) {
+        const finalPosition = this.dragIntersection.clone().add(this.dragOffset);
+        this.onNodeDragEnd(this.dragNode, finalPosition);
+      }
+      this.isDragging = false;
+      this.dragNode = null;
+      return; // Don't trigger click after drag
+    }
+
+    // Reset drag state even if not dragging
+    this.dragNode = null;
+
+    if (!this.config.enableClick) return;
     const node = this.getIntersectedNode(this.pointer);
     if (node) {
       const now = performance.now();

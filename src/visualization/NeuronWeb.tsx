@@ -58,6 +58,9 @@ export function NeuronWeb({
   onEdgeClick,
   onBackgroundClick,
   onCameraChange,
+  draggable,
+  onNodeDrag,
+  onNodeDragEnd,
   performanceMode,
   density,
   rendering,
@@ -566,16 +569,31 @@ export function NeuronWeb({
 
   const doubleClickEnabled = false;
 
+  // Parse draggable prop
+  const dragConfig = useMemo(() => {
+    if (!draggable) return { enabled: false, constrainToPlane: 'xy' as const };
+    if (draggable === true) {
+      // Default: constrain to XY for tree mode, XY otherwise
+      return { enabled: true, constrainToPlane: 'xy' as const };
+    }
+    return {
+      enabled: draggable.enabled,
+      constrainToPlane: draggable.constrainToPlane ?? 'xy',
+    };
+  }, [draggable]);
+
   const interactionManager = useMemo(() => {
     if (!sceneManager) return null;
     return new InteractionManager(sceneManager.scene, sceneManager.camera, sceneManager.renderer, {
       enableHover: true,
       enableClick: true,
       enableDoubleClick: doubleClickEnabled,
+      enableDrag: dragConfig.enabled,
       hoverDelay: Math.max(40, resolvedTheme.animation.hoverCardFadeDuration * 0.6),
       doubleClickDelay: 280,
+      dragConstrainPlane: dragConfig.constrainToPlane,
     });
-  }, [sceneManager, resolvedTheme.animation.hoverCardFadeDuration, doubleClickEnabled]);
+  }, [sceneManager, resolvedTheme.animation.hoverCardFadeDuration, doubleClickEnabled, dragConfig]);
 
   const animationController = useMemo(() => {
     if (!sceneManager) return null;
@@ -583,8 +601,9 @@ export function NeuronWeb({
       focusDuration: resolvedAnimationConfig.focusDurationMs,
       transitionDuration: resolvedAnimationConfig.transitionDurationMs,
       easing: resolvedAnimationConfig.easing,
+      constrainTo2D: isTreeLayout,
     });
-  }, [sceneManager, resolvedAnimationConfig]);
+  }, [sceneManager, resolvedAnimationConfig, isTreeLayout]);
 
   const rippleEnabled =
     resolvedAnimationConfig.enableSelectionRipple && resolvedPerformanceMode !== 'fallback';
@@ -857,6 +876,20 @@ export function NeuronWeb({
   const focusOnNodePosition = useCallback(
     (nodePosition: THREE.Vector3, callback?: () => void) => {
       if (!animationController && !sceneManager) return;
+
+      // Helper to get camera direction - fixed Z for 2D mode, current direction otherwise
+      const getCameraDirection = (): THREE.Vector3 => {
+        if (isTreeLayout) {
+          // Fixed Z-axis direction to prevent rotation drift in 2D mode
+          return new THREE.Vector3(0, 0, 1);
+        }
+        const direction = sceneManager!.camera.position.clone().sub(sceneManager!.controls.target);
+        if (direction.lengthSq() < 0.0001) {
+          direction.set(0, 0, 1);
+        }
+        return direction.normalize();
+      };
+
       if (Array.isArray(clickZoomOffset) && clickZoomOffset.length === 3) {
         const offset = new THREE.Vector3(...clickZoomOffset);
         const targetPosition = nodePosition.clone().add(offset);
@@ -877,11 +910,7 @@ export function NeuronWeb({
           }
           return;
         }
-        const direction = sceneManager.camera.position.clone().sub(sceneManager.controls.target);
-        if (direction.lengthSq() < 0.0001) {
-          direction.set(0, 0, 1);
-        }
-        direction.normalize();
+        const direction = getCameraDirection();
         const targetPosition = nodePosition.clone().add(direction.multiplyScalar(clickZoomDistance));
         if (cameraTweenEnabled && animationController) {
           animationController.focusOnPosition(targetPosition, nodePosition, callback);
@@ -896,11 +925,7 @@ export function NeuronWeb({
       if (cameraTweenEnabled && animationController) {
         animationController.focusOnNode(nodePosition, callback);
       } else if (sceneManager) {
-        const direction = sceneManager.camera.position.clone().sub(sceneManager.controls.target);
-        if (direction.lengthSq() < 0.0001) {
-          direction.set(0, 0, 1);
-        }
-        direction.normalize();
+        const direction = getCameraDirection();
         const distance = sceneManager.camera.position.distanceTo(sceneManager.controls.target);
         const targetPosition = nodePosition.clone().add(direction.multiplyScalar(distance));
         sceneManager.camera.position.copy(targetPosition);
@@ -909,7 +934,7 @@ export function NeuronWeb({
         if (callback) callback();
       }
     },
-    [animationController, clickZoomOffset, clickZoomDistance, sceneManager, cameraTweenEnabled]
+    [animationController, clickZoomOffset, clickZoomDistance, sceneManager, cameraTweenEnabled, isTreeLayout]
   );
 
   const handleKeyDown = useCallback(
@@ -1186,11 +1211,17 @@ export function NeuronWeb({
     const targetFov = Math.min(vFov, hFov);
     const distance = (radius * (1 + padding)) / Math.tan((targetFov * viewportFraction) / 2);
 
-    const direction = camera.position.clone().sub(sceneManager.controls.target);
-    if (direction.lengthSq() < 0.0001) {
-      direction.set(0, 0, 1);
+    let direction: THREE.Vector3;
+    if (isTreeLayout) {
+      // Fixed Z-axis direction for 2D mode
+      direction = new THREE.Vector3(0, 0, 1);
+    } else {
+      direction = camera.position.clone().sub(sceneManager.controls.target);
+      if (direction.lengthSq() < 0.0001) {
+        direction.set(0, 0, 1);
+      }
+      direction.normalize();
     }
-    direction.normalize();
 
     const targetPosition = sphere.center.clone().add(direction.multiplyScalar(distance));
     if (cameraTweenEnabled) {
@@ -1210,6 +1241,7 @@ export function NeuronWeb({
     fitSignature,
     cameraFitSuspended,
     cameraTweenEnabled,
+    isTreeLayout,
   ]);
 
   useEffect(() => {
@@ -1485,6 +1517,36 @@ export function NeuronWeb({
         onEdgeClick(edge as unknown as NeuronEdge);
       }
     };
+
+    // Set up drag handlers
+    if (dragConfig.enabled) {
+      interactionManager.onNodeDragStart = () => {
+        // Disable OrbitControls panning during drag
+        if (sceneManager) {
+          sceneManager.controls.enabled = false;
+        }
+      };
+
+      interactionManager.onNodeDrag = (node, position) => {
+        // Update node position in renderer
+        nodeRenderer.updateNodePosition(node.id, position);
+        // Call user callback
+        if (onNodeDrag) {
+          onNodeDrag(node as unknown as NeuronNode, [position.x, position.y, position.z]);
+        }
+      };
+
+      interactionManager.onNodeDragEnd = (node, position) => {
+        // Re-enable OrbitControls
+        if (sceneManager) {
+          sceneManager.controls.enabled = true;
+        }
+        // Call user callback
+        if (onNodeDragEnd) {
+          onNodeDragEnd(node as unknown as NeuronNode, [position.x, position.y, position.z]);
+        }
+      };
+    }
   }, [
     interactionManager,
     nodeRenderer,
@@ -1503,6 +1565,10 @@ export function NeuronWeb({
     onBackgroundClick,
     applyFocusEdges,
     selectionRipple,
+    dragConfig,
+    sceneManager,
+    onNodeDrag,
+    onNodeDragEnd,
     selectionControlled,
     doubleClickEnabled,
   ]);
