@@ -1678,13 +1678,16 @@ export function NeuronWeb({
   useEffect(() => {
     if (!sceneManager || !interactionManager) return;
     const element = sceneManager.renderer.domElement;
+    const handleDown = (event: PointerEvent) => interactionManager.onPointerDown(event);
     const handleMove = (event: PointerEvent) => interactionManager.onPointerMove(event);
     const handleUp = (event: PointerEvent) => interactionManager.onPointerUp(event);
     const handleLeave = () => interactionManager.onPointerLeave();
+    element.addEventListener('pointerdown', handleDown);
     element.addEventListener('pointermove', handleMove);
     element.addEventListener('pointerup', handleUp);
     element.addEventListener('pointerleave', handleLeave);
     return () => {
+      element.removeEventListener('pointerdown', handleDown);
       element.removeEventListener('pointermove', handleMove);
       element.removeEventListener('pointerup', handleUp);
       element.removeEventListener('pointerleave', handleLeave);
