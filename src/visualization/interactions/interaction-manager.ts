@@ -103,6 +103,8 @@ export class InteractionManager {
 
   onPointerDown(event: PointerEvent): void {
     if (!this.config.enableDrag) return;
+    // Require Shift key for drag - allows normal click/pan without Shift
+    if (!event.shiftKey) return;
 
     this.updatePointer(event);
     this.pointerDownPosition.copy(this.pointer);

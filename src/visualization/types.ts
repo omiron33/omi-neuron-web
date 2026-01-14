@@ -361,7 +361,8 @@ export interface NeuronWebProps {
   onCameraChange?: (position: [number, number, number]) => void;
   /**
    * Enable node dragging for manual arrangement.
-   * - `true` or `{ enabled: true }`: Enable dragging, constrain to XY plane in tree mode
+   * Use Shift+click to drag nodes (regular click still works for selection/pan).
+   * - `true` or `{ enabled: true }`: Enable dragging, constrain to XY plane
    * - `{ enabled: true, constrainToPlane: 'xy' | 'xz' | 'yz' }`: Constrain to specific plane
    */
   draggable?: boolean | { enabled: boolean; constrainToPlane?: 'xy' | 'xz' | 'yz' };
