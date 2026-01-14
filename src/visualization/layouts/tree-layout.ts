@@ -218,8 +218,15 @@ export function applyTreeLayout(
     });
   }
 
-  // Apply positions to nodes
+  // Apply positions to nodes, respecting overrides
+  const overrides = options.overrides ?? {};
   return nodes.map((node) => {
+    // Check for override first (by id or slug)
+    const override = overrides[node.id] ?? (node.slug ? overrides[node.slug] : undefined);
+    if (override) {
+      return { ...node, position: [...override] as [number, number, number] };
+    }
+    // Fall back to calculated position
     const position = positions.get(node.id);
     if (position) {
       return { ...node, position };
